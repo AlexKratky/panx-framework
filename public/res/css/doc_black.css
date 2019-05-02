@@ -1,0 +1,328 @@
+﻿:root {
+    --background: #1A1A1D;
+    --headers: #c3073f;
+    --links: #c3073f;
+    --text: white;
+    --subtitle: #eeeeee;
+    --tableHover: rgb(18, 18, 20);
+    --borders: #c3073f;/*rgb(16, 16, 19); or whitesmoke*/
+}
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--background);
+}
+ 
+::-webkit-scrollbar-thumb {
+    background: var(--headers);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--headers);
+}
+* {
+    padding: 0;
+}
+body {
+    background: white; /*var(--background);*/
+    color: var(--text);
+    margin: 0;
+}
+.container {
+    width: 100%;
+}
+.sidemenu {
+    font-family: "Maven Pro", sans-serif;
+    width: 20%;
+    position: fixed;
+    border-right: 2px solid var(--borders);
+    height: 100%;
+    background-color: var(--background);
+    z-index: 10;
+    padding-top: 96px;/*-8px padding ul li*/
+}
+.sidemenu-ul {
+    text-align: right;
+    padding-right: 35px;
+}
+.sidemenu-li {
+    padding:4px;
+    color: var(--links);
+    cursor:pointer;
+}
+.sidemenu-li a {
+    color: var(--links);
+    display: block;
+}
+.sidemenu-li:hover {
+    text-decoration: underline;
+}
+.sidemenu-sub {
+    /*ul*/
+    padding-right: 20px;
+}
+.sidemenu-sub-li::after {
+    content: ' •';
+    text-decoration: none;
+}
+/*Theme select*/
+.theme-select  {   
+    bottom: 120px;   
+    position: absolute;
+    right: 35px;
+    z-index: 10000;
+}
+.theme-select a {
+    color: var(--links);
+}
+.theme-select a:hover {
+    text-decoration: underline;
+}
+.theme-or {
+    color: var(--headers);
+}
+.go-home {
+    float: right;
+}
+.content {
+    position: absolute;
+    width: 80%;
+    vertical-align: top;
+    top:0;
+    left: 20%;
+}
+.text {
+    padding-top: 100px;
+    padding-bottom: 100px;
+    
+}
+.h1 {
+    font-size: 80px;
+    margin: 0;
+    line-height: 75px;
+    font-weight: 400;
+    padding-left: 60px;
+    padding-right: 60px;
+    color: var(--headers);
+}
+.credits {
+    padding-left: 57px;
+    padding-top: 5px;
+    padding-bottom: 25px;
+    padding-left: 117px;
+    padding-right: 60px;
+}
+.credits a {
+    color: var(--text);
+}
+a {
+    text-decoration: none;
+    color: var(--links);
+}
+a:hover {
+    text-decoration: underline;
+}
+.subtitle {
+    font-size: 1.25rem;
+    margin-bottom: 1.1rem;
+    color: var(--subtitle);
+    padding-left: 60px;
+    padding-right: 60px;
+    padding-bottom: 60px;
+}
+.caption-title {
+    color: var(--headers);
+    margin-top: 0;
+    margin-bottom: 2rem;
+    font-size: 34px;
+    font-weight: 400;
+}
+.button:hover {
+    color: var(--text);
+    background-color: var(--links);
+    text-decoration: none;
+}
+.button {
+    padding: 0.8rem 2rem;
+    margin-bottom: 8px;
+    border: 2px solid var(--links);
+    color: var(--links);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: 4px;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+.caption {
+    /*border-top: 2px solid var(--borders);*/
+    padding:60px;
+    padding-top: 115px;
+}
+@media only screen and (max-width: 800px) {
+    .notImportant {
+        display: none;
+    }
+    .sidemenu {
+        position: static;
+        width: 100%;
+        height: auto;
+        padding: 0;
+        margin: 0;
+        border: none;
+        border-bottom: 2px solid var(--borders);
+        padding-top: 35px;
+        padding-bottom: 35px;
+    }
+    .theme-select {
+        position: static;
+        text-align: center;
+    }
+    .theme-select a {
+        display: inline-block;
+        padding: 4px;
+    }
+    .go-home {
+        float: initial;
+    }
+    .text {
+        padding-top: 35px;
+    }
+    .sidemenu-ul {
+        text-align: center;
+        padding: 0;
+    }
+    .content {
+        position: static;
+        width: 100%;
+    }
+    .h1 {
+        font-size: 60px;
+        padding-left:5px;
+        padding-right: 5px;
+        text-align: center;
+    }
+    .subtitle {
+        padding-left:5px;
+        padding-right: 5px;
+        text-align: center;
+    }
+    .credits {
+        padding-left:5px;
+        text-align: center;
+        padding-right: 5px;
+    }
+    .caption-title {
+        text-align: center;
+    }
+    .caption {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+}
+@media only screen and (max-width: 520px) {
+    .button {
+        width: calc(100% - 4.2rem);
+        display: block;
+        margin-bottom: -24px;
+    }
+    .h1 {
+        font-size: 40px;
+    }
+    .subtitle {
+        text-align: center;
+    }
+    .error {
+        text-align: center;
+        padding: 5px;
+    }
+}
+    @media only screen and (max-width: 320px) {
+    .h1 {
+        font-size: 34px;
+    }
+}
+.pre {
+    display: block;
+    font-family: monospace;
+    margin: 1em 0;
+    padding: 0px;
+}
+.overflow {
+    overflow: auto;
+}
+.code {
+    font-family: "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace;
+    border-left: 6px solid #0099ff;
+    width: calc(100% - 55px);
+    padding-top: 3px;
+    padding-bottom: 3px;
+    text-align: left;
+    margin: 0;
+    padding: 0 15px;
+    display: block;
+    background: #1d1f20;
+    color: white;
+}
+.error {
+    font-size: 20px;
+    font-weight: 400;
+    padding-right: 60px;
+    padding-left: 60px;
+}
+.table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.table th, td {
+    padding: 8px 16px 8px 6px;
+    text-align: left;
+    border-bottom: 1px solid var(--borders);
+    vertical-align: top;
+}
+th {
+    text-align: left;
+    font-weight: 500;
+    color: var(--headers);
+}
+.table tr:hover {
+    background-color: var(--tableHover);
+}
+.version {
+    display: inline-block;
+}
+
+/*METHOD DETAILS*/
+.details-block {
+    border: 2px solid var(--borders);
+    margin-top: 20px;
+}
+.details-block__title {
+    color: var(--headers);
+    padding: 20px;
+    font-weight: 500;
+    font-size: 18px;
+    border-bottom: 2px solid var(--borders);
+}
+.details-block__description {
+    padding: 20px;
+}
+.details-block__return {
+    padding-left: 20px;
+    padding-right: 20px;
+}
+.details-block__parameters__title {
+    padding: 20px;
+    padding-bottom: 0px;
+}
+.details-block__parameters__item {
+    padding-left: 20px;
+    padding-right: 20px;
+    margin-left: 15px;
+}
+.text-bold {
+    font-weight: 500;
+}

@@ -1,0 +1,1 @@
+LoginForm <?=$CONFIG["custom"]["CUSTOM_VALUE"]?>

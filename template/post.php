@@ -1,0 +1,1 @@
+post with id <?=Route::getValue("AUTHOR_ID");?>:<?=Route::getValue("ID");?>
