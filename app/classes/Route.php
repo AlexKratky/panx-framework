@@ -1,8 +1,10 @@
 <?php
 class Route {
     private static $ROUTES = array();
+    private static $API_ROUTES = array();
     private static $ERRORS = array();
     private static $VALUES = array();
+
     /**
      * Error class constants
      */
@@ -27,6 +29,10 @@ class Route {
         self::$ROUTES[$ROUTE] = $TEMPLATE_FILE;
     }
 
+    public static function apiGroup($VERSION, $ROUTES) {
+        self::$API_ROUTES[$VERSION] = $ROUTES;
+    }
+
     /**
      * Returns file which responds to ROUTE
      * Support wildcards:
@@ -35,6 +41,51 @@ class Route {
      *  {VARIABLE} : Mean one element (Same as +), but the value will be saved and can be accessed by getValue()
      */
     public static function search($SEARCH_ROUTE) {
+        $C = new URL();
+        $L = $C->getLink();
+        if (count($L) > 2 && $L[1] == "api") {
+            //e.g. $API_ROUTES["v2"]
+            if(isset(self::$API_ROUTES[$L[2]])) {
+                foreach(self::$API_ROUTES[$L[2]] as $API_ROUTE) {
+                    //var_dump($API_ROUTE);
+                    /*if($C->getString() == "/api/".$L[2]."/".trim($API_ROUTE[0], "/")){
+                        return $API_ROUTE[1];
+                    }*/
+                    $CURRENT = new URL();
+                    $x = new URL("/api/".$L[2]."/".trim($API_ROUTE[0], "/"), false);
+
+                    if(count($x->getLink()) > count($CURRENT->getLink())) {
+                        continue;
+                    }
+
+                    $match = true;
+                    $x = $x->getLink();
+                    $CURRENT = $CURRENT->getLink();
+                    for($i = 0; $i < count($x); $i++) {
+                        if($x[$i] == "*") {
+                            return $API_ROUTE[1];
+                        }
+                        if($x[$i] == "+") {
+                            continue;
+                        }
+                        preg_match("/{(.+?)}/", $x[$i], $matches);
+                        if(count($matches) > 0) {
+                            self::$VALUES[$matches[1]] = $CURRENT[$i];
+                            continue;
+                        }
+                        if(!isset($CURRENT[$i]) || $x[$i] != $CURRENT[$i]) {
+                            $match = false;
+
+                            break;
+                        }
+                    }
+                    if($match && count($x) == count($CURRENT)) {
+                        return $API_ROUTE[1];
+                    }
+                }
+            }
+        }
+
         foreach (self::$ROUTES as $ROUTE => $VALUE) {
             $CURRENT = new URL();
             $x = new URL($ROUTE."", false);

@@ -52,8 +52,6 @@ If you want to include more template files, then you need to pass array, for exa
 Route::set("/docs/intro", ["header.php", "intro.php", "footer.php"]);
 ```
 
-
-
 ### Routes with redirect
 
 If you want to redirect from one route to another, you can do it by this:

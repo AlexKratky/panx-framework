@@ -33,15 +33,17 @@ $template_files = Route::search($UC->getString());
 //is function
 if (is_callable($template_files)) {
     $template_files();
-}
+} else {
 
-if($template_files == Route::ERROR_NOT_FOUND)
-    $template_files = Route::searchError(Route::ERROR_NOT_FOUND);
+    if($template_files == Route::ERROR_NOT_FOUND)
+        $template_files = Route::searchError(Route::ERROR_NOT_FOUND);
 
-if(!is_array($template_files))
-    require(__DIR__."/template/".$template_files);
-else {
-    for($i = 0; $i < count($template_files); $i++) {
-        require(__DIR__."/template/".$template_files[$i]);
+    if(!is_array($template_files))
+        require(__DIR__."/template/".$template_files);
+    else {
+        for($i = 0; $i < count($template_files); $i++) {
+            require(__DIR__."/template/".$template_files[$i]);
+        }
     }
+
 }

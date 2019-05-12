@@ -1,6 +1,6 @@
 # panx-framework
 
-> microframework for small webistes
+> microframework for small websites
 
 * panx-framework is primary for small websites, whole framework have size around ~100kb
 
@@ -10,18 +10,19 @@
 
   * Simple routing engine
   * Database wrapper
-
+* Documentation generator
+  
   
 
-  ## Getting started
+## Getting started
 
-  To get started using panx framework, see [Creating first project using panx framework](https://panx.eu/docs/getting-started)
+To get started using panx framework, see [Creating first project using panx framework](https://panx.eu/docs/getting-started)
 
-  * See full [documentation](https://panx.eu/docs/).
+* See full [documentation](https://panx.eu/docs/).
 
-  
 
-  ## License
-  
-  The panx framework is open-source software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## License
+
+The panx framework is open-source software licensed under the [MIT license](https://opensource.org/licenses/MIT).
 

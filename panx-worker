@@ -2,51 +2,106 @@
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
-require(__DIR__."/app/panx-worker/TS_CMD.php");
-require(__DIR__."/vendor/autoload.php");
-$PROGRAM_INFO["name"] = "panx-worker";
-$PROGRAM_INFO["version"] = "v0.1 (30-04-2019) [dd-mm-yyyy]";
 
-$BINDS = array('');
+if(file_exists(__DIR__."/app/panx-worker/TS_CMD.php")) {
+    require(__DIR__."/app/panx-worker/TS_CMD.php");
 
-if ($ARGS_COUNT == 0) {
-    info_msg("panx-worker v0.1. Use argument ? to see help.");
-} else {
-    if($ARGS[0] == "?") {
-        //HELP
-        displayInfo();
-        write("Available parameters: " . colorize("create", "red", "black"));
-        exit();
-    }
-    if( function_exists ( $ARGS[0] ) && !in_array($ARGS[0], $BINDS) ) {
-        call_user_func($ARGS[0]);
+    $PROGRAM_INFO["name"] = "panx-worker";
+    $PROGRAM_INFO["version"] = "v0.1 (30-04-2019) [dd-mm-yyyy]";
+    $CONFIG = (file_exists(".config")) ? parse_ini_file(".config", true) : null;
+
+    $BINDS = array('');
+
+    if ($ARGS_COUNT == 0) {
+        info_msg("panx-worker v0.1. Use argument ? to see help.");
     } else {
-        //binds
-        switch($ARGS[0]) {
-            default:
-                error_msg("Invalid argument.");
-                break;
+        if($ARGS[0] == "?") {
+            //HELP
+            displayInfo();
+            write("Available parameters: " . colorize("create", "red", "black"));
+            exit();
+        }
+        if( function_exists ( $ARGS[0] ) && !in_array($ARGS[0], $BINDS) ) {
+            call_user_func($ARGS[0]);
+        } else {
+            //binds
+            switch($ARGS[0]) {
+                default:
+                    error_msg("Invalid argument.");
+                    break;
+            }
+        }
+    }
+} else {
+    echo "Class TS_CMD was not found. The only argument you can call is 'install [VERSION]'" . "\n";
+    $ARGS = $argv;
+    array_shift($ARGS);
+
+    if(isset($ARGS[0])) {
+        if($ARGS[0] == "install") {
+            install($ARGS);
         }
     }
 }
 
 function create() {
+    require __DIR__ . "/vendor/autoload.php";
     global $ARGS_COUNT;
     global $ARGS;
+    global $CONFIG;
     if (!isset($ARGS[1])) {error("You need to specify what to create.");}
     if($ARGS[1] == "doc" || $ARGS[1] == "documentation") {
         $docs_folder = "/docs";
         if (isset($ARGS[2])) $docs_folder = $ARGS[2];
         info_msg("Documentation will be created from folder: ".$docs_folder);
-        $f = scandir(__DIR__ . $docs_folder);
         $Parsedown = new ParsedownExtra();
         $r_files = "";
         $menu = "";
-        mkdir(__DIR__."/template/docs");
-        for($i = 2; $i < count($f); $i++) {
-            file_put_contents(__DIR__ . "/template/docs/" .  basename($f[$i], ".md") . ".php", $Parsedown->text(file_get_contents(__DIR__ . $docs_folder . "/" . $f[$i])));
-            $menu = $menu . "<li class='sidemenu-li'><a href='/docs/".basename($f[$i], ".md")."'>".basename($f[$i], ".md")."</a></li>\r\n";
-            $r_files = $r_files . "Route::set('/docs/".basename($f[$i], ".md")."', ['header.php', 'docs/".basename($f[$i], ".md").".php', 'footer.php']);\r\n";
+        $menu_arr = array();
+        $path = __DIR__."/template/docs/";
+        $source = __DIR__ . $docs_folder . "/";
+        $folders = array($source);
+        $index = 0;
+        while(count($folders) > $index) {
+            $f = scandir($folders[$index]);
+            $rel_path = $path . str_replace($source, "", $folders[$index]);
+            if(!file_exists($rel_path))
+                mkdir($rel_path);
+            for($i = 2; $i < count($f); $i++) {
+                // #+?\ .+?\n <- Match title
+                if(is_dir($folders[$index].$f[$i])) {
+                    array_push($folders, $folders[$index].$f[$i]."/");
+                    continue;
+                }
+                preg_match("/#+?\ (.+?)\n/", file_get_contents($folders[$index].$f[$i]), $matches);
+                if(!isset($matches[1])) {
+                    $matches[1] = basename($f[$i], ".md");
+                }
+                //$matches[1] is title
+                file_put_contents($rel_path .  basename($f[$i], ".md") . ".php", "<title>".$CONFIG["basic"]["APP_NAME"]." | Documentation | ".$matches[1]." </title>" . $Parsedown->text(file_get_contents($folders[$index].$f[$i])));
+                //$menu = $menu . "<li class='sidemenu-li'><a href='/docs/".basename($f[$i], ".md")."'>".$matches[1]."</a></li>\r\n";
+                array_push($menu_arr, array(str_replace($source, "", $folders[$index]).basename($f[$i], ".md"), $matches[1]));
+                $r_files = $r_files . "Route::set('/docs/".str_replace($source, "", $folders[$index])."/".basename($f[$i], ".md")."', ['header.php', 'docs/".str_replace($source, "", $folders[$index])."/".basename($f[$i], ".md").".php', 'footer.php']);\r\n";
+            }
+            $index++;
+        }
+
+        info_msg("Sort the pages, start with the first:");
+        $c = count($menu_arr);
+        while(count($menu_arr) > 0) {
+            for ($x = 0; $x < $c; $x++) {
+                if(isset($menu_arr[$x][0]))
+                    write(($x) . ": " . $menu_arr[$x][0] . " - " . $menu_arr[$x][1]);
+            }
+            $n = read("Select page: ");
+            if(isset($menu_arr[$n])) {
+                $menu = $menu . "<li class='sidemenu-li'><a href='/docs/" . $menu_arr[$n][0] . "'>" . $menu_arr[$n][1] . "</a></li>\r\n";
+                unset($menu_arr[$n]);
+                info_msg($n);
+
+            } else {
+                info_msg("Invalid page number.");
+            }
         }
         /**
          * Steps that panx-worker must do:
@@ -67,17 +122,138 @@ function create() {
             Route::set('/', 'home.php');
             Route::set('/docs', ['header.php', 'footer.php']);\r\n" . $r_files;
         }
-        if(mkdir(__DIR__."/routes/backup/")) {
-            copy(__DIR__."/routes/route.php", __DIR__."/routes/backup/route.php");
+        if(!file_exists(__DIR__."/routes/backup/")) 
+            mkdir(__DIR__."/routes/backup/");
+        copy(__DIR__."/routes/route.php", __DIR__."/routes/backup/route.php");
+        
+        write(colorize("Redirect /docs to /docs/?: (e.g. enter 'intro' for redirect to /docs/intro)", "cyan", "black"), false);
+        $R = read("");
+        if($R != "") {
+            $route = $route . 'Route::set("/docs", function () {
+                redirect("/docs/'.$R.'");
+            });' . "\r\n";
+
         }
+
         file_put_contents(__DIR__."/routes/route.php", $route);
-        file_put_contents(__DIR__."/template/header.php", file_get_contents(__DIR__."/app/panx-worker/docs-resource/header.php") . $menu . file_get_contents(__DIR__."/app/panx-worker/docs-resource/header_continue.php"));
+        $dt = read("Use dark theme [Y/n]");
+        if($dt != "n" && $dt != "N") {
+            file_put_contents(__DIR__."/template/header.php", file_get_contents(__DIR__."/app/panx-worker/docs-resource/header.php") . $menu . file_get_contents(__DIR__."/app/panx-worker/docs-resource/header_continue.php"));
+            info_msg("using dark theme");
+        } else 
+            file_put_contents(__DIR__ . "/template/header.php", file_get_contents(__DIR__ . "/app/panx-worker/docs-resource/header_light.php") . $menu . file_get_contents(__DIR__ . "/app/panx-worker/docs-resource/header_continue.php"));
+
         copy(__DIR__."/app/panx-worker/docs-resource/footer.php", __DIR__."/template/footer.php");
 
     }
 }
 
-function install() {
+function install($ARGS) {
+    //$ARGS_COUNT = count($argv) - 1;
+    //$ARGS = $argv;
+    //array_shift($ARGS);
+    $version;
+    if(!class_exists('ZipArchive')) {
+        echo("ZipArchive is not installed. \n");
+        exit();
+    }
+
+    if(!isset($ARGS[1])) {
+        $version = file_get_contents("https://panx.eu/api/v1/getlatestversion");
+        echo("No version passed, using the latest one: $version \n");
+    } else {
+        $version = $ARGS[1];
+    }
+    
+    if(!file_exists(__DIR__."/temp/")) {
+        mkdir(__DIR__."/temp");
+    }
+    try {    
+        $z = fopen("https://panx.eu/download/$version.zip", 'r');
+        if ( !$z ) {
+            echo("Failed to download $version.zip\n");
+            exit();
+        }
+        file_put_contents(__DIR__."/temp/$version.zip", $z);
+        fclose($z);
+    } catch (Exception $e) {
+        error($e);
+    }
+
+    $zip = new ZipArchive;
+    if ($zip->open(__DIR__."/temp/$version.zip") === true) {
+        $zip->extractTo(__DIR__);
+        $zip->close();
+        echo("Installation was successful \n");
+    } else {
+        echo("Failed to install.\n");
+        exit();
+    }
+    echo "Now you just need to run command 'composer install' \n";
+    unlink(__DIR__."/temp/$version.zip");
+}
+
+function update() {
+    global $ARGS_COUNT;
+    global $ARGS;
+
+    $version;
+    if (!class_exists('ZipArchive')) {
+        error("ZipArchive is not installed.");
+    }
+
+    if (empty($AGRS[1])) {
+        $version = file_get_contents("https://panx.eu/api/v1/getlatestversion");
+        info_msg("No version passed, using the latest one: $version");
+    }
+
+    if (!file_exists(__DIR__ . "/temp/")) {
+        mkdir(__DIR__ . "/temp");
+    }
+    file_put_contents(__DIR__ . "/temp/$version.zip", fopen("https://panx.eu/download/$version.zip", 'r'));
+
+    $zip = new ZipArchive;
+    if ($zip->open(__DIR__ . "/temp/$version.zip") === true) {
+        if(file_exists(__DIR__ . "/temp/$version"))
+            mkdir(__DIR__ . "/temp/$version");
+        $zip->extractTo(__DIR__ . "/temp/$version");
+        $zip->close();
+        //Now we need to move files from temp dir to main dir
+
+        info_msg("Updated to $version.");
+    } else {
+        info_msg("Failed to install.");
+        exit();
+    }
+    unlink(__DIR__ . "/temp/$version.zip");
+
+    rrmdir(__DIR__ . "/temp/$version/");
+
+}
+
+function api() {
     global $ARGS_COUNT;
     global $ARGS;
 }
+
+
+
+
+function rrmdir($dir)
+{
+    if (is_dir($dir)) {
+        $objects = scandir($dir);
+        foreach ($objects as $object) {
+            if ($object != "." && $object != "..") {
+                if (is_dir($dir . "/" . $object)) {
+                    rrmdir($dir . "/" . $object);
+                } else {
+                    unlink($dir . "/" . $object);
+                }
+
+            }
+        }
+        rmdir($dir);
+    }
+}
+
