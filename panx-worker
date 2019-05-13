@@ -236,6 +236,31 @@ function api() {
     global $ARGS;
 }
 
+function info() {
+    global $ARGS_COUNT;
+    global $ARGS;
+
+    $info = array();
+
+    $path = __DIR__ . "/";
+    $index = 0;
+    $folders = array($path);
+    while (count($folders) > $index) {
+        $f = scandir($folders[$index]);
+        for ($i = 2; $i < count($f); $i++) {
+            // #+?\ .+?\n <- Match title
+            if (is_dir($folders[$index] . $f[$i])) {
+                array_push($folders, $folders[$index] . $f[$i] . "/");
+                continue;
+            }
+            array_push($info, array($folders[$index] . $f[$i], filemtime($folders[$index] . $f[$i]), filesize($folders[$index] . $f[$i])));
+        }
+        $index++;
+    }
+    
+    file_put_contents("info.json", json_encode($info));    
+}
+
 
 
 
