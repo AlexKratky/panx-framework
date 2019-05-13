@@ -220,6 +220,79 @@ function update() {
         $zip->close();
         //Now we need to move files from temp dir to main dir
 
+        /******************** */
+
+        $path = __DIR__."/";
+        $source = __DIR__ . "/temp/$version/";
+        $folders = array($source);
+        $index = 0;
+        while(count($folders) > $index) {
+            $f = scandir($folders[$index]);
+            $rel_path = $path . str_replace($source, "", $folders[$index]);
+            if(!file_exists($rel_path))
+                mkdir($rel_path);
+            for($i = 2; $i < count($f); $i++) {
+                // #+?\ .+?\n <- Match title
+                if(is_dir($folders[$index].$f[$i])) {
+                    array_push($folders, $folders[$index].$f[$i]."/");
+                    continue;
+                }
+
+                if(!file_exists($rel_path . $f[$i])) {
+                    rename($folders[$index].$f[$i], $rel_path . $f[$i]);
+                } else {
+                    //Check if file was modified, if no, then overwrite, otherwise prompt for options
+                    //also check if file should be skipped, by searching in update.skip file
+                    if(file_exists(__DIR__ . "/update.skip")) {
+                        $SKIP = file_get_contents(__DIR__ . "/update.skip");
+                        $SKIP = explode(PHP_EOL, $SKIP);
+                        for($s = 0; $s < count($SKIP); $s++) {
+                            $SKIP[$s] = trim($SKIP[$s]);
+                        }
+                        //var_dump($SKIP);
+                        if(in_array(str_replace($source, "", $folders[$index]) . $f[$i], $SKIP)) {
+                            info_msg("Skipping: " . str_replace($source, "", $folders[$index]) . $f[$i]);
+                            continue;
+                        }
+                    }
+                        
+                    $FILE_CURRENT = array(filesize($rel_path . $f[$i]), filemtime($rel_path . $f[$i]));
+                    $INFO_JSON = file_exists(__DIR__."/info.json")  ? json_decode(file_get_contents(__DIR__."/info.json"),true) : array();
+                    if(isset($INFO_JSON[$rel_path . $f[$i]])) {
+                        if($FILE_CURRENT[0] == $INFO_JSON[$rel_path . $f[$i]][1] && $INFO_JSON[$rel_path . $f[$i]][0] == $FILE_CURRENT[1]) {
+                            //file is same, overwriting
+                            info_msg("Overwriting: " . str_replace($source, "", $folders[$index]) . $f[$i]);
+                            rename($folders[$index] . $f[$i], $rel_path . $f[$i]);
+
+                        } else {
+                            info_msg("File: " . str_replace($source, "", $folders[$index]) . $f[$i] . "  was edited. Do you want to overwrite it [Y/n]");
+                            $OW = read("");
+                            if(strtolower($OW) != "n") {
+                                info_msg("Overwriting: " . str_replace($source, "", $folders[$index]) . $f[$i]);
+                                rename($folders[$index] . $f[$i], $rel_path . $f[$i]);
+                            }
+                        }
+                    } else {
+                        //No data in info, need to confirm overwrite
+                        info_msg("File: " . str_replace($source, "", $folders[$index]) . $f[$i] . "  already exists. Do you want to overwrite it [Y/n]");
+                        $OW = read("");
+                        if (strtolower($OW) != "n") {
+                            info_msg("Overwriting: " . str_replace($source, "", $folders[$index]) . $f[$i]);
+                            rename($folders[$index] . $f[$i], $rel_path . $f[$i]);
+                        }
+
+                    }
+                
+
+                    //echo(str_replace($source, "", $folders[$index]) . $f[$i] . "\n");
+                }
+
+                //file_put_contents($rel_path .  basename($f[$i], ".md") . ".php", "<title>".$CONFIG["basic"]["APP_NAME"]." | Documentation | ".$matches[1]." </title>" . $Parsedown->text(file_get_contents($folders[$index].$f[$i])));
+            }
+            $index++;
+        }
+
+        /******************** */
         info_msg("Updated to $version.");
     } else {
         info_msg("Failed to install.");
@@ -253,7 +326,7 @@ function info() {
                 array_push($folders, $folders[$index] . $f[$i] . "/");
                 continue;
             }
-            array_push($info, array($folders[$index] . $f[$i], filemtime($folders[$index] . $f[$i]), filesize($folders[$index] . $f[$i])));
+            $info[$folders[$index] . $f[$i]] = array(filemtime($folders[$index] . $f[$i]), filesize($folders[$index] . $f[$i]));
         }
         $index++;
     }
