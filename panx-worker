@@ -146,8 +146,11 @@ function create() {
         copy(__DIR__."/app/panx-worker/docs-resource/footer.php", __DIR__."/template/footer.php");
 
     } else if($ARGS[1] == "post") {
+        
         if (!isset($ARGS[2])) {error("You need to specify path to post source.");}
         if (!file_exists(__DIR__.$ARGS[2])) error("File doesnt exists. " . __DIR__. $ARGS[2]);
+        $Parsedown = new ParsedownExtra();
+
         preg_match("/#+?\ (.+?)\n/", file_get_contents(__DIR__.$ARGS[2]), $matches);
         $f = __DIR__.$ARGS[2];
         if(!isset($matches[1])) {
@@ -164,18 +167,18 @@ function create() {
                 error("Failed to create directory " . __DIR__."/template/posts/");
         }
 
-        file_put_contents(__DIR__."/template/posts/" .  basename($f, ".md") . ".php", "<title>".$CONFIG["basic"]["APP_NAME"]." | Documentation | ".$title." </title>" . $Parsedown->text(file_get_contents($f)));
-        info_msg("Enter all custom headers, use ',' to enter multiple headers, e.g.: header.php, header2.php,");
+        file_put_contents(__DIR__."/template/posts/" .  basename($f, ".md") . ".php", "<title>".$CONFIG["basic"]["APP_NAME"]." | ".$title." </title>" . $Parsedown->text(file_get_contents($f)));
+        //info_msg("Enter all custom headers, use ',' to enter multiple headers, e.g.: header.php, header2.php,");
         //info_msg("After last header file, you need to write down ',' too!");
-        $headers = read("");
-        $headers = trim($headers);
+        //$headers = read("");
+        //$headers = trim($headers);
 // Need to change format of $headers and $footers to 'header.php', ...
         /*if ($headers != "") {
             // Check if last char is ,
         }*/
         
-        info_msg("Enter all custom footers, use ',' to enter multiple footers, e.g.: footer.php, footer2.php");
-        $footers = read("");
+        //info_msg("Enter all custom footers, use ',' to enter multiple footers, e.g.: footer.php, footer2.php");
+        //$footers = read("");
 
         if(!file_exists(__DIR__."/routes/posts.php")) {
             file_put_contents(__DIR__."/routes/posts.php", "<?php
@@ -252,6 +255,44 @@ function update() {
         info_msg("No version passed, using the latest one: $version");
     }
 
+    info_msg("Do you want to create backup? [Y/n]");
+    $b = read("");
+
+    if(strtolower($b) != "n") {
+        if(!file_exists(__DIR__."/backup/"))
+            mkdir(__DIR__ . "/backup/") ? info_msg("Created backup folder.") : error("Failed to create backup folder");
+        
+        $rootPath = __DIR__;
+
+        // Initialize archive object
+        $zip = new ZipArchive();
+        $t = time();
+        $zip->open(__DIR__.'/backup/backup_'.$t.'.zip', ZipArchive::CREATE | ZipArchive::OVERWRITE);
+
+        // Create recursive directory iterator
+        /** @var SplFileInfo[] $files */
+        $files = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($rootPath),
+            RecursiveIteratorIterator::LEAVES_ONLY
+        );
+
+        foreach ($files as $name => $file) {
+            // Skip directories (they would be added automatically)
+            if (!$file->isDir()) {
+                // Get real and relative path for current file
+                $filePath = $file->getRealPath();
+                $relativePath = substr($filePath, strlen($rootPath) + 1);
+
+                // Add current file to archive
+                $zip->addFile($filePath, $relativePath);
+            }
+        }
+
+        // Zip archive will be created only after closing object
+        $zip->close();
+        info_msg("Backup saved to /backup/backup_$t.zip");
+    }
+
     if (!file_exists(__DIR__ . "/temp/")) {
         mkdir(__DIR__ . "/temp");
     }
@@ -259,7 +300,7 @@ function update() {
 
     $zip = new ZipArchive;
     if ($zip->open(__DIR__ . "/temp/$version.zip") === true) {
-        if(file_exists(__DIR__ . "/temp/$version"))
+        if(!file_exists(__DIR__ . "/temp/$version"))
             mkdir(__DIR__ . "/temp/$version");
         $zip->extractTo(__DIR__ . "/temp/$version");
         $zip->close();
@@ -303,8 +344,8 @@ function update() {
                         
                     $FILE_CURRENT = array(filesize($rel_path . $f[$i]), filemtime($rel_path . $f[$i]));
                     $INFO_JSON = file_exists(__DIR__."/info.json")  ? json_decode(file_get_contents(__DIR__."/info.json"),true) : array();
-                    if(isset($INFO_JSON[$rel_path . $f[$i]])) {
-                        if($FILE_CURRENT[0] == $INFO_JSON[$rel_path . $f[$i]][1] && $INFO_JSON[$rel_path . $f[$i]][0] == $FILE_CURRENT[1]) {
+                    if(isset($INFO_JSON[str_replace(__DIR__, "", $rel_path . $f[$i])])) {
+                        if($FILE_CURRENT[0] == $INFO_JSON[str_replace(__DIR__, "", $rel_path . $f[$i])][1] && $INFO_JSON[str_replace(__DIR__, "", $rel_path . $f[$i])][0] == $FILE_CURRENT[1]) {
                             //file is same, overwriting
                             info_msg("Overwriting: " . str_replace($source, "", $folders[$index]) . $f[$i]);
                             rename($folders[$index] . $f[$i], $rel_path . $f[$i]);
@@ -371,7 +412,7 @@ function info() {
                 array_push($folders, $folders[$index] . $f[$i] . "/");
                 continue;
             }
-            $info[$folders[$index] . $f[$i]] = array(filemtime($folders[$index] . $f[$i]), filesize($folders[$index] . $f[$i]));
+            $info[str_replace(__DIR__, "", $folders[$index] . $f[$i])] = array(filemtime($folders[$index] . $f[$i]), filesize($folders[$index] . $f[$i]));
         }
         $index++;
     }

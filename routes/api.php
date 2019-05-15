@@ -9,6 +9,11 @@ Route::apiGroup("v1", array(
     array("getlatestversion", function() {
         echo "0.1";
     }),
+
+    array("getposts", function () {
+        //dump("test");
+        echo json_encode(Post::listPosts());
+    }),
 ));
 
 Route::apiGroup("v2", array(

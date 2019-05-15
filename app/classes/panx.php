@@ -31,3 +31,13 @@ function redirect($url) {
     exit();
 
 }
+
+function dump($var) {
+    if(!isset($CONFIG))
+        $CONFIG = parse_ini_file(__DIR__."/../../.config", true);
+
+    if($CONFIG["basic"]["APP_DEBUG"] == "true") {
+        var_dump($var);
+        exit();
+    }
+}
