@@ -145,6 +145,51 @@ function create() {
 
         copy(__DIR__."/app/panx-worker/docs-resource/footer.php", __DIR__."/template/footer.php");
 
+    } else if($ARGS[1] == "post") {
+        if (!isset($ARGS[2])) {error("You need to specify path to post source.");}
+        if (!file_exists(__DIR__.$ARGS[2])) error("File doesnt exists. " . __DIR__. $ARGS[2]);
+        preg_match("/#+?\ (.+?)\n/", file_get_contents(__DIR__.$ARGS[2]), $matches);
+        $f = __DIR__.$ARGS[2];
+        if(!isset($matches[1])) {
+            $matches[1] = basename($f, ".md");
+        }
+        info_msg("Current title: " . $matches[1]);
+        write("Do you want to use custom title? Enter a new one or press enter to keep current.");
+        $title = read("");
+        if ($title=="") {
+            $title = $matches[1];
+        }
+        if(!file_exists(__DIR__."/template/posts/")) {
+            if(!mkdir(__DIR__."/template/posts/"))
+                error("Failed to create directory " . __DIR__."/template/posts/");
+        }
+
+        file_put_contents(__DIR__."/template/posts/" .  basename($f, ".md") . ".php", "<title>".$CONFIG["basic"]["APP_NAME"]." | Documentation | ".$title." </title>" . $Parsedown->text(file_get_contents($f)));
+        info_msg("Enter all custom headers, use ',' to enter multiple headers, e.g.: header.php, header2.php,");
+        //info_msg("After last header file, you need to write down ',' too!");
+        $headers = read("");
+        $headers = trim($headers);
+// Need to change format of $headers and $footers to 'header.php', ...
+        /*if ($headers != "") {
+            // Check if last char is ,
+        }*/
+        
+        info_msg("Enter all custom footers, use ',' to enter multiple footers, e.g.: footer.php, footer2.php");
+        $footers = read("");
+
+        if(!file_exists(__DIR__."/routes/posts.php")) {
+            file_put_contents(__DIR__."/routes/posts.php", "<?php
+Route::set('/post/{ID}', function () {
+    Post::loadPost();
+});
+");
+        }
+
+        info_msg("Enter route indetifier, or press enter to use 'post' (/post/{ID})");
+
+        info_msg("Post created successfully, you can view it on: " . $CONFIG["basic"]["APP_URL"] . "post/" . basename($f, ".md"));
+// Maybe do not enter route for each post, rather use wildcard and Post class, and in Post class, you will specify headers and footers for all files
+
     }
 }
 
