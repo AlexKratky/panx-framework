@@ -21,7 +21,12 @@ Route::apiGroup("v1", array(
 
     array('sleep', function () {
         sleep(1);
-    })
+    }),
+
+    array('getTitle/{ID}', function() {
+        echo Post::getTitle(Route::getValue("ID"));
+
+    }),
 ));
 
 Route::apiGroup("v2", array(

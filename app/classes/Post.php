@@ -32,6 +32,14 @@ class Post {
         }
     }
 
+    public static function getTitle($post) {
+        if (!file_exists($_SERVER['DOCUMENT_ROOT'] . "/../template/posts/" . $post . ".php")) {
+            return Route::ERROR_NOT_FOUND;
+        }
+        preg_match('/<h[1-6]>(.+)<\/h[1-6]>/', file_get_contents($_SERVER['DOCUMENT_ROOT'] . "/../template/posts/" . $post . ".php"), $matches);
+        return $matches[1];
+    }
+
     public static function listPosts() {
         $p = Cache::get("posts", 60);
         if($p !== false) {

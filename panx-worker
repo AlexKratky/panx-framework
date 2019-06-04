@@ -202,6 +202,51 @@ Route::set('/post/{ID}', function () {
         info_msg("Post created successfully, you can view it on: " . $CONFIG["basic"]["APP_URL"] . "post/" . basename($f, ".md"));
 // Maybe do not enter route for each post, rather use wildcard and Post class, and in Post class, you will specify headers and footers for all files
 
+    } else if($ARGS[1] == "version") {
+        $version = read("Enter version (e.g.: 0.1)");
+        if($version == "") error("You need to enter version name.");
+
+        info();
+
+        $rootPath = realpath(__DIR__);
+
+        // Initialize archive object
+        if(!file_exists('public/download/')) {
+            mkdir('public/download/');
+        }
+        $zip = new ZipArchive();
+        $zip->open("public/download/$version.zip", ZipArchive::CREATE | ZipArchive::OVERWRITE);
+
+        // Create recursive directory iterator
+        /** @var SplFileInfo[] $files */
+        $files = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($rootPath),
+            RecursiveIteratorIterator::LEAVES_ONLY
+        );
+
+        foreach ($files as $name => $file) {
+            // Skip directories (they would be added automatically)
+            if (!$file->isDir()) {
+                // Get real and relative path for current file
+                $filePath = $file->getRealPath();
+                
+                $relativePath = substr($filePath, strlen($rootPath) + 1);
+                
+
+                // Add current file to archive
+                if(preg_match('/public\/download\/.+\.zip/', $relativePath)) {
+                    info_msg("Skipped: " . $relativePath);
+
+                    continue;
+                
+                }
+                $zip->addFile($filePath, $relativePath);
+            }
+        }
+
+        // Zip archive will be created only after closing object
+        $zip->close();
+
     }
 }
 
@@ -243,6 +288,8 @@ function install($ARGS) {
         if ($zip->open(__DIR__."/temp/$version.zip") === true) {
             $zip->extractTo(__DIR__);
             $zip->close();
+            if(file_exists(__DIR__ . "/temp/$version/changelog"))
+                displayChangelog(__DIR__ . "/temp/$version/changelog");
             echo("Installation was successful \n");
         } else {
             echo("Failed to install.\n");
@@ -357,7 +404,9 @@ function install($ARGS) {
             }
             if(!file_exists(__DIR__ . "/routes/route.php"))
                 file_put_contents(__DIR__ . "/routes/route.php", "<?php\r\n");
-
+            if(file_exists(__DIR__ . "/temp/$version/changelog")) {
+                displayChangelog(__DIR__ . "/temp/$version/changelog", true);
+            }
             echo("$version was installed successfuly.\n");
 
     
@@ -583,6 +632,8 @@ function update() {
         info_msg("Failed to install.");
         exit();
     }
+    if(file_exists(__DIR__ . "/temp/$version/changelog"))
+        displayChangelog(__DIR__ . "/temp/$version/changelog");
     unlink(__DIR__ . "/temp/$version.zip");
 
     rrmdir(__DIR__ . "/temp/$version/");
@@ -676,3 +727,31 @@ function rrmdir($dir)
     }
 }
 
+
+
+
+function displayChangelog($path, $useEchoOnly = false) {
+    $changelog = file_get_contents($path);
+    $changelog = explode(PHP_EOL, $changelog);
+    echo "\n";
+    foreach ($changelog as $line) {
+        if($useEchoOnly) {
+            if(isset($line[0]))
+                if($line[0] == "?")
+                    echo "\e[0;36;40m" . substr($line, 1) . "\e[0m\n";
+                else if($line[0] == "!")
+                    echo "\e[0;31;40m" . substr($line, 1) . "\e[0m\n";
+                else
+                    echo $line. "\n";
+            else
+                if($line[0] == "?")
+                    info_msg(substr($line, 1));
+                else if($line[0] == "!")
+                    error_msg(substr($line, 1));
+                else
+                    write($line);
+        }
+    
+    }
+    echo "\n";
+}
