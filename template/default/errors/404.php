@@ -1,6 +1,6 @@
 <?php
 if(!isset($CONFIG)) {
-	$CONFIG = parse_ini_file(__DIR__ . "/../../../.config", true);
+	$CONFIG = parse_ini_file($_SERVER['DOCUMENT_ROOT'] . "/../.config", true);
 }
 ?>
 <!DOCTYPE html>
@@ -18,5 +18,5 @@ http_response_code(404);
 if(!isset($UC)) {
 	$UC = new URL();
 }
-die("<div class='error'><div class='error-title'>Error <span class='error-code'>404</span></div><div class='error-msg'>Ať hledám, jak hledám tak \"" . $UC->getLink()[count($UC->getLink())-1] . "\" nemohu najít. Buď neexistuje, a nebo v minulosti existoval, ale byl smazán nebo přesunut.</div></div></body></html>");
+echo("<div class='error'><div class='error-title'>Error <span class='error-code'>404</span></div><div class='error-msg'>Ať hledám, jak hledám tak \"" . ($UC->getLink()[count($UC->getLink())-1] == "" ? "/" : $UC->getLink()[count($UC->getLink())-1]) . "\" nemohu najít. Buď neexistuje, a nebo v minulosti existoval, ale byl smazán nebo přesunut.</div></div></body></html>");
 ?>

@@ -93,14 +93,23 @@ function create() {
                 if(isset($menu_arr[$x][0]))
                     write(($x) . ": " . $menu_arr[$x][0] . " - " . $menu_arr[$x][1]);
             }
-            $n = read("Select page: ");
-            if(isset($menu_arr[$n])) {
-                $menu = $menu . "<li class='sidemenu-li'><a href='/docs/" . $menu_arr[$n][0] . "'>" . $menu_arr[$n][1] . "</a></li>\r\n";
-                unset($menu_arr[$n]);
-                info_msg($n);
-
+            $n = read("Select page (or write default to use this sorting)");
+            if($n == "default") {
+                foreach ($menu_arr as $menu_arr_el) {
+                    $menu = $menu . "<li class='sidemenu-li'><a href='/docs/" . $menu_arr_el[0] . "'>" . $menu_arr_el[1] . "</a></li>\r\n";
+                    //unset($menu_arr_el);
+                    
+                }
+                break;
             } else {
-                info_msg("Invalid page number.");
+                if(isset($menu_arr[$n])) {
+                    $menu = $menu . "<li class='sidemenu-li'><a href='/docs/" . $menu_arr[$n][0] . "'>" . $menu_arr[$n][1] . "</a></li>\r\n";
+                    unset($menu_arr[$n]);
+                    info_msg($n);
+
+                } else {
+                    info_msg("Invalid page number.");
+                }
             }
         }
         /**
@@ -212,6 +221,7 @@ function install($ARGS) {
     } else {
         $version = $ARGS[1];
     }
+
     
     if(!file_exists(__DIR__."/temp/")) {
         mkdir(__DIR__."/temp");
@@ -228,17 +238,140 @@ function install($ARGS) {
         error($e);
     }
 
-    $zip = new ZipArchive;
-    if ($zip->open(__DIR__."/temp/$version.zip") === true) {
-        $zip->extractTo(__DIR__);
-        $zip->close();
-        echo("Installation was successful \n");
+    if (!isset($ARGS[2])) {
+        $zip = new ZipArchive;
+        if ($zip->open(__DIR__."/temp/$version.zip") === true) {
+            $zip->extractTo(__DIR__);
+            $zip->close();
+            echo("Installation was successful \n");
+        } else {
+            echo("Failed to install.\n");
+            exit();
+        }
+    } else if ($ARGS[2] == "clean") {
+        // Extract zip to temp folder, move all files that are not in update.skip of THAT version (so /temp/xxx/update.skip file)
+        if (!file_exists(__DIR__ . "/temp/$version/")) {
+            mkdir(__DIR__ . "/temp/$version");
+        }
+        $zip = new ZipArchive;
+        if ($zip->open(__DIR__ . "/temp/$version.zip") === true) {
+            $zip->extractTo(__DIR__ . "/temp/$version/");
+            $zip->close();
+            $path = __DIR__ . "/";
+            $source = __DIR__ . "/temp/$version/";
+            $folders = array($source);
+            $index = 0;
+
+
+
+            $SKIP;
+            $ADDITIONAL_FILES = array();
+            if(file_exists(__DIR__ . "/temp/$version/update.skip")) {
+                $SKIP = file_get_contents(__DIR__ . "/temp/$version/update.skip");
+                $SKIP = explode(PHP_EOL, $SKIP);
+                for($s = 0; $s < count($SKIP); $s++) {
+                    $SKIP[$s] = trim($SKIP[$s]);
+                    if(isset($SKIP[$s][0]) && $SKIP[$s][0] == "!") {
+                        //exception
+                        $SKIP[$s] = substr($SKIP[$s], 1);
+                        if(is_dir($source.$SKIP[$s])) {
+                            echo("Adding folder (!): " . $source.$SKIP[$s]."\n");
+                            array_push($folders, $source.$SKIP[$s]);
+                        } else {
+                            echo("Adding file (!): " . $source . $SKIP[$s]."\n");
+                            array_push($ADDITIONAL_FILES, $source . $SKIP[$s]);
+                        }
+                    }
+                }
+            }
+
+            while(count($folders) > $index) {
+                $f = scandir($folders[$index]);
+                $rel_path = $path . str_replace($source, "", $folders[$index]);
+                if(!file_exists($rel_path))
+                    mkdir($rel_path, 0775, true);
+                for($i = 2; $i < count($f); $i++) {
+                    // #+?\ .+?\n <- Match title
+                    if(is_dir($folders[$index].$f[$i])) {
+                        if(in_array(str_replace($source, "", $folders[$index]) . $f[$i] . "/", $SKIP)) {
+                            echo("Skipping folder: " . str_replace($source, "", $folders[$index]) . $f[$i] . "/\n");
+                            continue;
+                        }
+                        if(!in_array($folders[$index].$f[$i]."/", $folders)) {
+                            echo("Adding folder: " . str_replace($source, "", $folders[$index]) . $f[$i] . "/\n");
+                            array_push($folders, $folders[$index].$f[$i]."/");
+                        } else {
+                            echo("Skipping folder (duplicity): " . str_replace($source, "", $folders[$index]) . $f[$i] . "/\n");
+                        }
+                        continue;
+                    }
+
+                    if(!empty($SKIP)) {
+                        //var_dump($SKIP);
+                        if(in_array(str_replace($source, "", $folders[$index]) . $f[$i], $SKIP)) {
+                            echo("Skipping: " . str_replace($source, "", $folders[$index]) . $f[$i] . "\n");
+                            continue;
+                        } else {
+                            rename($folders[$index] . $f[$i], $rel_path . $f[$i]);
+
+                        }
+                    }
+
+                }
+                $index++;
+            }
+  
+            foreach($ADDITIONAL_FILES as $ADDITIONAL_FILE) {
+                $rel_path = str_replace($source, "", $ADDITIONAL_FILE);
+                if(!file_exists(pathinfo($rel_path)['dirname']."/")) {
+                    echo ("Error: Folder doesnt exists ". pathinfo($rel_path)['dirname']."/"."\n");
+                    if(mkdir(pathinfo($rel_path)['dirname']."/", 0775, true)){
+                        echo("folder created ". pathinfo($rel_path)['dirname']."/"."\n");
+
+                    } else {
+                        echo("error: folder cant be created ". pathinfo($rel_path)['dirname']."/"."\n");
+                    }
+                }
+                if(!file_exists($ADDITIONAL_FILE)) {
+                    echo($ADDITIONAL_FILE . " doesnt exists.");
+                    continue;
+                }
+                if(is_writable(__DIR__ . "/" . $rel_path)) {
+                    echo( __DIR__ . "/" . $rel_path . " : true\n");
+                } else {
+                    echo (__DIR__ . "/" . $rel_path . " : false\n");
+
+                }
+                try {
+                    if(!file_exists(pathinfo($rel_path)['dirname']."/")) {
+                        echo("Error: Folder doesnt exists\n");
+                    }
+                    usleep(20);
+                    file_put_contents(__DIR__ . "/" . $rel_path, "test");
+                    usleep(20);
+
+                    rename($ADDITIONAL_FILE, __DIR__ . "/" . $rel_path);
+                } catch(Exception $e) {
+                    echo("Exception:\n$e\n");
+                }
+            }
+            if(!file_exists(__DIR__ . "/routes/route.php"))
+                file_put_contents(__DIR__ . "/routes/route.php", "<?php\r\n");
+
+            echo("$version was installed successfuly.\n");
+
+    
+        } else {
+            echo ("Failed to install.\n");
+            exit();
+        }
+
     } else {
-        echo("Failed to install.\n");
-        exit();
+        error("Invalid argument.\n");
     }
-    echo "Now you just need to run command 'composer install' \n";
+    echo "\nNow you just need to run command 'composer install' and create '.config' file (You can do it by running command: 'php panx-worker config').\n";
     unlink(__DIR__."/temp/$version.zip");
+    rrmdir(__DIR__."/temp/$version/");
 }
 
 function update() {
@@ -307,11 +440,38 @@ function update() {
         //Now we need to move files from temp dir to main dir
 
         /******************** */
-
-        $path = __DIR__."/";
+        $path = __DIR__ . "/";
         $source = __DIR__ . "/temp/$version/";
         $folders = array($source);
         $index = 0;
+
+
+
+        $SKIP;
+        $ADDITIONAL_FILES = array();
+        if(file_exists(__DIR__ . "/update.skip")) {
+            $SKIP = file_get_contents(__DIR__ . "/update.skip");
+            $SKIP = explode(PHP_EOL, $SKIP);
+            for($s = 0; $s < count($SKIP); $s++) {
+                $SKIP[$s] = trim($SKIP[$s]);
+                if(isset($SKIP[$s][0]) && $SKIP[$s][0] == "!") {
+                    //exception
+                    $SKIP[$s] = substr($SKIP[$s], 1);
+                    if(is_dir($source.$SKIP[$s])) {
+                        info_msg("Adding folder (!): " . $source.$SKIP[$s]);
+                        array_push($folders, $source.$SKIP[$s]);
+                    } else {
+                        info_msg("Adding file (!): " . $source . $SKIP[$s]);
+                        array_push($ADDITIONAL_FILES, $source . $SKIP[$s]);
+                    }
+                } else if(!isset($SKIP[$s][0])) {
+                    info_msg("Undefined string offset: " . $SKIP[$s]);
+                }
+            }
+        }
+
+        $INFO_JSON = file_exists(__DIR__ . "/info.json") ? json_decode(file_get_contents(__DIR__ . "/info.json"), true) : array();
+
         while(count($folders) > $index) {
             $f = scandir($folders[$index]);
             $rel_path = $path . str_replace($source, "", $folders[$index]);
@@ -320,7 +480,16 @@ function update() {
             for($i = 2; $i < count($f); $i++) {
                 // #+?\ .+?\n <- Match title
                 if(is_dir($folders[$index].$f[$i])) {
-                    array_push($folders, $folders[$index].$f[$i]."/");
+                    if(in_array(str_replace($source, "", $folders[$index]) . $f[$i] . "/", $SKIP)) {
+                        info_msg("Skipping folder: " . str_replace($source, "", $folders[$index]) . $f[$i] . "/");
+                        continue;
+                    }
+                    if(!in_array($folders[$index].$f[$i]."/", $folders)) {
+                        info_msg("Adding folder: " . str_replace($source, "", $folders[$index]) . $f[$i] . "/");
+                        array_push($folders, $folders[$index].$f[$i]."/");
+                    } else {
+                        info_msg("Skipping folder (duplicity): " . str_replace($source, "", $folders[$index]) . $f[$i] . "/");
+                    }
                     continue;
                 }
 
@@ -329,12 +498,7 @@ function update() {
                 } else {
                     //Check if file was modified, if no, then overwrite, otherwise prompt for options
                     //also check if file should be skipped, by searching in update.skip file
-                    if(file_exists(__DIR__ . "/update.skip")) {
-                        $SKIP = file_get_contents(__DIR__ . "/update.skip");
-                        $SKIP = explode(PHP_EOL, $SKIP);
-                        for($s = 0; $s < count($SKIP); $s++) {
-                            $SKIP[$s] = trim($SKIP[$s]);
-                        }
+                    if(!empty($SKIP)) {
                         //var_dump($SKIP);
                         if(in_array(str_replace($source, "", $folders[$index]) . $f[$i], $SKIP)) {
                             info_msg("Skipping: " . str_replace($source, "", $folders[$index]) . $f[$i]);
@@ -343,7 +507,6 @@ function update() {
                     }
                         
                     $FILE_CURRENT = array(filesize($rel_path . $f[$i]), filemtime($rel_path . $f[$i]));
-                    $INFO_JSON = file_exists(__DIR__."/info.json")  ? json_decode(file_get_contents(__DIR__."/info.json"),true) : array();
                     if(isset($INFO_JSON[str_replace(__DIR__, "", $rel_path . $f[$i])])) {
                         if($FILE_CURRENT[0] == $INFO_JSON[str_replace(__DIR__, "", $rel_path . $f[$i])][1] && $INFO_JSON[str_replace(__DIR__, "", $rel_path . $f[$i])][0] == $FILE_CURRENT[1]) {
                             //file is same, overwriting
@@ -377,7 +540,43 @@ function update() {
             }
             $index++;
         }
+ # EDIT   
+        foreach($ADDITIONAL_FILES as $ADDITIONAL_FILE) {
+            $rel_path = str_replace($source, "", $ADDITIONAL_FILE);
+            if(!file_exists($rel_path)) {
+                rename($ADDITIONAL_FILE, $rel_path);
+            } else {          
+                $FILE_CURRENT = array(filesize($rel_path), filemtime($rel_path));
+                if(isset($INFO_JSON[str_replace(__DIR__, "", $rel_path)])) {
+                    if($FILE_CURRENT[0] == $INFO_JSON[str_replace(__DIR__, "", $rel_path)][1] && $INFO_JSON[str_replace(__DIR__, "", $rel_path)][0] == $FILE_CURRENT[1]) {
+                        //file is same, overwriting
+                        info_msg("Overwriting: " . $ADDITIONAL_FILE);
+                        rename($ADDITIONAL_FILE, $rel_path);
 
+                    } else {
+                        info_msg("File: " . $ADDITIONAL_FILE . "  was edited. Do you want to overwrite it [Y/n]");
+                        $OW = read("");
+                        if(strtolower($OW) != "n") {
+                            info_msg("Overwriting: " . $ADDITIONAL_FILE);
+                            rename($ADDITIONAL_FILE, $rel_path);
+                        }
+                    }
+                } else {
+                    //No data in info, need to confirm overwrite
+                    info_msg("File: " . $ADDITIONAL_FILE . "  already exists. Do you want to overwrite it [Y/n]");
+                    $OW = read("");
+                    if (strtolower($OW) != "n") {
+                        info_msg("Overwriting: " . $ADDITIONAL_FILE);
+                        rename($ADDITIONAL_FILE, $rel_path);
+                    }
+
+                }
+                
+
+                    //echo(str_replace($source, "", $folders[$index]) . $f[$i] . "\n");
+            }
+        }
+# /EDIT
         /******************** */
         info_msg("Updated to $version.");
     } else {
@@ -409,6 +608,7 @@ function info() {
         for ($i = 2; $i < count($f); $i++) {
             // #+?\ .+?\n <- Match title
             if (is_dir($folders[$index] . $f[$i])) {
+                if($f[$i] == ".git") continue;
                 array_push($folders, $folders[$index] . $f[$i] . "/");
                 continue;
             }
@@ -418,6 +618,41 @@ function info() {
     }
     
     file_put_contents("info.json", json_encode($info));    
+}
+
+function config() {
+    $APP_NAME = read("Name of project");
+    $APP_URL = read("URL of project with http:// or https:// and ending with /");
+    $APP_DEBUG = read("Debug mode [true/FALSE]");
+    if($APP_NAME == "") {
+        $APP_NAME = "panx project";
+    }
+    if(!filter_var($APP_URL, FILTER_VALIDATE_URL)) {
+        error("You need to enter a valid URL");
+    }
+    if(strtolower($APP_DEBUG) != "true") {
+        $APP_DEBUG = "false";
+    } else {
+        $APP_DEBUG = "true";
+    }
+    $new_config = 
+"[basic]
+APP_NAME = $APP_NAME
+APP_URL = $APP_URL
+APP_DEBUG = $APP_DEBUG
+
+[database]
+; If DB_HOST is empty, no connection will be created
+DB_HOST = 
+DB_PORT = 3306
+DB_DATABASE = db
+DB_USERNAME = root
+DB_PASSWORD = 
+
+[custom]
+CUSTOM_VALUE = xxx";
+
+    file_put_contents(".config", $new_config);
 }
 
 

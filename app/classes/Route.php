@@ -1,6 +1,7 @@
 <?php
 class Route {
     private static $ROUTES = array();
+    private static $LOCK = array();
     private static $API_ROUTES = array();
     private static $ERRORS = array();
     private static $VALUES = array();
@@ -8,6 +9,7 @@ class Route {
     /**
      * Error class constants
      */
+    const ERROR_BAD_REQUEST = 400;
     const ERROR_FORBIDDEN = 403;
     const ERROR_NOT_FOUND = 404;
 
@@ -19,7 +21,7 @@ class Route {
     /**
      * Save route to $ROUTES
      */
-    public static function set($ROUTE, $TEMPLATE_FILE) {
+    public static function set($ROUTE, $TEMPLATE_FILE, $LOCK = null) {
         /**
          * $matches[0][0] : {id}
          * $matches[1][0] : id
@@ -27,6 +29,7 @@ class Route {
         //preg_match_all("/{(.+?)}/", $ROUTE, $matches);
         
         self::$ROUTES[$ROUTE] = $TEMPLATE_FILE;
+        if($LOCK !== null) self::$LOCK[$ROUTE] = $LOCK;
     }
 
     public static function apiGroup($VERSION, $ROUTES) {
@@ -63,6 +66,12 @@ class Route {
                     $CURRENT = $CURRENT->getLink();
                     for($i = 0; $i < count($x); $i++) {
                         if($x[$i] == "*") {
+                            if (!empty($API_ROUTE[2])) {
+                                if (!in_array($_SERVER["REQUEST_METHOD"], $API_ROUTE[2])) {
+                                    return self::ERROR_BAD_REQUEST;
+                                }
+                            }
+
                             return $API_ROUTE[1];
                         }
                         if($x[$i] == "+") {
@@ -80,6 +89,11 @@ class Route {
                         }
                     }
                     if($match && count($x) == count($CURRENT)) {
+                        if (!empty($API_ROUTE[2])) {
+                            if (!in_array($_SERVER["REQUEST_METHOD"], $API_ROUTE[2])) {
+                                return self::ERROR_BAD_REQUEST;
+                            }
+                        }
                         return $API_ROUTE[1];
                     }
                 }
@@ -99,6 +113,11 @@ class Route {
             $CURRENT = $CURRENT->getLink();
             for($i = 0; $i < count($x); $i++) {
                 if($x[$i] == "*") {
+                    if(!empty(self::$LOCK[$ROUTE])) {
+                        if(!in_array($_SERVER["REQUEST_METHOD"], self::$LOCK[$ROUTE])) {
+                            return self::ERROR_BAD_REQUEST;
+                        }
+                    }
                     return $VALUE;
                 }
                 if($x[$i] == "+") {
@@ -116,6 +135,12 @@ class Route {
                 }
             }
             if($match && count($x) == count($CURRENT)) {
+                if (!empty(self::$LOCK[$ROUTE])) {
+                    if (!in_array($_SERVER["REQUEST_METHOD"], self::$LOCK[$ROUTE])) {
+                        return self::ERROR_BAD_REQUEST;
+                    }
+                }
+
                 return $VALUE;
             }
 

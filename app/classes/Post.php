@@ -17,33 +17,41 @@ class Post {
     }
 
     public static function loadPost() {
-        if(!file_exists(__DIR__."/../../template/posts/".Route::getValue("ID").".php")) {
-            require __DIR__."/../../template/" . Route::searchError(Route::ERROR_NOT_FOUND);
+        if(!file_exists($_SERVER['DOCUMENT_ROOT']."/../template/posts/".Route::getValue("ID").".php")) {
+            require $_SERVER['DOCUMENT_ROOT']."/../template/" . Route::searchError(Route::ERROR_NOT_FOUND);
+            return;
         }
         foreach (self::$HEADERS as $header) {
-            require __DIR__. "/../../template/" . $header;
+            require $_SERVER['DOCUMENT_ROOT']. "/../template/" . $header;
         }
 
-        require __DIR__."/../../template/posts/".Route::getValue("ID").".php";
+        require $_SERVER['DOCUMENT_ROOT']."/../template/posts/".Route::getValue("ID").".php";
 
         foreach (self::$FOOTERS as $footer) {
-            require __DIR__. "/../../template/" . $footer;
+            require $_SERVER['DOCUMENT_ROOT']. "/../template/" . $footer;
         }
     }
 
     public static function listPosts() {
-        $f = scandir(__DIR__."/../../template/posts/");
+        $p = Cache::get("posts", 60);
+        if($p !== false) {
+            Logger::log("Using cached posts");
+            return $p;
+        }
+        $f = scandir($_SERVER['DOCUMENT_ROOT']."/../template/posts/");
         $f_arr = array();
 
         foreach($f as $file) {
             if($file == "." || $file == "..") continue;
-            array_push($f_arr, array("name" => basename($file, ".php"), "created_at" => filectime(__DIR__."/../../template/posts/$file")));
+            array_push($f_arr, array("name" => basename($file, ".php"), "created_at" => filectime($_SERVER['DOCUMENT_ROOT']."/../template/posts/$file")));
 
         }
         //sort array by date
         
 
         usort($f_arr, 'self::compareTime');
+        Cache::save("posts", $f_arr);
+        Logger::log("Cache saved");
         return $f_arr;
 
     }

@@ -12,8 +12,16 @@ Route::apiGroup("v1", array(
 
     array("getposts", function () {
         //dump("test");
-        echo json_encode(Post::listPosts());
+        echo json(json_encode(Post::listPosts()));
     }),
+
+    array('server', function () {
+        dump($_SERVER);
+    }),
+
+    array('sleep', function () {
+        sleep(1);
+    })
 ));
 
 Route::apiGroup("v2", array(
