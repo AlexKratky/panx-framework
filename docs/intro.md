@@ -11,7 +11,8 @@
   * Simple routing engine
   * Database wrapper
   * Documentation generator
-  
+  * Post manager (Useful for small blogs)
+
   
 
 ## Getting started
@@ -19,6 +20,16 @@
 To get started using panx framework, see [Creating first project using panx framework](https://panx.eu/docs/getting-started)
 
 * See full [documentation](https://panx.eu/docs/).
+
+
+
+## Running on panx framework
+
+Some websites that runs on panx framework:
+
+* [AlexKratky](https://alexkratky.cz/)
+
+If you want to be listed there, contact us on framework@panx.eu
 
 
 

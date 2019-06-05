@@ -45,12 +45,13 @@ if(file_exists(__DIR__."/app/panx-worker/TS_CMD.php")) {
 }
 
 function create() {
-    require __DIR__ . "/vendor/autoload.php";
     global $ARGS_COUNT;
     global $ARGS;
     global $CONFIG;
     if (!isset($ARGS[1])) {error("You need to specify what to create.");}
     if($ARGS[1] == "doc" || $ARGS[1] == "documentation") {
+        require __DIR__ . "/vendor/autoload.php";
+
         $docs_folder = "/docs";
         if (isset($ARGS[2])) $docs_folder = $ARGS[2];
         info_msg("Documentation will be created from folder: ".$docs_folder);
@@ -155,7 +156,8 @@ function create() {
         copy(__DIR__."/app/panx-worker/docs-resource/footer.php", __DIR__."/template/footer.php");
 
     } else if($ARGS[1] == "post") {
-        
+        require __DIR__ . "/vendor/autoload.php";
+
         if (!isset($ARGS[2])) {error("You need to specify path to post source.");}
         if (!file_exists(__DIR__.$ARGS[2])) error("File doesnt exists. " . __DIR__. $ARGS[2]);
         $Parsedown = new ParsedownExtra();
@@ -234,11 +236,13 @@ Route::set('/post/{ID}', function () {
                 
 
                 // Add current file to archive
-                if(preg_match('/public\/download\/.+\.zip/', $relativePath)) {
+                if(preg_match('/public\/download\/.+\.zip/', $relativePath) || preg_match('/public\\\download\\\.+\.zip/', $relativePath) || preg_match('/\.git\/.*/', $relativePath) || preg_match('/\.git\\.*/', $relativePath)) {
                     info_msg("Skipped: " . $relativePath);
 
                     continue;
                 
+                } else {
+                    error_msg($relativePath);
                 }
                 $zip->addFile($filePath, $relativePath);
             }
@@ -741,6 +745,8 @@ function displayChangelog($path, $useEchoOnly = false) {
                     echo "\e[0;36;40m" . substr($line, 1) . "\e[0m\n";
                 else if($line[0] == "!")
                     echo "\e[0;31;40m" . substr($line, 1) . "\e[0m\n";
+                else if($line[0] == "#")
+                    continue;
                 else
                     echo $line. "\n";
             else
@@ -748,6 +754,8 @@ function displayChangelog($path, $useEchoOnly = false) {
                     info_msg(substr($line, 1));
                 else if($line[0] == "!")
                     error_msg(substr($line, 1));
+                else if($line[0] == "#")
+                    continue;
                 else
                     write($line);
         }

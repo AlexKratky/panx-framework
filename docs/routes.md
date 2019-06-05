@@ -63,3 +63,56 @@ Route::set("/docs", function() {
 Route::set("/docs/intro", ["header.php", "intro.php", "footer.php"]);
 ```
 
+### Routes with function
+
+The second parameter of route can be anonymous function (Like in redirect).
+
+``````php
+Route::set("/dumpServerVariable", function() {
+    echo 'This route will dump() $_SERVER variable';
+    dump($_SERVER); // Function from panx
+});
+``````
+
+### Locking route to method
+
+If you need route accessible only from certain http methods, you can do it by passing third argument.
+
+```php
+Route::set("/", "home.php", ["GET"]);
+```
+
+Route above will be accessible only using GET method.
+
+```php
+Route::set("/postGet", "example.php", ["POST", "GET"]);
+```
+
+Route above will be accessible using methods POST and GET.
+
+The third argument is always an array. If you visit route, that does not support that method you are requesting, you will get Error 400 - Bad request.
+
+
+
+### API routes
+
+API routes should be in `/routes/api.php` file. You do not sets the route using function `Route::set()`, but using `Route::apiGroup()`. For example:
+
+```php
+Route::apiGroup("v1", array(
+    // /api/v1/list
+    array("list", function(){
+        echo "list";
+    }),
+    // /api/v1/getlatestversion/stable
+    array("getlatestversion/stable", function() {
+        echo "0.1";
+    }, ["GET"]),
+));
+```
+
+As the first parameter, you specify the version of API, for example `v1`, second parameter is array, containing all routes. Each route is single array. In route array, the first parameter is URI, the second parameter is function , file or array of files. The third parameter is optional. If you enter third parameter, it will lock route to certain http methods (See `Locking route to method` for more details).
+
+Why you should use API routes instead of classic routes? If the first element in URI is `/api/`, it will check all API routes first, after it will check all classic routes. So it will increase the speed of response.
+
+`Route::apiGroup()` function will generate route by following patern: `/api/{VERSION}/{URI}`, where `{VERSION}` is for example `v1`, and `{URI}` is for example `list` or `getlatestversion/stable` as in example above.

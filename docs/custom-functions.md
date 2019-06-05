@@ -4,8 +4,10 @@ panx-framework include `panx.php` file (located `/app/classes/panx`) containing 
 
 List of special functions:
 
-* error($code) - Include template file of specified error and exit() executing of script.
-* redirect($url) - Redirects to $url
+* `error($code)` - Include template file of specified error and exit() executing of script.
+* `redirect($url)` - Redirects to $url.
+* `dump($var, $should_exit = true)` - Dump a variable $var and exit exceuting of script if $should_exit is equals to true.
+* `json($json)` - Indents a flat JSON string to make it more human-readable.
 
 ### Usage
 
@@ -13,7 +15,7 @@ You can use all these function from yours templates files, just by calling them 
 
 ```php
 $is_user_logged_in = false;
-if($is_user_logged_in)
+if(!$is_user_logged_in)
 	error("USER_NOT_LOGGED_IN");
 ```
 

@@ -1,6 +1,21 @@
 ?panx-framework v0.1
 -------------------
 
-Example of changelog
-?this line is info msg
-!this line is error/warning msg
+?This is first release of panx-framework (v0.1).
+
+?The documentation is available on https://panx.eu/docs/
+!(In future, it will available only using https://panx.eu/docs/v0.1/)
+
+?Classes that comes with v0.1
+- Cache
+- Logger
+- panx
+- Post
+- Route
+- URL
+- panx-worker
+
+?After installation
+After installation, you need to run following commands:
+?composer install
+?php panx-worker create config
