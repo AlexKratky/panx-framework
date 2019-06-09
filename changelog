@@ -18,4 +18,4 @@
 ?After installation
 After installation, you need to run following commands:
 ?composer install
-?php panx-worker create config
+?php panx-worker config

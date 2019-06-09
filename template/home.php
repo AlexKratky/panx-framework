@@ -13,7 +13,7 @@
         <div class="main__option" style="z-index: 100;">
             <div class="main__title">panx framework</div><br>
             <div class="main__links">
-                <div class="main__label"><a href="https://tssoft.cz/panx-framework">Documentation</a></div>
+                <div class="main__label"><a href="https://panx.eu/docs/">Documentation</a></div>
                 <div class="main__label"><a href="https://github.com/AlexKratky/panx-framework">Github</a></div>
             </div>
         </div>

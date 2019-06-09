@@ -209,7 +209,7 @@ Route::set('/post/{ID}', function () {
         if($version == "") error("You need to enter version name.");
 
         info();
-
+        /*
         $rootPath = realpath(__DIR__);
 
         // Initialize archive object
@@ -219,8 +219,6 @@ Route::set('/post/{ID}', function () {
         $zip = new ZipArchive();
         $zip->open("public/download/$version.zip", ZipArchive::CREATE | ZipArchive::OVERWRITE);
 
-        // Create recursive directory iterator
-        /** @var SplFileInfo[] $files */
         $files = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($rootPath),
             RecursiveIteratorIterator::LEAVES_ONLY
@@ -236,7 +234,7 @@ Route::set('/post/{ID}', function () {
                 
 
                 // Add current file to archive
-                if(preg_match('/public\/download\/.+\.zip/', $relativePath) || preg_match('/public\\\download\\\.+\.zip/', $relativePath) || preg_match('/\.git\/.*/', $relativePath) || preg_match('/\.git\\.*/', $relativePath)) {
+                if(preg_match('/public\/download\/.+\.zip/', $relativePath) || preg_match('/public\\\download\\\.+\.zip/', $relativePath) || preg_match('/\.git\/.', $relativePath) || preg_match('/\.git\\.', $relativePath)) {
                     info_msg("Skipped: " . $relativePath);
 
                     continue;
@@ -249,7 +247,16 @@ Route::set('/post/{ID}', function () {
         }
 
         // Zip archive will be created only after closing object
+        $zip->close();*/
+
+        $rootPath = realpath(__DIR__);
+        $zipFileName = "public/download/$version.zip";
+        $zip = new ZipArchive();
+        $zip->open($zipFileName, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+
+        addFolderToZip($rootPath . "/", $zip, $zipdir = '');
         $zip->close();
+
 
     }
 }
@@ -762,4 +769,31 @@ function displayChangelog($path, $useEchoOnly = false) {
     
     }
     echo "\n";
+}
+
+
+function addFolderToZip($dir, $zipArchive, $zipdir = '') {
+    $relativePath = str_replace(__DIR__."/","",$dir);
+
+    if(preg_match('/public\/download\/.*/', $relativePath) || preg_match('/public\\\download\\\.*/', $relativePath) || preg_match('/\.git\/.*/', $relativePath) || preg_match('/\.git\\.*/', $relativePath)) {
+        echo "Skipping: " . $relativePath ."\n";
+        return;
+    }
+
+    if (is_dir($dir)) {
+        if ($dh = opendir($dir)) {
+            if (!empty($zipdir)) {
+                $zipArchive->addEmptyDir($zipdir);
+            }
+            while (($file = readdir($dh)) !== false) {
+                if (!is_file($dir . $file)) {
+                    if (($file !== ".") && ($file !== "..")) {
+                        addFolderToZip($dir . $file . "/", $zipArchive, $zipdir . $file . "/");
+                    }
+                } else {
+                    $zipArchive->addFile($dir . $file, $zipdir . $file);
+                }
+            }
+        }
+    }
 }
