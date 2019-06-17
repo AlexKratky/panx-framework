@@ -135,3 +135,25 @@ function html() {
     echo $tidy;
 
 }
+
+function __($key) {
+    if(!isset($CONFIG))
+        $CONFIG = parse_ini_file($_SERVER['DOCUMENT_ROOT']."/../.config", true);
+
+    $lang = $CONFIG["basic"]["APP_LANGUAGE"];
+    $c = Cache::get("lang_$lang.json", 60);
+    if($c !== false) {
+        return (empty($c[$key]) ? false : $c[$key]);
+    } else {
+        $translation = array();
+        $lang_f = $_SERVER['DOCUMENT_ROOT']."/../app/resources/lang/$lang.lang";
+        $lang_f = file_get_contents($lang_f);
+        $lang_f = explode(PHP_EOL, $lang_f);
+        foreach ($lang_f as $line) {
+            $line = explode(": ", $line, 2);
+            $translation[$line[0]] = $line[1];
+        }
+        Cache::save("lang_$lang.json", $translation);
+        return (empty($translation[$key]) ? false : $translation[$key]);
+    }
+}
