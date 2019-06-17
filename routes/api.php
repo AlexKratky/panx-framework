@@ -36,6 +36,7 @@ Route::apiGroup("v2", array(
     }),
     
 ));
+Route::setApiMiddleware("v2", ["AuthMiddleware"]);
 
 Route::apiGroup("v3", array(
     // /api/v1/list

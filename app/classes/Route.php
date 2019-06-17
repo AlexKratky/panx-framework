@@ -4,12 +4,14 @@ class Route {
     private static $MIDDLEWARES = array();
     private static $LOCK = array();
     private static $API_ROUTES = array();
+    private static $API_MIDDLEWARES = array();
     private static $ERRORS = array();
     private static $VALUES = array();
 
     /**
      * Error class constants
      */
+    const DO_NOT_INCLUDE_ANY_FILE = -1; // wont include any file
     const ERROR_MIDDLEWARE = 1;
     const ERROR_BAD_REQUEST = 400;
     const ERROR_FORBIDDEN = 403;
@@ -52,6 +54,17 @@ class Route {
         if (count($L) > 2 && $L[1] == "api") {
             //e.g. $API_ROUTES["v2"]
             if(isset(self::$API_ROUTES[$L[2]])) {
+                if (!empty(self::$API_MIDDLEWARES[$L[2]])) {
+                    foreach (self::$API_MIDDLEWARES[$L[2]] as $MIDDLEWARE) {
+                        require $_SERVER['DOCUMENT_ROOT'] . "/../app/middlewares/" . $MIDDLEWARE . ".php";
+                        if (!$MIDDLEWARE::handle()) {
+                            if(method_exists($MIDDLEWARE, "error"))
+                                return $MIDDLEWARE::error();
+                            return self::ERROR_MIDDLEWARE;
+                        }
+                    }
+                }
+
                 foreach(self::$API_ROUTES[$L[2]] as $API_ROUTE) {
                     //var_dump($API_ROUTE);
                     /*if($C->getString() == "/api/".$L[2]."/".trim($API_ROUTE[0], "/")){
@@ -125,6 +138,8 @@ class Route {
                         foreach (self::$MIDDLEWARES[$ROUTE] as $MIDDLEWARE) {
                             require $_SERVER['DOCUMENT_ROOT']."/../app/middlewares/".$MIDDLEWARE.".php";
                             if(!$MIDDLEWARE::handle()) {
+                                 if(method_exists($MIDDLEWARE, "error"))
+                                    return $MIDDLEWARE::error();
                                 return self::ERROR_MIDDLEWARE;
                             }
                         }
@@ -155,6 +170,8 @@ class Route {
                     foreach (self::$MIDDLEWARES[$ROUTE] as $MIDDLEWARE) {
                         require $_SERVER['DOCUMENT_ROOT']."/../app/middlewares/".$MIDDLEWARE.".php";
                         if(!$MIDDLEWARE::handle()) {
+                             if(method_exists($MIDDLEWARE, "error"))
+                                return $MIDDLEWARE::error();
                             return self::ERROR_MIDDLEWARE;
                         }
                     }
@@ -189,6 +206,10 @@ class Route {
 
             }
         }
+    }
+
+    public static function setApiMiddleware($API_GROUP, $MIDDLEWARES) {
+            self::$API_MIDDLEWARES[$API_GROUP] = $MIDDLEWARES;
     }
 
     public static function getValue($VALUE_NAME) {

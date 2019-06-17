@@ -38,8 +38,11 @@ $template_files = Route::search($UC->getString());
 if (is_callable($template_files)) {
     $template_files();
 } else {
-
+    $include = true;
     switch($template_files){
+        case Route::DO_NOT_INCLUDE_ANY_FILE:
+            $include = false;
+            break;
         case Route::ERROR_MIDDLEWARE:
             $template_files = Route::searchError(Route::ERROR_MIDDLEWARE);
             break;
@@ -53,15 +56,17 @@ if (is_callable($template_files)) {
             $template_files = Route::searchError(Route::ERROR_FORBIDDEN);
             break;
     }
-
-    if(!is_array($template_files))
-        require($_SERVER['DOCUMENT_ROOT']."/../template/".$template_files);
-    else {
-        for($i = 0; $i < count($template_files); $i++) {
-            require($_SERVER['DOCUMENT_ROOT']."/../template/".$template_files[$i]);
+    if($include) {
+        if(!is_array($template_files))
+            require($_SERVER['DOCUMENT_ROOT']."/../template/".$template_files);
+        else {
+            if($template_files !== null) {
+                for($i = 0; $i < count($template_files); $i++) {
+                    require($_SERVER['DOCUMENT_ROOT']."/../template/".$template_files[$i]);
+                }
+            }
         }
     }
-
 }
 $time_end = microtime(true);
 $ru = getrusage();
