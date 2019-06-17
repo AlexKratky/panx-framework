@@ -120,5 +120,19 @@ function json($json)
  * https://www.php.net/manual/en/tidy.examples.basic.php
  */
 function html() {
+    $html = ob_get_clean();
+
+    $config = array(
+        'indent' => true,
+        'output-xhtml' => true,
+        'wrap' => 200);
+
+    // Tidy
+    $tidy = new tidy;
+    $tidy->parseString($html, $config, 'utf8');
+    $tidy->cleanRepair();
+
+    // Output
+    echo $tidy;
 
 }

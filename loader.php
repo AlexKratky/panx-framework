@@ -87,3 +87,7 @@ if ($CONFIG["basic"]["APP_DEBUG"] == "1") {
 
     }
 }
+
+if ($CONFIG["basic"]["APP_HTML_BEAUTIFY"] == "1") {
+    html();
+}
