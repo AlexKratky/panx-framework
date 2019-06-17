@@ -80,6 +80,9 @@ function create() {
                     array_push($folders, $folders[$index].$f[$i]."/");
                     continue;
                 }
+                if($f[$i] == "sorting") {
+                    continue;
+                }
                 preg_match("/#+?\ (.+?)\n/", file_get_contents($folders[$index].$f[$i]), $matches);
                 if(!isset($matches[1])) {
                     $matches[1] = basename($f[$i], ".md");
@@ -88,34 +91,48 @@ function create() {
                 file_put_contents($rel_path .  basename($f[$i], ".md") . ".php", "<title>".$CONFIG["basic"]["APP_NAME"]." | Documentation | ".$matches[1]." </title>" . $Parsedown->text(file_get_contents($folders[$index].$f[$i])));
                 //$menu = $menu . "<li class='sidemenu-li'><a href='/docs/".basename($f[$i], ".md")."'>".$matches[1]."</a></li>\r\n";
                 array_push($menu_arr, array(str_replace($source, "", $folders[$index]).basename($f[$i], ".md"), $matches[1]));
-                $r_files = $r_files . "Route::set('/docs/".str_replace($source, "", $folders[$index])."/".basename($f[$i], ".md")."', ['header.php', 'docs/".str_replace($source, "", $folders[$index])."/".basename($f[$i], ".md").".php', 'footer.php']);\r\n";
+                $r_files = $r_files . "Route::set('/docs/".str_replace($source, "", $folders[$index]).basename($f[$i], ".md")."', ['header.php', 'docs/".str_replace($source, "", $folders[$index]).basename($f[$i], ".md").".php', 'footer.php']);\r\n";
             }
             $index++;
         }
-
-        info_msg("Sort the pages, start with the first:");
-        $c = count($menu_arr);
-        while(count($menu_arr) > 0) {
-            for ($x = 0; $x < $c; $x++) {
-                if(isset($menu_arr[$x][0]))
-                    write(($x) . ": " . $menu_arr[$x][0] . " - " . $menu_arr[$x][1]);
-            }
-            $n = read("Select page (or write default to use this sorting)");
-            if($n == "default") {
+        if(file_exists($source."sorting")) {
+            info_msg("Using sorting");
+            $s = file_get_contents($source."sorting");
+            $s = explode(PHP_EOL, $s);
+            foreach($s as $line) {
                 foreach ($menu_arr as $menu_arr_el) {
-                    $menu = $menu . "<li class='sidemenu-li'><a href='/docs/" . $menu_arr_el[0] . "'>" . $menu_arr_el[1] . "</a></li>\r\n";
-                    //unset($menu_arr_el);
-                    
+                    if($menu_arr_el[0] == trim($line)) {
+                        $menu = $menu . "<li class='sidemenu-li'><a href='/docs/" . $menu_arr_el[0] . "'>" . $menu_arr_el[1] . "</a></li>\r\n";
+                        break;
+                    }
                 }
-                break;
-            } else {
-                if(isset($menu_arr[$n])) {
-                    $menu = $menu . "<li class='sidemenu-li'><a href='/docs/" . $menu_arr[$n][0] . "'>" . $menu_arr[$n][1] . "</a></li>\r\n";
-                    unset($menu_arr[$n]);
-                    info_msg($n);
 
+            }
+        } else {
+            info_msg("Sort the pages, start with the first:");
+            $c = count($menu_arr);
+            while(count($menu_arr) > 0) {
+                for ($x = 0; $x < $c; $x++) {
+                    if(isset($menu_arr[$x][0]))
+                        write(($x) . ": " . $menu_arr[$x][0] . " - " . $menu_arr[$x][1]);
+                }
+                $n = read("Select page (or write default to use this sorting)");
+                if($n == "default") {
+                    foreach ($menu_arr as $menu_arr_el) {
+                        $menu = $menu . "<li class='sidemenu-li'><a href='/docs/" . $menu_arr_el[0] . "'>" . $menu_arr_el[1] . "</a></li>\r\n";
+                        //unset($menu_arr_el);
+                        
+                    }
+                    break;
                 } else {
-                    info_msg("Invalid page number.");
+                    if(isset($menu_arr[$n])) {
+                        $menu = $menu . "<li class='sidemenu-li'><a href='/docs/" . $menu_arr[$n][0] . "'>" . $menu_arr[$n][1] . "</a></li>\r\n";
+                        unset($menu_arr[$n]);
+                        info_msg($n);
+
+                    } else {
+                        info_msg("Invalid page number.");
+                    }
                 }
             }
         }
@@ -131,12 +148,12 @@ function create() {
         if ($H != "y" && $H != "Y") {
             file_put_contents(__DIR__ . "/template/home.php", "<h1>Documentation created by panx-worker</h1>");
             $route = "<?php
-            Route::set('/', ['header.php', 'home.php', 'footer.php']);
-            Route::set('/docs', ['header.php', 'footer.php']);\r\n" . $r_files;
+Route::set('/', ['header.php', 'home.php', 'footer.php']);
+Route::set('/docs', ['header.php', 'footer.php']);\r\n" . $r_files;
         } else {
             $route = "<?php
-            Route::set('/', 'home.php');
-            Route::set('/docs', ['header.php', 'footer.php']);\r\n" . $r_files;
+Route::set('/', 'home.php');
+Route::set('/docs', ['header.php', 'footer.php']);\r\n" . $r_files;
         }
         if(!file_exists(__DIR__."/routes/backup/")) 
             mkdir(__DIR__."/routes/backup/");
@@ -146,16 +163,17 @@ function create() {
         $R = read("");
         if($R != "") {
             $route = $route . 'Route::set("/docs", function () {
-                redirect("/docs/'.$R.'");
-            });' . "\r\n";
+    redirect("/docs/'.$R.'");
+});' . "\r\n";
 
         }
 
         file_put_contents(__DIR__."/routes/route.php", $route);
-        $dt = read("Use dark theme [Y/n]");
+        write(colorize("Use dark theme [Y/n]", "cyan", "black"), false);
+        $dt = read("");
         if($dt != "n" && $dt != "N") {
             file_put_contents(__DIR__."/template/header.php", file_get_contents(__DIR__."/app/panx-worker/docs-resource/header.php") . $menu . file_get_contents(__DIR__."/app/panx-worker/docs-resource/header_continue.php"));
-            info_msg("using dark theme");
+            info_msg("Using dark theme");
         } else 
             file_put_contents(__DIR__ . "/template/header.php", file_get_contents(__DIR__ . "/app/panx-worker/docs-resource/header_light.php") . $menu . file_get_contents(__DIR__ . "/app/panx-worker/docs-resource/header_continue.php"));
 
@@ -422,7 +440,7 @@ function install($ARGS) {
             if(!file_exists(__DIR__ . "/routes/route.php"))
                 file_put_contents(__DIR__ . "/routes/route.php", "<?php\r\n");
             if(file_exists(__DIR__ . "/temp/$version/changelog")) {
-                displayChangelog(__DIR__ . "/temp/$version/changelog", true);
+                displayChangelog(__DIR__ . "/temp/$version/changelog");
             }
             echo("$version was installed successfuly.\n");
 
@@ -667,14 +685,17 @@ function extension() {
     global $ARGS;
     global $PATH;
     global $SCRIPT_PATH;
-    if(empty($ARGS[1])) error("No action/extension specified");
-    if($ARGS[1] == "install") {
-        require($SCRIPT_PATH . "extension/install.php");
+    if(empty($ARGS[1])) {
+        require $SCRIPT_PATH . "extension/list.php";
     } else {
-        if(file_exists($SCRIPT_PATH . "extension/".strtolower($ARGS[1]).".php")) {
-            require $SCRIPT_PATH . "extension/".strtolower($ARGS[1]).".php";
+        if($ARGS[1] == "install") {
+            require($SCRIPT_PATH . "extension/install.php");
         } else {
-            error_msg("Unkown extension");
+            if(file_exists($SCRIPT_PATH . "extension/".strtolower($ARGS[1]).".php")) {
+                require $SCRIPT_PATH . "extension/".strtolower($ARGS[1]).".php";
+            } else {
+                error_msg("Unkown extension");
+            }
         }
     }
 }
@@ -779,31 +800,20 @@ function rrmdir($dir)
 
 
 
-function displayChangelog($path, $useEchoOnly = false) {
+function displayChangelog($path) {
     $changelog = file_get_contents($path);
     $changelog = explode(PHP_EOL, $changelog);
     echo "\n";
     foreach ($changelog as $line) {
-        if($useEchoOnly) {
-            if(isset($line[0]))
-                if($line[0] == "?")
-                    echo "\e[0;36;40m" . substr($line, 1) . "\e[0m\n";
-                else if($line[0] == "!")
-                    echo "\e[0;31;40m" . substr($line, 1) . "\e[0m\n";
-                else if($line[0] == "#")
-                    continue;
-                else
-                    echo $line. "\n";
+        if(isset($line[0]))
+            if($line[0] == "?")
+                echo "\e[0;36;40m" . substr($line, 1) . "\e[0m\n";
+            else if($line[0] == "!")
+                echo "\e[0;31;40m" . substr($line, 1) . "\e[0m\n";
+            else if($line[0] == "#")
+                continue;
             else
-                if($line[0] == "?")
-                    info_msg(substr($line, 1));
-                else if($line[0] == "!")
-                    error_msg(substr($line, 1));
-                else if($line[0] == "#")
-                    continue;
-                else
-                    write($line);
-        }
+                echo $line. "\n";
     
     }
     echo "\n";

@@ -13,9 +13,15 @@ function error($code) {
 
 }
 
-function redirect($url) {
+function redirect($url, $goto = false) {
     //var_dump(debug_backtrace());
-
+    if($goto != false) {
+        if($goto) {
+            $_SESSION["REDIRECT_TO"] = $_SERVER['REQUEST_URI'];
+        } else {
+            $_SESSION["REDIRECT_TO"] = $goto;
+        }
+    }
     if (headers_sent() === false) {
         header('Location: ' . $url);
     } else {
@@ -29,7 +35,16 @@ function redirect($url) {
     }
 
     exit();
+}
 
+function goToPrevious() {
+    if (!empty($_SESSION["REDIRECT_TO"])) {
+        $goto = $_SESSION["REDIRECT_TO"];
+        unset($_SESSION["REDIRECT_TO"]);
+        redirect($goto);
+    } else {
+        return false;
+    }
 }
 
 function dump($var, $should_exit = true) {
@@ -39,10 +54,10 @@ function dump($var, $should_exit = true) {
     if($CONFIG["basic"]["APP_DEBUG"] == "1") {
         echo "<pre>";
         //var_dump($var);
-        highlight_string("<?php\n" . var_export($var, true) . ";\n?>");
+        highlight_string("<?php\n" . var_export($var, true) . "\n");
         
         echo "</pre>";
-        echo '<script>document.getElementsByTagName("code")[0].getElementsByTagName("span")[1].remove() ;document.getElementsByTagName("code")[0].getElementsByTagName("span")[document.getElementsByTagName("code")[0].getElementsByTagName("span").length - 1].remove() ; </script>';
+        //echo '<script>document.getElementsByTagName("code")[0].getElementsByTagName("span")[1].remove() ;document.getElementsByTagName("code")[0].getElementsByTagName("span")[document.getElementsByTagName("code")[0].getElementsByTagName("span").length - 1].remove() ; </script>';
 
         $args = array();
         for($i = 0; $i < count(debug_backtrace()[1]['args']); $i++) {
@@ -116,9 +131,44 @@ function json($json)
 
 
 /**
- * https://github.com/spyrosoft/php-format-html-output
  * https://www.php.net/manual/en/tidy.examples.basic.php
  */
 function html() {
+    $html = ob_get_clean();
 
+    $config = array(
+        'indent' => true,
+        'output-xhtml' => true,
+        'wrap' => 200);
+
+    // Tidy
+    $tidy = new tidy;
+    $tidy->parseString($html, $config, 'utf8');
+    $tidy->cleanRepair();
+
+    // Output
+    echo $tidy;
+
+}
+
+function __($key) {
+    if(!isset($CONFIG))
+        $CONFIG = parse_ini_file($_SERVER['DOCUMENT_ROOT']."/../.config", true);
+
+    $lang = $CONFIG["basic"]["APP_LANGUAGE"];
+    $c = Cache::get("lang_$lang.json", 60);
+    if($c !== false) {
+        return (empty($c[$key]) ? false : $c[$key]);
+    } else {
+        $translation = array();
+        $lang_f = $_SERVER['DOCUMENT_ROOT']."/../app/resources/lang/$lang.lang";
+        $lang_f = file_get_contents($lang_f);
+        $lang_f = explode(PHP_EOL, $lang_f);
+        foreach ($lang_f as $line) {
+            $line = explode(": ", $line, 2);
+            $translation[$line[0]] = $line[1];
+        }
+        Cache::save("lang_$lang.json", $translation);
+        return (empty($translation[$key]) ? false : $translation[$key]);
+    }
 }

@@ -7,4 +7,9 @@ class AuthMiddleware {
             return false;
         }
     }
+
+    public static function error() {
+        echo "NOT AUTHENTICATED";
+        return -1;
+    }
 }
