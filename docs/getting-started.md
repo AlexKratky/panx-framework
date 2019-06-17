@@ -6,7 +6,7 @@ Firstly, download panx framework from Github and extract it to your server. Or y
 
 This command will install Parsedown (Markdown parser). It is necessary to have markdown parser if you want create documentation. 
 
-Next step is edit `.config` (ini) file, if you have not done it yet. Here you need change `APP_NAME`, `APP_URL`. You should keep `APP_DEBUG` to `false`. Database credentials do not need to change, only if you want to use database. If `DB_HOST` is empty, no connection will be created. Also you can enter other custom values and access to them using `$CONFIG["custom"]["CUSTOM_VALUE"]`. Or you can run command `php panx-worker config` which will generate config for you.
+Next step is edit `.config` (ini) file, if you have not done it yet. Here you need change `APP_NAME`, `APP_URL`. You should keep `APP_DEBUG` to `false`. Database credentials do not need to change, only if you want to use database. If `DB_HOST` is empty, no connection will be created. Also you can enter other custom values and access to them using `$CONFIG["custom"]["CUSTOM_VALUE"]` (This sometimes will not work, you should use `$GLOBALS["CONFIG"]["custom"]["CUSTOM_VALUE"]`). Or you can run command `php panx-worker config` which will generate config for you.
 
 Next step is to set routes, go to `/routes/` and open file `route.php`. Add all routes you want, for example:
 
