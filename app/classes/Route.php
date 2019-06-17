@@ -1,6 +1,7 @@
 <?php
 class Route {
     private static $ROUTES = array();
+    private static $MIDDLEWARES = array();
     private static $LOCK = array();
     private static $API_ROUTES = array();
     private static $ERRORS = array();
@@ -9,6 +10,7 @@ class Route {
     /**
      * Error class constants
      */
+    const ERROR_MIDDLEWARE = 1;
     const ERROR_BAD_REQUEST = 400;
     const ERROR_FORBIDDEN = 403;
     const ERROR_NOT_FOUND = 404;
@@ -30,6 +32,7 @@ class Route {
         
         self::$ROUTES[$ROUTE] = $TEMPLATE_FILE;
         if($LOCK !== null) self::$LOCK[$ROUTE] = $LOCK;
+        return $ROUTE;
     }
 
     public static function apiGroup($VERSION, $ROUTES) {
@@ -118,6 +121,14 @@ class Route {
                             return self::ERROR_BAD_REQUEST;
                         }
                     }
+                    if (!empty(self::$MIDDLEWARES[$ROUTE])) {
+                        foreach (self::$MIDDLEWARES[$ROUTE] as $MIDDLEWARE) {
+                            require $_SERVER['DOCUMENT_ROOT']."/../app/middlewares/".$MIDDLEWARE.".php";
+                            if(!$MIDDLEWARE::handle()) {
+                                return self::ERROR_MIDDLEWARE;
+                            }
+                        }
+                    }
                     return $VALUE;
                 }
                 if($x[$i] == "+") {
@@ -140,7 +151,14 @@ class Route {
                         return self::ERROR_BAD_REQUEST;
                     }
                 }
-
+                if (!empty(self::$MIDDLEWARES[$ROUTE])) {
+                    foreach (self::$MIDDLEWARES[$ROUTE] as $MIDDLEWARE) {
+                        require $_SERVER['DOCUMENT_ROOT']."/../app/middlewares/".$MIDDLEWARE.".php";
+                        if(!$MIDDLEWARE::handle()) {
+                            return self::ERROR_MIDDLEWARE;
+                        }
+                    }
+                }
                 return $VALUE;
             }
 
@@ -162,8 +180,44 @@ class Route {
         return self::$ERRORS[$ERROR_CODE];
     }
 
+    public static function setMiddleware($ROUTES, $MIDDLEWARES) {
+        if(!is_array($ROUTES)) {
+            self::$MIDDLEWARES[$ROUTES] = $MIDDLEWARES;
+        } else {
+            foreach ($ROUTES as $ROUTE) {
+                self::$MIDDLEWARES[$ROUTE] = $MIDDLEWARES;
+
+            }
+        }
+    }
+
     public static function getValue($VALUE_NAME) {
         return self::$VALUES[$VALUE_NAME];
 
+    }
+
+    public static function getDataTable() {
+        $data = array();
+        foreach (self::$ROUTES as $ROUTE => $FILE) {
+            array_push($data, array('TYPE' => 'ROUTE', 'URI/CODE' => $ROUTE, 'ACTION' => (is_object($FILE) && ($FILE instanceof Closure) ? "function" : (is_array($FILE) ? "[".implode(", ", $FILE) . "]" :  $FILE)), 'LOCK' => (isset(self::$LOCK[$ROUTE]) ? "[".implode(", ", self::$LOCK[$ROUTE])."]" : "[]"), 'MIDDLEWARES' => (isset(self::$MIDDLEWARES[$ROUTE]) ? "[".implode(", ", self::$MIDDLEWARES[$ROUTE])."]" : "[]")));
+        }
+
+        //var_dump(self::$API_ROUTES);
+        foreach (self::$API_ROUTES as $API_ROUTE => $API) {
+   
+            foreach ($API as $route => $value) {
+                array_push($data, array('TYPE' => 'API', 'URI/CODE' => "/api/" . $API_ROUTE . "/" . $value[0], 'ACTION' => (is_object($value[1]) && ($value[1] instanceof Closure) ? "function" : (is_array($value[1]) ? "[" . implode(", ", $value[1]) . "]" : $value[1])), 'LOCK' => (isset($value[2]) ? "[" . implode(", ", $value[2]) . "]" : "[]"), 'MIDDLEWARES' => "[]"));
+
+            }
+            
+
+        }
+
+        foreach (self::$ERRORS as $ERROR => $ACTION) {
+            array_push($data, array('TYPE' => 'ERROR', 'URI/CODE' => $ERROR, 'ACTION' => (is_object($ACTION) && ($ACTION instanceof Closure) ? "function" : (is_array($ACTION) ? "[" . implode(", ", $ACTION) . "]" : $ACTION)), 'LOCK' => (isset(self::$LOCK[$ROUTE]) ? "[" . implode(", ", self::$LOCK[$ROUTE]) . "]" : "[]"), 'MIDDLEWARES' => "[]"));
+        }
+
+
+        return $data;
     }
 }

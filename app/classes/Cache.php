@@ -22,4 +22,8 @@ class Cache {
             return false;
         }
     }
+
+    public static function destroy($name) {
+        return unlink($_SERVER['DOCUMENT_ROOT']. "/../cache/" . $name);
+    }
 }

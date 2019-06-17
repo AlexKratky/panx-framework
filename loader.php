@@ -40,6 +40,9 @@ if (is_callable($template_files)) {
 } else {
 
     switch($template_files){
+        case Route::ERROR_MIDDLEWARE:
+            $template_files = Route::searchError(Route::ERROR_MIDDLEWARE);
+            break;
         case Route::ERROR_NOT_FOUND:
             $template_files = Route::searchError(Route::ERROR_NOT_FOUND);
             break;

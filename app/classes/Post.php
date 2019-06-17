@@ -36,6 +36,11 @@ class Post {
         if (!file_exists($_SERVER['DOCUMENT_ROOT'] . "/../template/posts/" . $post . ".php")) {
             return Route::ERROR_NOT_FOUND;
         }
+        $info = self::loadInfo($post);
+        if($info !== false) {
+            if(isset($info["title"]))
+                return $info["title"];
+        }
         preg_match('/<h[1-6]>(.+)<\/h[1-6]>/', file_get_contents($_SERVER['DOCUMENT_ROOT'] . "/../template/posts/" . $post . ".php"), $matches);
         return $matches[1];
     }
@@ -51,6 +56,7 @@ class Post {
 
         foreach($f as $file) {
             if($file == "." || $file == "..") continue;
+            if(pathinfo($file, PATHINFO_EXTENSION) != "php") continue;
             array_push($f_arr, array("name" => basename($file, ".php"), "created_at" => filectime($_SERVER['DOCUMENT_ROOT']."/../template/posts/$file")));
 
         }
@@ -62,6 +68,38 @@ class Post {
         Logger::log("Cache saved");
         return $f_arr;
 
+    }
+
+    public static function deletePost() {
+        if(!file_exists($_SERVER['DOCUMENT_ROOT']."/../template/posts/".Route::getValue("ID").".php")) {
+            require $_SERVER['DOCUMENT_ROOT']."/../template/" . Route::searchError(Route::ERROR_NOT_FOUND);
+            return;
+        }
+
+        unlink($_SERVER['DOCUMENT_ROOT']."/../template/posts/".Route::getValue("ID").".php");
+        if(file_exists(unlink($_SERVER['DOCUMENT_ROOT'] . "/../template/posts/" . Route::getValue("ID") . ".info")))
+            unlink($_SERVER['DOCUMENT_ROOT'] . "/../template/posts/" . Route::getValue("ID") . ".info");
+
+        Cache::destroy("posts");
+    }
+
+    public static function loadInfo($post) {
+        if (!file_exists($_SERVER['DOCUMENT_ROOT'] . "/../template/posts/" . $post . ".php")) {
+            return Route::ERROR_NOT_FOUND;
+        }
+        if(file_exists($_SERVER['DOCUMENT_ROOT'] . "/../template/posts/" . $post . ".info")) {
+            $f = file_get_contents($_SERVER['DOCUMENT_ROOT'] . "/../template/posts/" . $post . ".info");
+            $f = explode(PHP_EOL, $f);
+            $info = [];
+            foreach($f as $line) {
+                if(isset($line[0]) && $line[0] == "#") continue; //skip comments
+                $line = explode(': ', $line, 2);
+                $info[strtolower($line[0])] = $line[1];
+            }
+            return $info;
+        } else {
+            return false;
+        }
     }
 
     private static function compareTime($a, $b)
