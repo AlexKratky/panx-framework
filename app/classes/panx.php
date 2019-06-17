@@ -116,7 +116,6 @@ function json($json)
 
 
 /**
- * https://github.com/spyrosoft/php-format-html-output
  * https://www.php.net/manual/en/tidy.examples.basic.php
  */
 function html() {

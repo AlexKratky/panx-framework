@@ -80,6 +80,9 @@ function create() {
                     array_push($folders, $folders[$index].$f[$i]."/");
                     continue;
                 }
+                if($f[$i] == "sorting") {
+                    continue;
+                }
                 preg_match("/#+?\ (.+?)\n/", file_get_contents($folders[$index].$f[$i]), $matches);
                 if(!isset($matches[1])) {
                     $matches[1] = basename($f[$i], ".md");
@@ -92,30 +95,44 @@ function create() {
             }
             $index++;
         }
-
-        info_msg("Sort the pages, start with the first:");
-        $c = count($menu_arr);
-        while(count($menu_arr) > 0) {
-            for ($x = 0; $x < $c; $x++) {
-                if(isset($menu_arr[$x][0]))
-                    write(($x) . ": " . $menu_arr[$x][0] . " - " . $menu_arr[$x][1]);
-            }
-            $n = read("Select page (or write default to use this sorting)");
-            if($n == "default") {
+        if(file_exists($source."sorting")) {
+            info_msg("Using sorting");
+            $s = file_get_contents($source."sorting");
+            $s = explode(PHP_EOL, $s);
+            foreach($s as $line) {
                 foreach ($menu_arr as $menu_arr_el) {
-                    $menu = $menu . "<li class='sidemenu-li'><a href='/docs/" . $menu_arr_el[0] . "'>" . $menu_arr_el[1] . "</a></li>\r\n";
-                    //unset($menu_arr_el);
-                    
+                    if($menu_arr_el[0] == trim($line)) {
+                        $menu = $menu . "<li class='sidemenu-li'><a href='/docs/" . $menu_arr_el[0] . "'>" . $menu_arr_el[1] . "</a></li>\r\n";
+                        break;
+                    }
                 }
-                break;
-            } else {
-                if(isset($menu_arr[$n])) {
-                    $menu = $menu . "<li class='sidemenu-li'><a href='/docs/" . $menu_arr[$n][0] . "'>" . $menu_arr[$n][1] . "</a></li>\r\n";
-                    unset($menu_arr[$n]);
-                    info_msg($n);
 
+            }
+        } else {
+            info_msg("Sort the pages, start with the first:");
+            $c = count($menu_arr);
+            while(count($menu_arr) > 0) {
+                for ($x = 0; $x < $c; $x++) {
+                    if(isset($menu_arr[$x][0]))
+                        write(($x) . ": " . $menu_arr[$x][0] . " - " . $menu_arr[$x][1]);
+                }
+                $n = read("Select page (or write default to use this sorting)");
+                if($n == "default") {
+                    foreach ($menu_arr as $menu_arr_el) {
+                        $menu = $menu . "<li class='sidemenu-li'><a href='/docs/" . $menu_arr_el[0] . "'>" . $menu_arr_el[1] . "</a></li>\r\n";
+                        //unset($menu_arr_el);
+                        
+                    }
+                    break;
                 } else {
-                    info_msg("Invalid page number.");
+                    if(isset($menu_arr[$n])) {
+                        $menu = $menu . "<li class='sidemenu-li'><a href='/docs/" . $menu_arr[$n][0] . "'>" . $menu_arr[$n][1] . "</a></li>\r\n";
+                        unset($menu_arr[$n]);
+                        info_msg($n);
+
+                    } else {
+                        info_msg("Invalid page number.");
+                    }
                 }
             }
         }
