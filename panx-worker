@@ -684,14 +684,17 @@ function extension() {
     global $ARGS;
     global $PATH;
     global $SCRIPT_PATH;
-    if(empty($ARGS[1])) error("No action/extension specified");
-    if($ARGS[1] == "install") {
-        require($SCRIPT_PATH . "extension/install.php");
+    if(empty($ARGS[1])) {
+        require $SCRIPT_PATH . "extension/list.php";
     } else {
-        if(file_exists($SCRIPT_PATH . "extension/".strtolower($ARGS[1]).".php")) {
-            require $SCRIPT_PATH . "extension/".strtolower($ARGS[1]).".php";
+        if($ARGS[1] == "install") {
+            require($SCRIPT_PATH . "extension/install.php");
         } else {
-            error_msg("Unkown extension");
+            if(file_exists($SCRIPT_PATH . "extension/".strtolower($ARGS[1]).".php")) {
+                require $SCRIPT_PATH . "extension/".strtolower($ARGS[1]).".php";
+            } else {
+                error_msg("Unkown extension");
+            }
         }
     }
 }
