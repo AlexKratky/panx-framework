@@ -96,3 +96,9 @@ if ($CONFIG["basic"]["APP_DEBUG"] == "1") {
 if ($CONFIG["basic"]["APP_HTML_BEAUTIFY"] == "1") {
     html();
 }
+
+if ($CONFIG["basic"]["APP_INFO"] == "1") {
+    echo "\n<!-- Powered by panx framework -->";
+    echo "\n<!-- https://panx.eu/ -->";
+}
+

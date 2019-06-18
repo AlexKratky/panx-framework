@@ -756,6 +756,9 @@ function config() {
 APP_NAME = $APP_NAME
 APP_URL = $APP_URL
 APP_DEBUG = $APP_DEBUG
+APP_HTML_BEAUTIFY = false
+APP_LANGUAGE = en
+APP_INFO = true
 
 [database]
 ; If DB_HOST is empty, no connection will be created
@@ -772,8 +775,14 @@ CUSTOM_VALUE = xxx";
 }
 
 function serve() {
-    info_msg("Starting server on http://localhost:8000");
-    echo shell_exec("php -S localhost:8000 -t public/");
+    global $ARGS;
+    info_msg("You can set host and port by passing arguments. (php panx-worker serve localhost 8080)");
+    if(empty($ARGS[1])) $host = "localhost";
+    else $host = $ARGS[1];
+    if(empty($ARGS[2])) $port = "8000";
+    else $port = $ARGS[2];
+    info_msg("Starting server on http://$host:$port");
+    echo shell_exec("php -S $host:$port -t public/");
 }
 
 
