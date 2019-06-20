@@ -1,29 +1,83 @@
 <?php
+/**
+ * @name Route.php
+ * @link https://alexkratky.cz                          Author website
+ * @link https://panx.eu/docs/                          Documentation
+ * @link https://github.com/AlexKratky/panx-framework/  Github Repository
+ * @author Alex Kratky <info@alexkratky.cz>
+ * @copyright Copyright (c) 2019 Alex Kratky
+ * @license http://opensource.org/licenses/mit-license.php MIT License
+ * @description Router engine. Part of panx-framework.
+ */
+
 class Route {
+    /**
+     * @var array The array of routes.
+     */
     private static $ROUTES = array();
+    /**
+     * @var array The array of middlewares.
+     */
     private static $MIDDLEWARES = array();
+    /**
+     * @var array The array of locks (which will limit routes to certain methods).
+     */
     private static $LOCK = array();
+    /**
+     * @var array The array of API routes.
+     */
     private static $API_ROUTES = array();
+    /**
+     * @var array The array of API middlewares.
+     */
     private static $API_MIDDLEWARES = array();
+    /**
+     * @var array The array of error routes.
+     */
     private static $ERRORS = array();
+    /**
+     * @var array The array of URL parameters (Accesible using Route::getValue()).
+     */
     private static $VALUES = array();
 
     /**
      * Error class constants
      */
-    const DO_NOT_INCLUDE_ANY_FILE = -1; // wont include any file
+    /**
+     * @var int This error will not include any files.
+     */
+    const DO_NOT_INCLUDE_ANY_FILE = -1;
+    /**
+     * @var int Middleware error (When middleware decline request).
+     */
     const ERROR_MIDDLEWARE = 1;
+    /**
+     * @var int Error 400 - Bad Request.
+     */
     const ERROR_BAD_REQUEST = 400;
+    /**
+     * @var int Error 403 - Forbidden.
+     */
     const ERROR_FORBIDDEN = 403;
+    /**
+     * @var int Error 404 - Not found.
+     */
     const ERROR_NOT_FOUND = 404;
 
     /**
      * Custom errors
      */
+    /**
+     * @var string Example custom error.
+     */
     const ERROR_NOT_LOGGED_IN = "NOT_LOGGED_IN";
 
     /**
-     * Save route to $ROUTES
+     * Saves route to $ROUTES.
+     * @param string $ROUTE The URI to handle.
+     * @param function|string|array $TEMPLATE_FILE Handler of URI, it can be single file, multiple files using array or function.
+     * @param array|null $LOCK The array of supported methods for this route. If is set to null, the route will not be locked, so it can be accessed from any http method.
+     * @return string The function returns $ROUTE passed in argument, so you can easily set middleware on it.
      */
     public static function set($ROUTE, $TEMPLATE_FILE, $LOCK = null) {
         /**
@@ -37,16 +91,23 @@ class Route {
         return $ROUTE;
     }
 
+    /**
+     * Saves group of api routes to $API_ROUTES.
+     * @param string $VERSION The version of API, e.g. 'v1' (/api/v1/).
+     * @param array $ROUTES The multi dimensional array of routes.
+     */
     public static function apiGroup($VERSION, $ROUTES) {
         self::$API_ROUTES[$VERSION] = $ROUTES;
     }
 
     /**
-     * Returns file which responds to ROUTE
-     * Support wildcards:
+     * Returns file(s) or function which responds to $SEARCH_ROUTE.
+     * Supports wildcards:
      *  + : Mean one elements, eg: /post/+/edit -> match with /post/1/edit, /post/2/edit ...
      *  * : Mean one or more element, eg: /post/* -> match with /post/1, /post/1/edit ... 
      *  {VARIABLE} : Mean one element (Same as +), but the value will be saved and can be accessed by getValue()
+     * @param string $SEARCH_ROUTE The searched route.
+     * @return function|array|string Returns file(s) or function which responds to $SEARCH_ROUTE.
      */
     public static function search($SEARCH_ROUTE) {
         $C = new URL();
@@ -184,7 +245,9 @@ class Route {
     }
 
     /**
-     * Set route for ERROR CODE
+     * Sets route for ERROR CODE
+     * @param string|int $ERROR_CODE The code of error. Can be int (e.g. 404) or string (e.g. "NOT_FOUND").
+     * @param string|array|function The handler of error, it can be single file, multiple files using array or function. You should use single file only.
      */
     public static function setError($ERROR_CODE, $ERROR_FILE) {
         self::$ERRORS[$ERROR_CODE] = $ERROR_FILE;
@@ -192,11 +255,18 @@ class Route {
 
     /**
      * Returns file which repsonds to error code
+     * @param string|int $ERROR_CODE The code of error. Can be int (e.g. 404) or string (e.g. "NOT_FOUND").
+     * @return string|array|function The handler of error, it can be single file, multiple files using array or function. You should use single file only.
      */
     public static function searchError($ERROR_CODE) {
         return self::$ERRORS[$ERROR_CODE];
     }
 
+    /**
+     * Sets middlewares for routes.
+     * @param array|string $ROUTES It can be array of routes, so for each route it will sets middlewares, or it can be route, which will sets middlewares just for this route.
+     * @param array $MIDDLEWARES The array of middlewares.
+     */
     public static function setMiddleware($ROUTES, $MIDDLEWARES) {
         if(!is_array($ROUTES)) {
             self::$MIDDLEWARES[$ROUTES] = $MIDDLEWARES;
@@ -208,15 +278,29 @@ class Route {
         }
     }
 
+    /**
+     * Sets middlewares for API group.
+     * @param string $API_GROUP The name of API group.
+     * @param array $MIDDLEWARES The array containing all middlewares for API group.
+     */
     public static function setApiMiddleware($API_GROUP, $MIDDLEWARES) {
             self::$API_MIDDLEWARES[$API_GROUP] = $MIDDLEWARES;
     }
 
+    /**
+     * Obtain value from URL (Using {paramater}).
+     * @param string $VALUE_NAME The parameter's name used in routes.
+     * @return string The parameter's value.
+     */
     public static function getValue($VALUE_NAME) {
         return self::$VALUES[$VALUE_NAME];
 
     }
 
+    /**
+     * Returns array containing all routes (TYPE, URI/CODE, ACTION, LOCK, MIDDLEWARES).
+     * @return array The array of all loaded routes.
+     */
     public static function getDataTable() {
         $data = array();
         foreach (self::$ROUTES as $ROUTE => $FILE) {

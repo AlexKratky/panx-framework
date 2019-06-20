@@ -1,13 +1,43 @@
 <?php
+/**
+ * @name URL.php
+ * @link https://alexkratky.cz                          Author website
+ * @link https://panx.eu/docs/                          Documentation
+ * @link https://github.com/AlexKratky/panx-framework/  Github Repository
+ * @author Alex Kratky <info@alexkratky.cz>
+ * @copyright Copyright (c) 2019 Alex Kratky
+ * @license http://opensource.org/licenses/mit-license.php MIT License
+ * @description Class to work with URLs. Part of panx-framework.
+ */
+
 class URL {
+    /**
+     * @var string The string representing URL.
+     */
     private $URL_STRING;
+    /**
+     * @var array The array containing URL elements (URL splited by '/').
+     */
     private $URL_LINK = array();
+    /**
+     * @var int The count of URL elements.
+     */
     private $ELEMENTS = 0;
 
+    /**
+     * Calls urlString() method with passed parameters.
+     * @param string|null $URL The URI to work with, if its sets to null, it will use the current URI. 
+     * @param boolean $DECODE If its sets to true, the URI will be decoded using urldecode().
+     */
     public function __construct($URL = null, $DECODE = true) {
         $this->urlString($URL, $DECODE);
     }
 
+    /**
+     * Splits the URI to elements (by '/' character). It will delete any get parameter (Everything behind '?' character). It will delete '//'. It will also remove '/' from end
+     * @param string $URL_TO_CHECK The URI to work with, if its sets to null, it will use the current URI.
+     * @param boolean $DECODE If its sets to true, the URI will be decoded using urldecode().
+     */
     public function urlString($URL_TO_CHECK = null, $DECODE = true) {
         if($URL_TO_CHECK == null)
             $URL_TO_CHECK = $_SERVER['REQUEST_URI'];
@@ -34,14 +64,23 @@ class URL {
         }
     }
 
+    /**
+     * @return string Returns the string representing URL.
+     */
     public function getString() {
         return $this->URL_STRING;
     }
 
+    /**
+     * @return array Returns the array containing URL elements (URL splited by '/'). First element [0] is empty.
+     */
     public function getLink() {
         return $this->URL_LINK;
     }
 
+    /**
+     * @return int Returns the count of URL elements.
+     */
     public function getCount() {
         return $this->ELEMENTS;
     }
