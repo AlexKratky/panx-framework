@@ -29,8 +29,9 @@ foreach ($route_files as $route_file) {
     }
     require($_SERVER['DOCUMENT_ROOT']."/../routes/".$route_file);
 }
+$request = new Request();
 
-$UC = new URL();
+$UC = $request->getUrl();
 //echo $UC->getString();
 $template_files = Route::search($UC->getString());
 
@@ -79,7 +80,7 @@ function rutime($ru, $rus, $index)
 }
 
 if ($CONFIG["basic"]["APP_DEBUG"] == "1") {
-    if(isset($_GET["debug"])) {
+    if($request->getQuery('debug') !== null) {
         echo "<br><hr><br>";
         echo "This process used " . rutime($ru, $rustart, "utime") .
             " ms for its computations<br>\n";

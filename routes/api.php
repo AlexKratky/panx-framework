@@ -27,6 +27,44 @@ Route::apiGroup("v1", array(
         echo Post::getTitle(Route::getValue("ID"));
 
     }),
+
+    array('getheaders', function () {
+        foreach (getallheaders() as $name => $value) {
+            echo "$name: $value<br>";
+        }
+    }),
+
+    array('request', function () {
+        echo $GLOBALS["request"]->getUrl()->getString();
+        echo "<br>";
+        echo $GLOBALS["request"]->getQuery();
+        echo "<br>";
+        echo $GLOBALS["request"]->getQuery('xd');
+        echo "<br>";
+        echo var_dump($GLOBALS["request"]->getPost());
+        echo "<br>";
+        echo $GLOBALS["request"]->getPost('xd');
+        echo "<br>";
+        echo $GLOBALS["request"]->getMethod();
+        echo "<br>";
+        echo var_dump($GLOBALS["request"]->isMethod('post'));
+        echo "<br>";
+        echo $GLOBALS["request"]->getHeader('user-agent');
+        echo "<br>";
+        echo var_dump($GLOBALS["request"]->getHeaders());
+        echo "<br>";
+        echo var_dump($GLOBALS["request"]->getReferer());
+        echo "<br>";
+        echo var_dump($GLOBALS["request"]->isSecured());
+        echo "<br>";
+        echo var_dump($GLOBALS["request"]->isAjax());
+        echo "<br>";
+        echo $GLOBALS["request"]->getRemoteAddress();
+        echo "<br>";
+        echo var_dump($GLOBALS["request"]->detectLanguage(array("en", "sk", "cz")));
+        echo "<br>";
+        echo var_dump($GLOBALS["request"]->workWith('GET', ['xd', 'lel']));
+    }),
 ));
 
 Route::apiGroup("v2", array(
