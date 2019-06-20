@@ -64,6 +64,8 @@ Route::apiGroup("v1", array(
         echo var_dump($GLOBALS["request"]->detectLanguage(array("en", "sk", "cz")));
         echo "<br>";
         echo var_dump($GLOBALS["request"]->workWith('GET', ['xd', 'lel']));
+        echo "<br>";
+        echo var_dump($GLOBALS["request"]->getMostPreferredLanguage());
     }),
 ));
 
