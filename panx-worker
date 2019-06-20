@@ -53,233 +53,18 @@ if(file_exists(__DIR__."/app/panx-worker/TS_CMD.php")) {
 function create() {
     global $ARGS_COUNT;
     global $ARGS;
+    global $PATH;
+    global $SCRIPT_PATH;
     global $CONFIG;
     if (!isset($ARGS[1])) {error("You need to specify what to create.");}
     if($ARGS[1] == "doc" || $ARGS[1] == "documentation") {
-        require __DIR__ . "/vendor/autoload.php";
-
-        $docs_folder = "/docs";
-        if (isset($ARGS[2])) $docs_folder = $ARGS[2];
-        info_msg("Documentation will be created from folder: ".$docs_folder);
-        $Parsedown = new ParsedownExtra();
-        $r_files = "";
-        $menu = "";
-        $menu_arr = array();
-        $path = __DIR__."/template/docs/";
-        $source = __DIR__ . $docs_folder . "/";
-        $folders = array($source);
-        $index = 0;
-        while(count($folders) > $index) {
-            $f = scandir($folders[$index]);
-            $rel_path = $path . str_replace($source, "", $folders[$index]);
-            if(!file_exists($rel_path))
-                mkdir($rel_path);
-            for($i = 2; $i < count($f); $i++) {
-                // #+?\ .+?\n <- Match title
-                if(is_dir($folders[$index].$f[$i])) {
-                    array_push($folders, $folders[$index].$f[$i]."/");
-                    continue;
-                }
-                if($f[$i] == "sorting") {
-                    continue;
-                }
-                preg_match("/#+?\ (.+?)\n/", file_get_contents($folders[$index].$f[$i]), $matches);
-                if(!isset($matches[1])) {
-                    $matches[1] = basename($f[$i], ".md");
-                }
-                //$matches[1] is title
-                file_put_contents($rel_path .  basename($f[$i], ".md") . ".php", "<title>".$CONFIG["basic"]["APP_NAME"]." | Documentation | ".$matches[1]." </title>" . $Parsedown->text(file_get_contents($folders[$index].$f[$i])));
-                //$menu = $menu . "<li class='sidemenu-li'><a href='/docs/".basename($f[$i], ".md")."'>".$matches[1]."</a></li>\r\n";
-                array_push($menu_arr, array(str_replace($source, "", $folders[$index]).basename($f[$i], ".md"), $matches[1]));
-                $r_files = $r_files . "Route::set('/docs/".str_replace($source, "", $folders[$index]).basename($f[$i], ".md")."', ['header.php', 'docs/".str_replace($source, "", $folders[$index]).basename($f[$i], ".md").".php', 'footer.php']);\r\n";
-            }
-            $index++;
-        }
-        if(file_exists($source."sorting")) {
-            info_msg("Using sorting");
-            $s = file_get_contents($source."sorting");
-            $s = explode(PHP_EOL, $s);
-            foreach($s as $line) {
-                foreach ($menu_arr as $menu_arr_el) {
-                    if($menu_arr_el[0] == trim($line)) {
-                        $menu = $menu . "<li class='sidemenu-li'><a href='/docs/" . $menu_arr_el[0] . "'>" . $menu_arr_el[1] . "</a></li>\r\n";
-                        break;
-                    }
-                }
-
-            }
-        } else {
-            info_msg("Sort the pages, start with the first:");
-            $c = count($menu_arr);
-            while(count($menu_arr) > 0) {
-                for ($x = 0; $x < $c; $x++) {
-                    if(isset($menu_arr[$x][0]))
-                        write(($x) . ": " . $menu_arr[$x][0] . " - " . $menu_arr[$x][1]);
-                }
-                $n = read("Select page (or write default to use this sorting)");
-                if($n == "default") {
-                    foreach ($menu_arr as $menu_arr_el) {
-                        $menu = $menu . "<li class='sidemenu-li'><a href='/docs/" . $menu_arr_el[0] . "'>" . $menu_arr_el[1] . "</a></li>\r\n";
-                        //unset($menu_arr_el);
-                        
-                    }
-                    break;
-                } else {
-                    if(isset($menu_arr[$n])) {
-                        $menu = $menu . "<li class='sidemenu-li'><a href='/docs/" . $menu_arr[$n][0] . "'>" . $menu_arr[$n][1] . "</a></li>\r\n";
-                        unset($menu_arr[$n]);
-                        info_msg($n);
-
-                    } else {
-                        info_msg("Invalid page number.");
-                    }
-                }
-            }
-        }
-        /**
-         * Steps that panx-worker must do:
-         * * Edit route.php
-         * * Create header.php
-         * * From generated html create php file and put it to template
-         */
-        write(colorize("Keep current home.php file? [y/N]", "cyan", "black"), false);
-        $H = read("");
-        $route;
-        if ($H != "y" && $H != "Y") {
-            file_put_contents(__DIR__ . "/template/home.php", "<h1>Documentation created by panx-worker</h1>");
-            $route = "<?php
-Route::set('/', ['header.php', 'home.php', 'footer.php']);
-Route::set('/docs', ['header.php', 'footer.php']);\r\n" . $r_files;
-        } else {
-            $route = "<?php
-Route::set('/', 'home.php');
-Route::set('/docs', ['header.php', 'footer.php']);\r\n" . $r_files;
-        }
-        if(!file_exists(__DIR__."/routes/backup/")) 
-            mkdir(__DIR__."/routes/backup/");
-        copy(__DIR__."/routes/route.php", __DIR__."/routes/backup/route.php");
-        
-        write(colorize("Redirect /docs to /docs/?: (e.g. enter 'intro' for redirect to /docs/intro)", "cyan", "black"), false);
-        $R = read("");
-        if($R != "") {
-            $route = $route . 'Route::set("/docs", function () {
-    redirect("/docs/'.$R.'");
-});' . "\r\n";
-
-        }
-
-        file_put_contents(__DIR__."/routes/route.php", $route);
-        write(colorize("Use dark theme [Y/n]", "cyan", "black"), false);
-        $dt = read("");
-        if($dt != "n" && $dt != "N") {
-            file_put_contents(__DIR__."/template/header.php", file_get_contents(__DIR__."/app/panx-worker/docs-resource/header.php") . $menu . file_get_contents(__DIR__."/app/panx-worker/docs-resource/header_continue.php"));
-            info_msg("Using dark theme");
-        } else 
-            file_put_contents(__DIR__ . "/template/header.php", file_get_contents(__DIR__ . "/app/panx-worker/docs-resource/header_light.php") . $menu . file_get_contents(__DIR__ . "/app/panx-worker/docs-resource/header_continue.php"));
-
-        copy(__DIR__."/app/panx-worker/docs-resource/footer.php", __DIR__."/template/footer.php");
+        require $SCRIPT_PATH."create/doc.php";
 
     } else if($ARGS[1] == "post") {
-        require __DIR__ . "/vendor/autoload.php";
-
-        if (!isset($ARGS[2])) {error("You need to specify path to post source.");}
-        if (!file_exists(__DIR__.$ARGS[2])) error("File doesnt exists. " . __DIR__. $ARGS[2]);
-        $Parsedown = new ParsedownExtra();
-
-        preg_match("/#+?\ (.+?)\n/", file_get_contents(__DIR__.$ARGS[2]), $matches);
-        $f = __DIR__.$ARGS[2];
-        if(!isset($matches[1])) {
-            $matches[1] = basename($f, ".md");
-        }
-        info_msg("Current title: " . $matches[1]);
-        write("Do you want to use custom title? Enter a new one or press enter to keep current.");
-        $title = read("");
-        if ($title=="") {
-            $title = $matches[1];
-        }
-        if(!file_exists(__DIR__."/template/posts/")) {
-            if(!mkdir(__DIR__."/template/posts/"))
-                error("Failed to create directory " . __DIR__."/template/posts/");
-        }
-
-        file_put_contents(__DIR__."/template/posts/" .  basename($f, ".md") . ".php", "<title>".$CONFIG["basic"]["APP_NAME"]." | ".$title." </title>" . $Parsedown->text(file_get_contents($f)));
-        //info_msg("Enter all custom headers, use ',' to enter multiple headers, e.g.: header.php, header2.php,");
-        //info_msg("After last header file, you need to write down ',' too!");
-        //$headers = read("");
-        //$headers = trim($headers);
-// Need to change format of $headers and $footers to 'header.php', ...
-        /*if ($headers != "") {
-            // Check if last char is ,
-        }*/
-        
-        //info_msg("Enter all custom footers, use ',' to enter multiple footers, e.g.: footer.php, footer2.php");
-        //$footers = read("");
-
-        if(!file_exists(__DIR__."/routes/posts.php")) {
-            file_put_contents(__DIR__."/routes/posts.php", "<?php
-Route::set('/post/{ID}', function () {
-    Post::loadPost();
-});
-");
-        }
-
-        info_msg("Enter route indetifier, or press enter to use 'post' (/post/{ID})");
-
-        info_msg("Post created successfully, you can view it on: " . $CONFIG["basic"]["APP_URL"] . "post/" . basename($f, ".md"));
-// Maybe do not enter route for each post, rather use wildcard and Post class, and in Post class, you will specify headers and footers for all files
+        require $SCRIPT_PATH."create/post.php";
 
     } else if($ARGS[1] == "version") {
-        $version = read("Enter version (e.g.: 0.1)");
-        if($version == "") error("You need to enter version name.");
-
-        info();
-        /*
-        $rootPath = realpath(__DIR__);
-
-        // Initialize archive object
-        if(!file_exists('public/download/')) {
-            mkdir('public/download/');
-        }
-        $zip = new ZipArchive();
-        $zip->open("public/download/$version.zip", ZipArchive::CREATE | ZipArchive::OVERWRITE);
-
-        $files = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($rootPath),
-            RecursiveIteratorIterator::LEAVES_ONLY
-        );
-
-        foreach ($files as $name => $file) {
-            // Skip directories (they would be added automatically)
-            if (!$file->isDir()) {
-                // Get real and relative path for current file
-                $filePath = $file->getRealPath();
-                
-                $relativePath = substr($filePath, strlen($rootPath) + 1);
-                
-
-                // Add current file to archive
-                if(preg_match('/public\/download\/.+\.zip/', $relativePath) || preg_match('/public\\\download\\\.+\.zip/', $relativePath) || preg_match('/\.git\/.', $relativePath) || preg_match('/\.git\\.', $relativePath)) {
-                    info_msg("Skipped: " . $relativePath);
-
-                    continue;
-                
-                } else {
-                    error_msg($relativePath);
-                }
-                $zip->addFile($filePath, $relativePath);
-            }
-        }
-
-        // Zip archive will be created only after closing object
-        $zip->close();*/
-
-        $rootPath = realpath(__DIR__);
-        $zipFileName = "public/download/$version.zip";
-        $zip = new ZipArchive();
-        $zip->open($zipFileName, ZipArchive::CREATE | ZipArchive::OVERWRITE);
-
-        addFolderToZip($rootPath . "/", $zip, $zipdir = '');
-        $zip->close();
+        require $SCRIPT_PATH."create/version.php";
 
 
     }
@@ -289,167 +74,15 @@ function install($ARGS) {
     //$ARGS_COUNT = count($argv) - 1;
     //$ARGS = $argv;
     //array_shift($ARGS);
-    $version;
-    if(!class_exists('ZipArchive')) {
-        echo("ZipArchive is not installed. \n");
-        exit();
-    }
-
-    if(!isset($ARGS[1])) {
-        $version = file_get_contents("https://panx.eu/api/v1/getlatestversion");
-        echo("No version passed, using the latest one: $version \n");
-    } else {
-        $version = $ARGS[1];
-    }
-
+    global $SCRIPT_PATH;
+    global $PATH;
     
-    if(!file_exists(__DIR__."/temp/")) {
-        mkdir(__DIR__."/temp");
-    }
-    try {    
-        $z = fopen("https://panx.eu/download/$version.zip", 'r');
-        if ( !$z ) {
-            echo("Failed to download $version.zip\n");
-            exit();
-        }
-        file_put_contents(__DIR__."/temp/$version.zip", $z);
-        fclose($z);
-    } catch (Exception $e) {
-        error($e);
-    }
+    require $SCRIPT_PATH."install/download.php";
 
     if (!isset($ARGS[2])) {
-        $zip = new ZipArchive;
-        if ($zip->open(__DIR__."/temp/$version.zip") === true) {
-            $zip->extractTo(__DIR__);
-            $zip->close();
-            if(file_exists(__DIR__ . "/temp/$version/changelog"))
-                displayChangelog(__DIR__ . "/temp/$version/changelog");
-            echo("Installation was successful \n");
-        } else {
-            echo("Failed to install.\n");
-            exit();
-        }
+        require $SCRIPT_PATH."install/install.php";
     } else if ($ARGS[2] == "clean") {
-        // Extract zip to temp folder, move all files that are not in update.skip of THAT version (so /temp/xxx/update.skip file)
-        if (!file_exists(__DIR__ . "/temp/$version/")) {
-            mkdir(__DIR__ . "/temp/$version");
-        }
-        $zip = new ZipArchive;
-        if ($zip->open(__DIR__ . "/temp/$version.zip") === true) {
-            $zip->extractTo(__DIR__ . "/temp/$version/");
-            $zip->close();
-            $path = __DIR__ . "/";
-            $source = __DIR__ . "/temp/$version/";
-            $folders = array($source);
-            $index = 0;
-
-
-
-            $SKIP;
-            $ADDITIONAL_FILES = array();
-            if(file_exists(__DIR__ . "/temp/$version/update.skip")) {
-                $SKIP = file_get_contents(__DIR__ . "/temp/$version/update.skip");
-                $SKIP = explode(PHP_EOL, $SKIP);
-                for($s = 0; $s < count($SKIP); $s++) {
-                    $SKIP[$s] = trim($SKIP[$s]);
-                    if(isset($SKIP[$s][0]) && $SKIP[$s][0] == "!") {
-                        //exception
-                        $SKIP[$s] = substr($SKIP[$s], 1);
-                        if(is_dir($source.$SKIP[$s])) {
-                            echo("Adding folder (!): " . $source.$SKIP[$s]."\n");
-                            array_push($folders, $source.$SKIP[$s]);
-                        } else {
-                            echo("Adding file (!): " . $source . $SKIP[$s]."\n");
-                            array_push($ADDITIONAL_FILES, $source . $SKIP[$s]);
-                        }
-                    }
-                }
-            }
-
-            while(count($folders) > $index) {
-                $f = scandir($folders[$index]);
-                $rel_path = $path . str_replace($source, "", $folders[$index]);
-                if(!file_exists($rel_path))
-                    mkdir($rel_path, 0775, true);
-                for($i = 2; $i < count($f); $i++) {
-                    // #+?\ .+?\n <- Match title
-                    if(is_dir($folders[$index].$f[$i])) {
-                        if(in_array(str_replace($source, "", $folders[$index]) . $f[$i] . "/", $SKIP)) {
-                            echo("Skipping folder: " . str_replace($source, "", $folders[$index]) . $f[$i] . "/\n");
-                            continue;
-                        }
-                        if(!in_array($folders[$index].$f[$i]."/", $folders)) {
-                            echo("Adding folder: " . str_replace($source, "", $folders[$index]) . $f[$i] . "/\n");
-                            array_push($folders, $folders[$index].$f[$i]."/");
-                        } else {
-                            echo("Skipping folder (duplicity): " . str_replace($source, "", $folders[$index]) . $f[$i] . "/\n");
-                        }
-                        continue;
-                    }
-
-                    if(!empty($SKIP)) {
-                        //var_dump($SKIP);
-                        if(in_array(str_replace($source, "", $folders[$index]) . $f[$i], $SKIP)) {
-                            echo("Skipping: " . str_replace($source, "", $folders[$index]) . $f[$i] . "\n");
-                            continue;
-                        } else {
-                            rename($folders[$index] . $f[$i], $rel_path . $f[$i]);
-
-                        }
-                    }
-
-                }
-                $index++;
-            }
-  
-            foreach($ADDITIONAL_FILES as $ADDITIONAL_FILE) {
-                $rel_path = str_replace($source, "", $ADDITIONAL_FILE);
-                if(!file_exists(pathinfo($rel_path)['dirname']."/")) {
-                    echo ("Error: Folder doesnt exists ". pathinfo($rel_path)['dirname']."/"."\n");
-                    if(mkdir(pathinfo($rel_path)['dirname']."/", 0775, true)){
-                        echo("folder created ". pathinfo($rel_path)['dirname']."/"."\n");
-
-                    } else {
-                        echo("error: folder cant be created ". pathinfo($rel_path)['dirname']."/"."\n");
-                    }
-                }
-                if(!file_exists($ADDITIONAL_FILE)) {
-                    echo($ADDITIONAL_FILE . " doesnt exists.");
-                    continue;
-                }
-                if(is_writable(__DIR__ . "/" . $rel_path)) {
-                    echo( __DIR__ . "/" . $rel_path . " : true\n");
-                } else {
-                    echo (__DIR__ . "/" . $rel_path . " : false\n");
-
-                }
-                try {
-                    if(!file_exists(pathinfo($rel_path)['dirname']."/")) {
-                        echo("Error: Folder doesnt exists\n");
-                    }
-                    usleep(20);
-                    file_put_contents(__DIR__ . "/" . $rel_path, "test");
-                    usleep(20);
-
-                    rename($ADDITIONAL_FILE, __DIR__ . "/" . $rel_path);
-                } catch(Exception $e) {
-                    echo("Exception:\n$e\n");
-                }
-            }
-            if(!file_exists(__DIR__ . "/routes/route.php"))
-                file_put_contents(__DIR__ . "/routes/route.php", "<?php\r\n");
-            if(file_exists(__DIR__ . "/temp/$version/changelog")) {
-                displayChangelog(__DIR__ . "/temp/$version/changelog");
-            }
-            echo("$version was installed successfuly.\n");
-
-    
-        } else {
-            echo ("Failed to install.\n");
-            exit();
-        }
-
+        require $SCRIPT_PATH . "install/clean.php";
     } else {
         error("Invalid argument.\n");
     }
@@ -461,217 +94,10 @@ function install($ARGS) {
 function update() {
     global $ARGS_COUNT;
     global $ARGS;
+    global $PATH;
+    global $SCRIPT_PATH;
 
-    $version;
-    if (!class_exists('ZipArchive')) {
-        error("ZipArchive is not installed.");
-    }
-
-    if (empty($AGRS[1])) {
-        $version = file_get_contents("https://panx.eu/api/v1/getlatestversion");
-        info_msg("No version passed, using the latest one: $version");
-    }
-
-    info_msg("Do you want to create backup? [Y/n]");
-    $b = read("");
-
-    if(strtolower($b) != "n") {
-        if(!file_exists(__DIR__."/backup/"))
-            mkdir(__DIR__ . "/backup/") ? info_msg("Created backup folder.") : error("Failed to create backup folder");
-        
-        $rootPath = __DIR__;
-
-        // Initialize archive object
-        $zip = new ZipArchive();
-        $t = time();
-        $zip->open(__DIR__.'/backup/backup_'.$t.'.zip', ZipArchive::CREATE | ZipArchive::OVERWRITE);
-
-        // Create recursive directory iterator
-        /** @var SplFileInfo[] $files */
-        $files = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($rootPath),
-            RecursiveIteratorIterator::LEAVES_ONLY
-        );
-
-        foreach ($files as $name => $file) {
-            // Skip directories (they would be added automatically)
-            if (!$file->isDir()) {
-                // Get real and relative path for current file
-                $filePath = $file->getRealPath();
-                $relativePath = substr($filePath, strlen($rootPath) + 1);
-
-                // Add current file to archive
-                $zip->addFile($filePath, $relativePath);
-            }
-        }
-
-        // Zip archive will be created only after closing object
-        $zip->close();
-        info_msg("Backup saved to /backup/backup_$t.zip");
-    }
-
-    if (!file_exists(__DIR__ . "/temp/")) {
-        mkdir(__DIR__ . "/temp");
-    }
-    file_put_contents(__DIR__ . "/temp/$version.zip", fopen("https://panx.eu/download/$version.zip", 'r'));
-
-    $zip = new ZipArchive;
-    if ($zip->open(__DIR__ . "/temp/$version.zip") === true) {
-        if(!file_exists(__DIR__ . "/temp/$version"))
-            mkdir(__DIR__ . "/temp/$version");
-        $zip->extractTo(__DIR__ . "/temp/$version");
-        $zip->close();
-        //Now we need to move files from temp dir to main dir
-
-        /******************** */
-        $path = __DIR__ . "/";
-        $source = __DIR__ . "/temp/$version/";
-        $folders = array($source);
-        $index = 0;
-
-
-
-        $SKIP;
-        $ADDITIONAL_FILES = array();
-        if(file_exists(__DIR__ . "/update.skip")) {
-            $SKIP = file_get_contents(__DIR__ . "/update.skip");
-            $SKIP = explode(PHP_EOL, $SKIP);
-            for($s = 0; $s < count($SKIP); $s++) {
-                $SKIP[$s] = trim($SKIP[$s]);
-                if(isset($SKIP[$s][0]) && $SKIP[$s][0] == "!") {
-                    //exception
-                    $SKIP[$s] = substr($SKIP[$s], 1);
-                    if(is_dir($source.$SKIP[$s])) {
-                        info_msg("Adding folder (!): " . $source.$SKIP[$s]);
-                        array_push($folders, $source.$SKIP[$s]);
-                    } else {
-                        info_msg("Adding file (!): " . $source . $SKIP[$s]);
-                        array_push($ADDITIONAL_FILES, $source . $SKIP[$s]);
-                    }
-                } else if(!isset($SKIP[$s][0])) {
-                    info_msg("Undefined string offset: " . $SKIP[$s]);
-                }
-            }
-        }
-
-        $INFO_JSON = file_exists(__DIR__ . "/info.json") ? json_decode(file_get_contents(__DIR__ . "/info.json"), true) : array();
-
-        while(count($folders) > $index) {
-            $f = scandir($folders[$index]);
-            $rel_path = $path . str_replace($source, "", $folders[$index]);
-            if(!file_exists($rel_path))
-                mkdir($rel_path);
-            for($i = 2; $i < count($f); $i++) {
-                // #+?\ .+?\n <- Match title
-                if(is_dir($folders[$index].$f[$i])) {
-                    if(in_array(str_replace($source, "", $folders[$index]) . $f[$i] . "/", $SKIP)) {
-                        info_msg("Skipping folder: " . str_replace($source, "", $folders[$index]) . $f[$i] . "/");
-                        continue;
-                    }
-                    if(!in_array($folders[$index].$f[$i]."/", $folders)) {
-                        info_msg("Adding folder: " . str_replace($source, "", $folders[$index]) . $f[$i] . "/");
-                        array_push($folders, $folders[$index].$f[$i]."/");
-                    } else {
-                        info_msg("Skipping folder (duplicity): " . str_replace($source, "", $folders[$index]) . $f[$i] . "/");
-                    }
-                    continue;
-                }
-
-                if(!file_exists($rel_path . $f[$i])) {
-                    rename($folders[$index].$f[$i], $rel_path . $f[$i]);
-                } else {
-                    //Check if file was modified, if no, then overwrite, otherwise prompt for options
-                    //also check if file should be skipped, by searching in update.skip file
-                    if(!empty($SKIP)) {
-                        //var_dump($SKIP);
-                        if(in_array(str_replace($source, "", $folders[$index]) . $f[$i], $SKIP)) {
-                            info_msg("Skipping: " . str_replace($source, "", $folders[$index]) . $f[$i]);
-                            continue;
-                        }
-                    }
-                        
-                    $FILE_CURRENT = array(filesize($rel_path . $f[$i]), filemtime($rel_path . $f[$i]));
-                    if(isset($INFO_JSON[str_replace(__DIR__, "", $rel_path . $f[$i])])) {
-                        if($FILE_CURRENT[0] == $INFO_JSON[str_replace(__DIR__, "", $rel_path . $f[$i])][1] && $INFO_JSON[str_replace(__DIR__, "", $rel_path . $f[$i])][0] == $FILE_CURRENT[1]) {
-                            //file is same, overwriting
-                            info_msg("Overwriting: " . str_replace($source, "", $folders[$index]) . $f[$i]);
-                            rename($folders[$index] . $f[$i], $rel_path . $f[$i]);
-
-                        } else {
-                            info_msg("File: " . str_replace($source, "", $folders[$index]) . $f[$i] . "  was edited. Do you want to overwrite it [Y/n]");
-                            $OW = read("");
-                            if(strtolower($OW) != "n") {
-                                info_msg("Overwriting: " . str_replace($source, "", $folders[$index]) . $f[$i]);
-                                rename($folders[$index] . $f[$i], $rel_path . $f[$i]);
-                            }
-                        }
-                    } else {
-                        //No data in info, need to confirm overwrite
-                        info_msg("File: " . str_replace($source, "", $folders[$index]) . $f[$i] . "  already exists. Do you want to overwrite it [Y/n]");
-                        $OW = read("");
-                        if (strtolower($OW) != "n") {
-                            info_msg("Overwriting: " . str_replace($source, "", $folders[$index]) . $f[$i]);
-                            rename($folders[$index] . $f[$i], $rel_path . $f[$i]);
-                        }
-
-                    }
-                
-
-                    //echo(str_replace($source, "", $folders[$index]) . $f[$i] . "\n");
-                }
-
-                //file_put_contents($rel_path .  basename($f[$i], ".md") . ".php", "<title>".$CONFIG["basic"]["APP_NAME"]." | Documentation | ".$matches[1]." </title>" . $Parsedown->text(file_get_contents($folders[$index].$f[$i])));
-            }
-            $index++;
-        }
- # EDIT   
-        foreach($ADDITIONAL_FILES as $ADDITIONAL_FILE) {
-            $rel_path = str_replace($source, "", $ADDITIONAL_FILE);
-            if(!file_exists($rel_path)) {
-                rename($ADDITIONAL_FILE, $rel_path);
-            } else {          
-                $FILE_CURRENT = array(filesize($rel_path), filemtime($rel_path));
-                if(isset($INFO_JSON[str_replace(__DIR__, "", $rel_path)])) {
-                    if($FILE_CURRENT[0] == $INFO_JSON[str_replace(__DIR__, "", $rel_path)][1] && $INFO_JSON[str_replace(__DIR__, "", $rel_path)][0] == $FILE_CURRENT[1]) {
-                        //file is same, overwriting
-                        info_msg("Overwriting: " . $ADDITIONAL_FILE);
-                        rename($ADDITIONAL_FILE, $rel_path);
-
-                    } else {
-                        info_msg("File: " . $ADDITIONAL_FILE . "  was edited. Do you want to overwrite it [Y/n]");
-                        $OW = read("");
-                        if(strtolower($OW) != "n") {
-                            info_msg("Overwriting: " . $ADDITIONAL_FILE);
-                            rename($ADDITIONAL_FILE, $rel_path);
-                        }
-                    }
-                } else {
-                    //No data in info, need to confirm overwrite
-                    info_msg("File: " . $ADDITIONAL_FILE . "  already exists. Do you want to overwrite it [Y/n]");
-                    $OW = read("");
-                    if (strtolower($OW) != "n") {
-                        info_msg("Overwriting: " . $ADDITIONAL_FILE);
-                        rename($ADDITIONAL_FILE, $rel_path);
-                    }
-
-                }
-                
-
-                    //echo(str_replace($source, "", $folders[$index]) . $f[$i] . "\n");
-            }
-        }
-# /EDIT
-        /******************** */
-        info_msg("Updated to $version.");
-    } else {
-        info_msg("Failed to install.");
-        exit();
-    }
-    if(file_exists(__DIR__ . "/temp/$version/changelog"))
-        displayChangelog(__DIR__ . "/temp/$version/changelog");
-    unlink(__DIR__ . "/temp/$version.zip");
-
-    rrmdir(__DIR__ . "/temp/$version/");
+    require $SCRIPT_PATH."update.php";
 
 }
 
@@ -713,78 +139,36 @@ function routelist() {
 function info() {
     global $ARGS_COUNT;
     global $ARGS;
+    global $PATH;
+    global $SCRIPT_PATH;
 
-    $info = array();
-
-    $path = __DIR__ . "/";
-    $index = 0;
-    $folders = array($path);
-    while (count($folders) > $index) {
-        $f = scandir($folders[$index]);
-        for ($i = 2; $i < count($f); $i++) {
-            // #+?\ .+?\n <- Match title
-            if (is_dir($folders[$index] . $f[$i])) {
-                if($f[$i] == ".git") continue;
-                array_push($folders, $folders[$index] . $f[$i] . "/");
-                continue;
-            }
-            $info[str_replace(__DIR__, "", $folders[$index] . $f[$i])] = array(filemtime($folders[$index] . $f[$i]), filesize($folders[$index] . $f[$i]));
-        }
-        $index++;
-    }
-    
-    file_put_contents("info.json", json_encode($info));    
+    require $SCRIPT_PATH."info.php";    
 }
 
 function config() {
-    $APP_NAME = read("Name of project");
-    $APP_URL = read("URL of project with http:// or https:// and ending with /");
-    $APP_DEBUG = read("Debug mode [true/FALSE]");
-    if($APP_NAME == "") {
-        $APP_NAME = "panx project";
-    }
-    if(!filter_var($APP_URL, FILTER_VALIDATE_URL)) {
-        error("You need to enter a valid URL");
-    }
-    if(strtolower($APP_DEBUG) != "true") {
-        $APP_DEBUG = "false";
-    } else {
-        $APP_DEBUG = "true";
-    }
-    $new_config = 
-"[basic]
-APP_NAME = $APP_NAME
-APP_URL = $APP_URL
-APP_DEBUG = $APP_DEBUG
-APP_HTML_BEAUTIFY = false
-APP_LANGUAGE = en
-APP_INFO = true
+    global $PATH;
+    global $SCRIPT_PATH;
 
-[database]
-; If DB_HOST is empty, no connection will be created
-DB_HOST = 
-DB_PORT = 3306
-DB_DATABASE = db
-DB_USERNAME = root
-DB_PASSWORD = 
-
-[custom]
-CUSTOM_VALUE = xxx";
-
-    file_put_contents(".config", $new_config);
+    require $SCRIPT_PATH."config.php";
 }
 
 function serve() {
     global $ARGS;
-    info_msg("You can set host and port by passing arguments. (php panx-worker serve localhost 8080)");
-    if(empty($ARGS[1])) $host = "localhost";
-    else $host = $ARGS[1];
-    if(empty($ARGS[2])) $port = "8000";
-    else $port = $ARGS[2];
-    info_msg("Starting server on http://$host:$port");
-    echo shell_exec("php -S $host:$port -t public/");
+    global $PATH;
+    global $SCRIPT_PATH;
+    
+    require $SCRIPT_PATH."serve.php";
 }
 
+
+
+
+
+function displayChangelog($path) {
+    global $SCRIPT_PATH;
+
+    require $SCRIPT_PATH."display_changelog.php";
+}
 
 
 
@@ -805,29 +189,6 @@ function rrmdir($dir)
         rmdir($dir);
     }
 }
-
-
-
-
-function displayChangelog($path) {
-    $changelog = file_get_contents($path);
-    $changelog = explode(PHP_EOL, $changelog);
-    echo "\n";
-    foreach ($changelog as $line) {
-        if(isset($line[0]))
-            if($line[0] == "?")
-                echo "\e[0;36;40m" . substr($line, 1) . "\e[0m\n";
-            else if($line[0] == "!")
-                echo "\e[0;31;40m" . substr($line, 1) . "\e[0m\n";
-            else if($line[0] == "#")
-                continue;
-            else
-                echo $line. "\n";
-    
-    }
-    echo "\n";
-}
-
 
 function addFolderToZip($dir, $zipArchive, $zipdir = '') {
     $relativePath = str_replace(__DIR__."/","",$dir);

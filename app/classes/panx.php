@@ -1,5 +1,19 @@
 <?php
+/**
+ * @name panx.php
+ * @link https://alexkratky.cz                          Author website
+ * @link https://panx.eu/docs/                          Documentation
+ * @link https://github.com/AlexKratky/panx-framework/  Github Repository
+ * @author Alex Kratky <info@alexkratky.cz>
+ * @copyright Copyright (c) 2019 Alex Kratky
+ * @license http://opensource.org/licenses/mit-license.php MIT License
+ * @description File containing useful functions. Part of panx-framework.
+ */
 
+/**
+ * Search for error's template files, include it and stop executing.
+ * @param mixed $code The error code.
+ */
 function error($code) {
     $template_files = Route::searchError($code);
     if (!is_array($template_files)) {
@@ -13,6 +27,11 @@ function error($code) {
 
 }
 
+/**
+ * Redirects to specified URL.
+ * @param string $url The URL where will be the user redirected.
+ * @param boolean|string $goto If is equal to TRUE, saves to session the current URL. If is equal to FALSE, it will not saves anything to session. Otherwise, it will save string passed to session.
+ */
 function redirect($url, $goto = false) {
     //var_dump(debug_backtrace());
     if($goto != false) {
@@ -37,6 +56,10 @@ function redirect($url, $goto = false) {
     exit();
 }
 
+/**
+ * Go to URL before redirect - Specified by $goto in redirect()
+ * @return false|redirect If $_SESSION["REDIRECT_TO"] does not contain any URL, it will return FALSE, otherwise the user will be redirected to that URL.
+ */
 function goToPrevious() {
     if (!empty($_SESSION["REDIRECT_TO"])) {
         $goto = $_SESSION["REDIRECT_TO"];
@@ -47,6 +70,11 @@ function goToPrevious() {
     }
 }
 
+/**
+ * Dumps the variable.
+ * @param mixed $var The variable to be dumped.
+ * @param boolean $should_exit If it sets to TRUE, the function will stop executing, otherwise it will not. Default is TRUE.
+ */
 function dump($var, $should_exit = true) {
     if(!isset($CONFIG))
         $CONFIG = parse_ini_file($_SERVER['DOCUMENT_ROOT']."/../.config", true);
@@ -74,10 +102,8 @@ function dump($var, $should_exit = true) {
 }
 
 
-/*
-*
+/**
 * Indents a flat JSON string to make it more human-readable.
-*
 * @param string $json The original JSON string to process.
 * @return string Indented version of the original JSON string.
 */
@@ -131,7 +157,7 @@ function json($json)
 
 
 /**
- * https://www.php.net/manual/en/tidy.examples.basic.php
+ * The function will beautify the outputed HTML using https://www.php.net/manual/en/tidy.examples.basic.php
  */
 function html() {
     $html = ob_get_clean();
@@ -151,6 +177,11 @@ function html() {
 
 }
 
+/**
+ * Function to obtain translation of key. The language is specified in .config
+ * @param string $key The name of key.
+ * @return string The translation of key.
+ */
 function __($key) {
     if(!isset($CONFIG))
         $CONFIG = parse_ini_file($_SERVER['DOCUMENT_ROOT']."/../.config", true);
