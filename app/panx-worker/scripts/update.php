@@ -4,9 +4,12 @@ if (!class_exists('ZipArchive')) {
     error("ZipArchive is not installed.");
 }
 
-if (empty($AGRS[1])) {
+if (count($ARGS) == 1) {
     $version = file_get_contents("https://panx.eu/api/v1/getlatestversion");
     info_msg("No version passed, using the latest one: $version");
+} else {
+    $version = $ARGS[1];
+    info_msg("Using version $version");
 }
 
 info_msg("Do you want to create backup? [Y/n]");
