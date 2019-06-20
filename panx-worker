@@ -79,9 +79,9 @@ function install($ARGS) {
     
     require $SCRIPT_PATH."install/download.php";
 
-    if (!isset($ARGS[2])) {
+    if (!isset($ARGS[2]) && $ARGS[1] != "clean") {
         require $SCRIPT_PATH."install/install.php";
-    } else if ($ARGS[2] == "clean") {
+    } else if ($ARGS[1] == "clean" || $ARGS[2] == "clean") {
         require $SCRIPT_PATH . "install/clean.php";
     } else {
         error("Invalid argument.\n");

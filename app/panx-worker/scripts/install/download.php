@@ -5,7 +5,7 @@ if (!class_exists('ZipArchive')) {
     exit();
 }
 
-if (!isset($ARGS[1])) {
+if (!isset($ARGS[1]) || $ARGS[1] == "clean") {
     $version = file_get_contents("https://panx.eu/api/v1/getlatestversion");
     echo ("No version passed, using the latest one: $version \n");
 } else {
