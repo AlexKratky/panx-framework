@@ -187,7 +187,7 @@ function __($key) {
         $CONFIG = parse_ini_file($_SERVER['DOCUMENT_ROOT']."/../.config", true);
 
     $lang = $CONFIG["basic"]["APP_LANGUAGE"];
-    $c = Cache::get("lang_$lang.json", 60);
+    $c = Cache::get("lang_$lang.json", $CONFIG["basic"]["APP_LANG_CACHE_TIME"]);
     if($c !== false) {
         return (empty($c[$key]) ? false : $c[$key]);
     } else {
