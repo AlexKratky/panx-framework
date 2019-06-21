@@ -188,7 +188,7 @@ class Request {
      * Return most preferred language.
      * @return string Return string containing most preferred language, e.g. 'cz', 'en' (lower cased), or null if header does not define the preferred language.
      */
-    public function getMostPreferredLanguage(): ?array {
+    public function getMostPreferredLanguage(): ?string {
         $header = $this->getHeader('Accept-Language');
 		if (!$header) {
 			return null;

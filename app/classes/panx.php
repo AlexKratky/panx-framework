@@ -180,15 +180,16 @@ function html() {
 /**
  * Function to obtain translation of key. The language is specified in .config
  * @param string $key The name of key.
- * @return string The translation of key.
+ * @return string|false The translation of key or false if the translation does not exists.
  */
 function __($key) {
     if(!isset($CONFIG))
         $CONFIG = parse_ini_file($_SERVER['DOCUMENT_ROOT']."/../.config", true);
 
     $lang = strtolower($CONFIG["basic"]["APP_LANGUAGE"]);
+
     if($lang == "auto") {
-        $lang = $GLOBALS["request"]->getMostPreferredLanguage()[0];
+        $lang = $GLOBALS["request"]->getMostPreferredLanguage();
         if($lang === null) {
             $lang = "en";
         }
@@ -196,11 +197,21 @@ function __($key) {
             $lang = "cz";
         }
     }
+    if(isset($_COOKIE["language"])) {
+        $lang = $_COOKIE["language"];
+    }
     $c = Cache::get("lang_$lang.json", $CONFIG["basic"]["APP_LANG_CACHE_TIME"]);
     if($c !== false) {
         return (empty($c[$key]) ? false : $c[$key]);
     } else {
         $translation = array();
+        if(!file_exists($_SERVER['DOCUMENT_ROOT']."/../app/resources/lang/$lang.lang")) {
+            if(!file_exists($_SERVER['DOCUMENT_ROOT']."/../app/resources/lang/en.lang")) {
+                return false;
+            } else {
+                $lang = "en";
+            }
+        }
         $lang_f = $_SERVER['DOCUMENT_ROOT']."/../app/resources/lang/$lang.lang";
         $lang_f = file_get_contents($lang_f);
         $lang_f = explode(PHP_EOL, $lang_f);
