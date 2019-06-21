@@ -186,7 +186,16 @@ function __($key) {
     if(!isset($CONFIG))
         $CONFIG = parse_ini_file($_SERVER['DOCUMENT_ROOT']."/../.config", true);
 
-    $lang = $CONFIG["basic"]["APP_LANGUAGE"];
+    $lang = strtolower($CONFIG["basic"]["APP_LANGUAGE"]);
+    if($lang == "auto") {
+        $lang = $GLOBALS["request"]->getMostPreferredLanguage()[0];
+        if($lang === null) {
+            $lang = "en";
+        }
+        if($lang == "cs") {
+            $lang = "cz";
+        }
+    }
     $c = Cache::get("lang_$lang.json", $CONFIG["basic"]["APP_LANG_CACHE_TIME"]);
     if($c !== false) {
         return (empty($c[$key]) ? false : $c[$key]);

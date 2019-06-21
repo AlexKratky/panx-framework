@@ -12,6 +12,10 @@
   * Database wrapper
   * Documentation generator
   * Post manager (Useful for small blogs)
+  * Multi language webs support
+  * Cache system
+  * Extension support
+  * And more useful functions
 
   
 
@@ -27,7 +31,8 @@ To get started using panx framework, see [Creating first project using panx fram
 
 Some websites that runs on panx framework:
 
-* [AlexKratky](https://alexkratky.cz/)
+* [AlexKratky.cz](https://www.alexkratky.cz/)
+* [AlexKratky.com](https://alexkratky.com/)
 
 If you want to be listed there, contact us on framework@panx.eu
 

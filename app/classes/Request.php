@@ -186,7 +186,7 @@ class Request {
 
     /**
      * Return most preferred language.
-     * @return array|null Return array containing most preferred language, e.g. ['cs', 'cz'] (lower cased), or null if header does not define the preferred language.
+     * @return string Return string containing most preferred language, e.g. 'cz', 'en' (lower cased), or null if header does not define the preferred language.
      */
     public function getMostPreferredLanguage(): ?array {
         $header = $this->getHeader('Accept-Language');
@@ -194,8 +194,9 @@ class Request {
 			return null;
         }
         $lang = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 5);
-        $lang = strtolower($lang);
-        return explode('-', $lang);
+		$lang = strtolower($lang);
+		$lang = explode('-', $lang)[0];
+        return $lang == "cs" ? "cz" : $lang;
     }
     
     /**
