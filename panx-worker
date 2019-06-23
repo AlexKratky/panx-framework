@@ -77,12 +77,174 @@ function install($ARGS) {
     global $SCRIPT_PATH;
     global $PATH;
     
-    require $SCRIPT_PATH."install/download.php";
+    $version;
+    if (!class_exists('ZipArchive')) {
+        echo ("ZipArchive is not installed. \n");
+        exit();
+    }
 
-    if (!isset($ARGS[2])) {
-        require $SCRIPT_PATH."install/install.php";
-    } else if ($ARGS[2] == "clean") {
-        require $SCRIPT_PATH . "install/clean.php";
+    if (!isset($ARGS[1]) || $ARGS[1] == "clean") {
+        $version = file_get_contents("https://panx.eu/api/v1/getlatestversion");
+        echo ("No version passed, using the latest one: $version \n");
+    } else {
+        $version = $ARGS[1];
+    }
+
+    if (!file_exists(__DIR__ . "/temp/")) {
+        mkdir(__DIR__ . "/temp");
+    }
+    try {
+        $z = fopen("https://panx.eu/download/$version.zip", 'r');
+        if (!$z) {
+            echo ("Failed to download $version.zip\n");
+            exit();
+        }
+        file_put_contents(__DIR__ . "/temp/$version.zip", $z);
+        fclose($z);
+    } catch (Exception $e) {
+        error($e);
+    }
+
+
+    if (!isset($ARGS[2]) && $ARGS[1] != "clean") {
+        
+        $zip = new ZipArchive;
+        if ($zip->open(__DIR__ . "/temp/$version.zip") === true) {
+            $zip->extractTo(__DIR__);
+            $zip->close();
+            if (file_exists(__DIR__ . "/temp/$version/changelog")) {
+                displayChangelog(__DIR__ . "/temp/$version/changelog");
+            }
+
+            echo ("Installation was successful \n");
+        } else {
+            echo ("Failed to install.\n");
+            exit();
+        }
+
+
+    } else if ($ARGS[1] == "clean" || $ARGS[2] == "clean") {
+        
+        if (!file_exists(__DIR__ . "/temp/$version/")) {
+            mkdir(__DIR__ . "/temp/$version");
+        }
+        $zip = new ZipArchive;
+        if ($zip->open(__DIR__ . "/temp/$version.zip") === true) {
+            $zip->extractTo(__DIR__ . "/temp/$version/");
+            $zip->close();
+            $path = __DIR__ . "/";
+            $source = __DIR__ . "/temp/$version/";
+            $folders = array($source);
+            $index = 0;
+
+            $SKIP;
+            $ADDITIONAL_FILES = array();
+            if (file_exists(__DIR__ . "/temp/$version/update.skip")) {
+                $SKIP = file_get_contents(__DIR__ . "/temp/$version/update.skip");
+                $SKIP = explode(PHP_EOL, $SKIP);
+                for ($s = 0; $s < count($SKIP); $s++) {
+                    $SKIP[$s] = trim($SKIP[$s]);
+                    if (isset($SKIP[$s][0]) && $SKIP[$s][0] == "!") {
+                        //exception
+                        $SKIP[$s] = substr($SKIP[$s], 1);
+                        if (is_dir($source . $SKIP[$s])) {
+                            echo ("Adding folder (!): " . $source . $SKIP[$s] . "\n");
+                            array_push($folders, $source . $SKIP[$s]);
+                        } else {
+                            echo ("Adding file (!): " . $source . $SKIP[$s] . "\n");
+                            array_push($ADDITIONAL_FILES, $source . $SKIP[$s]);
+                        }
+                    }
+                }
+            }
+
+            while (count($folders) > $index) {
+                $f = scandir($folders[$index]);
+                $rel_path = $path . str_replace($source, "", $folders[$index]);
+                if (!file_exists($rel_path)) {
+                    mkdir($rel_path, 0775, true);
+                }
+
+                for ($i = 2; $i < count($f); $i++) {
+                    // #+?\ .+?\n <- Match title
+                    if (is_dir($folders[$index] . $f[$i])) {
+                        if (in_array(str_replace($source, "", $folders[$index]) . $f[$i] . "/", $SKIP)) {
+                            echo ("Skipping folder: " . str_replace($source, "", $folders[$index]) . $f[$i] . "/\n");
+                            continue;
+                        }
+                        if (!in_array($folders[$index] . $f[$i] . "/", $folders)) {
+                            echo ("Adding folder: " . str_replace($source, "", $folders[$index]) . $f[$i] . "/\n");
+                            array_push($folders, $folders[$index] . $f[$i] . "/");
+                        } else {
+                            echo ("Skipping folder (duplicity): " . str_replace($source, "", $folders[$index]) . $f[$i] . "/\n");
+                        }
+                        continue;
+                    }
+
+                    if (!empty($SKIP)) {
+                        //var_dump($SKIP);
+                        if (in_array(str_replace($source, "", $folders[$index]) . $f[$i], $SKIP)) {
+                            echo ("Skipping: " . str_replace($source, "", $folders[$index]) . $f[$i] . "\n");
+                            continue;
+                        } else {
+                            rename($folders[$index] . $f[$i], $rel_path . $f[$i]);
+
+                        }
+                    }
+
+                }
+                $index++;
+            }
+
+            foreach ($ADDITIONAL_FILES as $ADDITIONAL_FILE) {
+                $rel_path = str_replace($source, "", $ADDITIONAL_FILE);
+                if (!file_exists(pathinfo($rel_path)['dirname'] . "/")) {
+                    echo ("Error: Folder doesnt exists " . pathinfo($rel_path)['dirname'] . "/" . "\n");
+                    if (mkdir(pathinfo($rel_path)['dirname'] . "/", 0775, true)) {
+                        echo ("folder created " . pathinfo($rel_path)['dirname'] . "/" . "\n");
+
+                    } else {
+                        echo ("error: folder cant be created " . pathinfo($rel_path)['dirname'] . "/" . "\n");
+                    }
+                }
+                if (!file_exists($ADDITIONAL_FILE)) {
+                    echo ($ADDITIONAL_FILE . " doesnt exists.");
+                    continue;
+                }
+                if (is_writable(__DIR__ . "/" . $rel_path)) {
+                    echo (__DIR__ . "/" . $rel_path . " : true\n");
+                } else {
+                    echo (__DIR__ . "/" . $rel_path . " : false\n");
+
+                }
+                try {
+                    if (!file_exists(pathinfo($rel_path)['dirname'] . "/")) {
+                        echo ("Error: Folder doesnt exists\n");
+                    }
+                    usleep(20);
+                    file_put_contents(__DIR__ . "/" . $rel_path, "test");
+                    usleep(20);
+
+                    rename($ADDITIONAL_FILE, __DIR__ . "/" . $rel_path);
+                } catch (Exception $e) {
+                    echo ("Exception:\n$e\n");
+                }
+            }
+            if (!file_exists(__DIR__ . "/routes/route.php")) {
+                file_put_contents(__DIR__ . "/routes/route.php", "<?php\r\n");
+            }
+
+            if (file_exists(__DIR__ . "/temp/$version/changelog")) {
+                displayChangelog(__DIR__ . "/temp/$version/changelog");
+            }
+            echo ("$version was installed successfuly.\n");
+
+        } else {
+            echo ("Failed to install.\n");
+            exit();
+        }
+
+
     } else {
         error("Invalid argument.\n");
     }

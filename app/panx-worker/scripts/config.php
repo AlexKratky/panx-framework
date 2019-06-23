@@ -20,6 +20,7 @@ APP_DEBUG = $APP_DEBUG
 APP_HTML_BEAUTIFY = false
 APP_LANGUAGE = en
 APP_INFO = true
+APP_LANG_CACHE_TIME = 60
 
 [database]
 ; If DB_HOST is empty, no connection will be created

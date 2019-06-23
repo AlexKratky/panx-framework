@@ -2,16 +2,20 @@
 
 > microframework for small websites
 
-- panx-framework is primary for small websites, whole framework have size around ~100kb
+* panx-framework is primary for small websites, whole framework have size around ~100kb
 
-- panx-framework have tool to create a documentation website from markdown files
+* panx-framework have tool to create a documentation website from markdown files
 
-- panx have some basic features like:
+* panx have some basic features like:
 
-  - Simple routing engine
-  - Database wrapper
-  - Documentation generator
-  - Post manager (Useful for small blogs)
+  * Simple routing engine
+  * Database wrapper
+  * Documentation generator
+  * Post manager (Useful for small blogs)
+  * Multi language webs support
+  * Cache system
+  * Extension support
+  * And more useful functions
 
   
 
@@ -19,7 +23,7 @@
 
 To get started using panx framework, see [Creating first project using panx framework](https://panx.eu/docs/getting-started)
 
-- See full [documentation](https://panx.eu/docs/).
+* See full [documentation](https://panx.eu/docs/).
 
 
 
@@ -27,7 +31,8 @@ To get started using panx framework, see [Creating first project using panx fram
 
 Some websites that runs on panx framework:
 
-- [AlexKratky](https://alexkratky.cz/)
+* [AlexKratky.cz](https://www.alexkratky.cz/)
+* [AlexKratky.com](https://alexkratky.com/)
 
 If you want to be listed there, contact us on framework@panx.eu
 
