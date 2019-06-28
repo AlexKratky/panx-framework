@@ -7,7 +7,7 @@ Route::apiGroup("v1", array(
     }),
     
     array("getlatestversion", function() {
-        echo "0.1.1";
+        echo "0.1.2";
     }),
 
     array("getposts", function () {

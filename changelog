@@ -1,24 +1,18 @@
-?panx-framework v0.1.1
+?panx-framework v0.1.2
 -------------------
 
-?This is second release of panx-framework (v0.1.1).
+?This is next release of panx-framework (v0.1.2).
 
 ?The documentation is available on https://panx.eu/docs/
-!(In future, it will available only using https://panx.eu/docs/v0.1.1/)
+!(In future, it will available only using https://panx.eu/docs/v0.1.2/)
 
 ?New features
 - Fixed bugs
-- Added middlewares (Route)
-- Added Cache::destroy()
-- Added Post::loadInfo()
-- Added 'route-list' command
-- Added 'serve' command
-- Added extensions support
-- Added sorting of documentation using 'sorting'
-- Added option to beautify outputed html (Currently not available)
-- Added support for multi language using __()
-- Added option $goto to redirect
-
+- Added Request class
+- Clean install without specifing the version
+- Update command - You can now pass a version (Fix)
+- Auto language
+- Added comments to /app/classes/
 
 ?After installation
 After installation, you need to run following commands:
