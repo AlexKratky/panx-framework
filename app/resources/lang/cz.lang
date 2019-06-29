@@ -1,1 +1,6 @@
 welcome: Vítejte na panx.eu
+middleware: Požadavek byl zamítnut middlewarem.
+forbidden1: Bohužel k zobrazení
+forbidden2: nemáte přístup.
+notfound1: Ať hledám, jak hledám tak
+notfound2: nemohu najít. Buď neexistuje, a nebo v minulosti existoval, ale byl smazán nebo přesunut.
