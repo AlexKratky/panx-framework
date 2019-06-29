@@ -57,13 +57,49 @@ if (is_callable($template_files)) {
             $template_files = Route::searchError(Route::ERROR_FORBIDDEN);
             break;
     }
+    if(file_exists($_SERVER['DOCUMENT_ROOT']."/../app/core/handlers.php")) {
+        require $_SERVER['DOCUMENT_ROOT']."/../app/core/handlers.php";
+    }
     if($include) {
-        if(!is_array($template_files))
-            require($_SERVER['DOCUMENT_ROOT']."/../template/".$template_files);
-        else {
+        if(!is_array($template_files)) {
+            $ext = pathinfo($_SERVER['DOCUMENT_ROOT']."/../template/".$template_files)["extension"];
+            if($ext == "php") {
+                require $_SERVER['DOCUMENT_ROOT'] . "/../template/" . $template_files;
+            } else {
+                //Need to custom handler
+                if(!empty($handlers[$ext])) {
+                    require_once $_SERVER['DOCUMENT_ROOT']."/../app/handlers/$handlers[$ext].php";
+                    $handlers[$ext]::handle($template_files);
+                } else {
+                    $ext = ucfirst(strtolower($ext));
+                    if(file_exists($_SERVER['DOCUMENT_ROOT']."/../app/handlers/".$ext."Handler.php")) {
+                        require_once $_SERVER['DOCUMENT_ROOT']."/../app/handlers/".$ext."Handler.php";
+                        $ext = $ext."Handler";
+                        $ext::handle($template_files);
+                    }
+                }
+            }
+        } else {
             if($template_files !== null) {
                 for($i = 0; $i < count($template_files); $i++) {
-                    require($_SERVER['DOCUMENT_ROOT']."/../template/".$template_files[$i]);
+                    $ext = pathinfo($_SERVER['DOCUMENT_ROOT']."/../template/".$template_files[$i])["extension"];
+                    if ($ext == "php") {
+                        require $_SERVER['DOCUMENT_ROOT']."/../template/".$template_files[$i];
+                    } else {
+                        //Need to custom handler
+                        if(!empty($handlers[$ext])) {
+                            require_once $_SERVER['DOCUMENT_ROOT']."/../app/handlers/$handlers[$ext].php";
+                            $handlers[$ext]::handle($template_files[$i]);
+                        } else {
+                            $ext = ucfirst(strtolower($ext));
+                            if(file_exists($_SERVER['DOCUMENT_ROOT']."/../app/handlers/".$ext."Handler.php")) {
+                                require_once $_SERVER['DOCUMENT_ROOT']."/../app/handlers/".$ext."Handler.php";
+                                $ext = $ext."Handler";
+                                $ext::handle($template_files[$i]);
+                            }
+                        }
+                    }
+
                 }
             }
         }

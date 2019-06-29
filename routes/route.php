@@ -15,3 +15,5 @@ Route::set("/test/*", "test.php");
 Route::set("/lang", function() {
     echo __("welcome");
 });
+Route::set("/Handler", ["handler.latte", "test.latte"]);
+Route::set("/Handler2", ["handler.latte", "xd.latte", "onemore.latte"]);

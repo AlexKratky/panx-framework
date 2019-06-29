@@ -10,5 +10,5 @@
 	<body>
 <?php
 http_response_code(400);
-die("<div class='error'><div class='error-title'>Error <span class='error-code'>Middleware</span></div><div class='error-msg'>Your request was declined by middleware.</div></div></body></html>");
+die("<div class='error'><div class='error-title'>Error <span class='error-code'>Middleware</span></div><div class='error-msg'>".__('middleware')."</div></div></body></html>");
 ?>

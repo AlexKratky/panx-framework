@@ -94,6 +94,8 @@ class Post {
             Logger::log("Using cached posts");
             return $p;
         }
+        if(!file_exists($_SERVER['DOCUMENT_ROOT']."/../template/posts/"))
+            return array();
         $f = scandir($_SERVER['DOCUMENT_ROOT']."/../template/posts/");
         $f_arr = array();
 

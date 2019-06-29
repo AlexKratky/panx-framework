@@ -1,3 +1,6 @@
+<?php
+global $CONFIG;
+?>
 <!DOCTYPE html>
 	<head>
 		<title><?=$CONFIG["basic"]["APP_NAME"]?> | Error 403</title>
@@ -10,5 +13,5 @@
 	<body>
 <?php
 http_response_code(403);
-die("<div class='error'><div class='error-title'>Error <span class='error-code'>403</span></div><div class='error-msg'>Bohužel k zobrazení \"" . $UC->getString() . "\" nemáte přístup.</div></div></body></html>");
+die("<div class='error'><div class='error-title'>Error <span class='error-code'>403</span></div><div class='error-msg'>".__('forbidden1')." \"" . $GLOBALS["request"]->getUrl()->getString() . "\" ".__('forbidden2')."</div></div></body></html>");
 ?>

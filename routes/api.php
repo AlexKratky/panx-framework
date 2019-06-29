@@ -7,7 +7,7 @@ Route::apiGroup("v1", array(
     }),
     
     array("getlatestversion", function() {
-        echo "0.1.1";
+        echo "0.1.2";
     }),
 
     array("getposts", function () {
@@ -81,7 +81,8 @@ Route::setApiMiddleware("v2", ["AuthMiddleware"]);
 Route::apiGroup("v3", array(
     // /api/v1/list
     array("edit/post/{ID}", function () {
-        echo "edit post " . Route::getValue("ID");
+        //echo "edit post " . Route::getValue("ID");
+        error(403);
     }),
 
     array("view/post/+", function () {

@@ -15,3 +15,4 @@ posts/
 logs/
 docs/
 cache/
+tests/
