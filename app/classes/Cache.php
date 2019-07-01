@@ -56,7 +56,7 @@ class Cache {
      * Destroy specified cache.
      * @param string $name The name of variable.
      */
-    public static function destroy(string $name): boolean {
+    public static function destroy(string $name): bool {
         return unlink($_SERVER['DOCUMENT_ROOT']. "/../cache/" . $name);
     }
 }
