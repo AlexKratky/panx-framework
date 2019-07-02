@@ -266,6 +266,12 @@ class Route {
         return (isset(self::$ROUTES[$SEARCH_ROUTE]) ? self::$ROUTES[$SEARCH_ROUTE] : self::ERROR_NOT_FOUND);
     }
 
+    /**
+     * Convert the URI to route
+     * For example, if you set route '/example/+/edit' in route.php and you pass the URI to this function (e.g., /example/13/edit), it will returns the route with wildcard -> '/example/+/edit'
+     * @param string|null $route The URI, if sets to null, then will use the current URI.
+     * @return string The route coresponding to URI.
+     */
     public static function convertRoute($route = null) {
         foreach (self::$ROUTES as $ROUTE => $VALUE) {
             $CURRENT = new URL($route);
