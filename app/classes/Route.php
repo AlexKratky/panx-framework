@@ -101,7 +101,9 @@ class Route {
          * $matches[1][0] : id
          */
         //preg_match_all("/{(.+?)}/", $ROUTE, $matches);
-        
+        if(isset($GLOBALS["CONFIG"]["basic"]["APP_ROUTES_CASE_SENSITIVE"]) && $GLOBALS["CONFIG"]["basic"]["APP_ROUTES_CASE_SENSITIVE"] !== "1") {
+            $ROUTE = strtolower($ROUTE);
+        }
         self::$ROUTES[$ROUTE] = $TEMPLATE_FILE;
         if($LOCK !== null) self::$LOCK[$ROUTE] = $LOCK;
         return new Route($ROUTE);
@@ -195,6 +197,10 @@ class Route {
 
         foreach (self::$ROUTES as $ROUTE => $VALUE) {
             $CURRENT = new URL();
+            if (isset($GLOBALS["CONFIG"]["basic"]["APP_ROUTES_CASE_SENSITIVE"]) && $GLOBALS["CONFIG"]["basic"]["APP_ROUTES_CASE_SENSITIVE"] !== "1") {
+                $CURRENT = new URL(strtolower($_SERVER["REQUEST_URI"]));
+            }
+
             $x = new URL($ROUTE."", false);
 
             if(count($x->getLink()) > count($CURRENT->getLink())) {
@@ -260,9 +266,53 @@ class Route {
         return (isset(self::$ROUTES[$SEARCH_ROUTE]) ? self::$ROUTES[$SEARCH_ROUTE] : self::ERROR_NOT_FOUND);
     }
 
+    public static function convertRoute($route = null) {
+        foreach (self::$ROUTES as $ROUTE => $VALUE) {
+            $CURRENT = new URL($route);
+            if (isset($GLOBALS["CONFIG"]["basic"]["APP_ROUTES_CASE_SENSITIVE"]) && $GLOBALS["CONFIG"]["basic"]["APP_ROUTES_CASE_SENSITIVE"] !== "1") {
+                $ROUTE = strtolower($ROUTE);
+            } else {
+                
+            }
+
+            $x = new URL($ROUTE."", false);
+
+            if(count($x->getLink()) > count($CURRENT->getLink())) {
+                continue;
+            }
+
+            $match = true;
+            $x = $x->getLink();
+            $CURRENT_LINK = $CURRENT->getLink();
+            for($i = 0; $i < count($x); $i++) {
+                if($x[$i] == "*") {
+                    return $ROUTE;
+                }
+                if($x[$i] == "+") {
+                    continue;
+                }
+                preg_match("/{(.+?)}/", $x[$i], $matches);
+                if(count($matches) > 0) {
+                    self::$VALUES[$matches[1]] = $CURRENT_LINK[$i];
+                    continue;
+                }
+                if(!isset($CURRENT_LINK[$i]) || $x[$i] != $CURRENT_LINK[$i]) {
+                    $match = false;
+
+                    break;
+                }
+            }
+            if($match && count($x) == count($CURRENT_LINK)) {
+                return $ROUTE;
+            }
+
+        }
+        return $CURRENT->getString();
+    }
+
     /**
-     * Sets controllers for single route.
-     * @param array|string $controller The array of controllers or single string.
+     * Sets controller for single route.
+     * @param string $controller The controller name.
      * @return Route Reference to this object.
      */
     public function setController($controller) {
@@ -271,9 +321,33 @@ class Route {
     }
 
     /**
-     * Sets controllers for multiple routes.
+     * Returns the contoller name for specified route
+     * @param string|null $ROUTE
+     * @return string|null Returns the controller. If there is no controller sets, try to lookup for default, e.g. requesting /action/edit will include ActionController. If no default controller found, returns null.
+     */
+    public static function getController($ROUTE = null) {
+        if($ROUTE === null) {
+            $ROUTE = $GLOBALS["request"]->getUrl()->getString();
+            $ROUTE = self::convertRoute($ROUTE);
+        }
+
+        if(isset(self::$CONTROLLERS[$ROUTE])) {
+            return self::$CONTROLLERS[$ROUTE]; 
+        } else {
+            //try to lookup for default controller or return empty array
+            $url = new URL($ROUTE);
+            $default = ucfirst(strtolower($url->getLink()[1])) . "Controller";
+            if(file_exists($_SERVER['DOCUMENT_ROOT']."/../app/controllers/$default.php")) {
+                return $default;
+            }
+            return null;
+        }
+    }
+
+    /**
+     * Sets controller for multiple routes.
      * @param array $ROUTES For each route it will sets controllers.
-     * @param array|string $controller The array of controllers or single string.
+     * @param string $controller The controller name.
      */
     public static function setControllers($ROUTES, $controller) {
         foreach ($ROUTES as $ROUTE) {
