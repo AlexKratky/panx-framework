@@ -12,13 +12,18 @@ if($CONFIG["basic"]["APP_DEBUG"] == "1") {
 }
 function load($class)
 {
-    require $_SERVER['DOCUMENT_ROOT']."/../app/classes/$class.php";
+    if(file_exists($_SERVER['DOCUMENT_ROOT']."/../app/classes/$class.php")) {
+        require $_SERVER['DOCUMENT_ROOT']."/../app/classes/$class.php";
+    } else {
+        require_once $_SERVER['DOCUMENT_ROOT'] . "/../app/models/$class.php";
+    }
 }
 spl_autoload_register("load");
 if(!empty($CONFIG["database"]["DB_HOST"]))
     db::connect($CONFIG["database"]["DB_HOST"], $CONFIG["database"]["DB_USERNAME"], $CONFIG["database"]["DB_PASSWORD"], $CONFIG["database"]["DB_DATABASE"]);
 
 load('panx'); //not class
+require_once $_SERVER['DOCUMENT_ROOT']."/../app/handlers/Handler.php";
 
 $route_files = scandir($_SERVER['DOCUMENT_ROOT']."/../routes");
 foreach ($route_files as $route_file) {
@@ -69,12 +74,22 @@ if (is_callable($template_files)) {
                 //Need to custom handler
                 if(!empty($handlers[$ext])) {
                     require_once $_SERVER['DOCUMENT_ROOT']."/../app/handlers/$handlers[$ext].php";
+                    $controller = Route::getController();
+                    if($controller !== null) {
+                        require_once $_SERVER['DOCUMENT_ROOT']."/../app/controllers/$controller.php";
+                        $controller::main($handlers[$ext]);
+                    }
                     $handlers[$ext]::handle($template_files);
                 } else {
                     $ext = ucfirst(strtolower($ext));
                     if(file_exists($_SERVER['DOCUMENT_ROOT']."/../app/handlers/".$ext."Handler.php")) {
                         require_once $_SERVER['DOCUMENT_ROOT']."/../app/handlers/".$ext."Handler.php";
                         $ext = $ext."Handler";
+                        $controller = Route::getController();
+                        if($controller !== null) {
+                            require_once $_SERVER['DOCUMENT_ROOT']."/../app/controllers/$controller.php";
+                            $controller::main($ext);
+                        }
                         $ext::handle($template_files);
                     }
                 }
@@ -89,12 +104,22 @@ if (is_callable($template_files)) {
                         //Need to custom handler
                         if(!empty($handlers[$ext])) {
                             require_once $_SERVER['DOCUMENT_ROOT']."/../app/handlers/$handlers[$ext].php";
+                            $controller = Route::getController();
+                            if ($controller !== null) {
+                                require_once $_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php";
+                                $controller::main($handlers[$ext]);
+                            }
                             $handlers[$ext]::handle($template_files[$i]);
                         } else {
                             $ext = ucfirst(strtolower($ext));
                             if(file_exists($_SERVER['DOCUMENT_ROOT']."/../app/handlers/".$ext."Handler.php")) {
                                 require_once $_SERVER['DOCUMENT_ROOT']."/../app/handlers/".$ext."Handler.php";
                                 $ext = $ext."Handler";
+                                $controller = Route::getController();
+                                if ($controller !== null) {
+                                    require_once $_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php";
+                                    $controller::main($ext);
+                                }
                                 $ext::handle($template_files[$i]);
                             }
                         }

@@ -248,6 +248,10 @@ function install($ARGS) {
     } else {
         error("Invalid argument.\n");
     }
+    /**
+     * Now creates dirs, setup chmod
+     */
+    createDirs(array('temp', 'cache', 'logs', 'template/posts', 'app/controllers', 'app/middlewares', 'app/models'));
     echo "\nNow you just need to run command 'composer install' and create '.config' file (You can do it by running command: 'php panx-worker config').\n";
     unlink(__DIR__."/temp/$version.zip");
     rrmdir(__DIR__."/temp/$version/");
@@ -296,6 +300,15 @@ function routelist() {
 
     require $SCRIPT_PATH."routelist.php";
 
+}
+
+function clear() {
+    global $ARGS_COUNT;
+    global $ARGS;
+    global $PATH;
+    global $SCRIPT_PATH;
+
+    require $SCRIPT_PATH."clear.php";
 }
 
 function info() {
@@ -375,5 +388,19 @@ function addFolderToZip($dir, $zipArchive, $zipdir = '') {
                 }
             }
         }
+    }
+}
+
+
+function createDirs($dirs) {
+    foreach ($dirs as $dir) {
+        if(!file_exists(__DIR__.'/'.$dir.'/')) {
+            if(!mkdir(__DIR__.'/'.$dir.'/', 0777, true)) {
+                echo "Failed to create: " . __DIR__.'/'.$dir.'/' . "\n";   
+            }
+        }
+        chmod( __DIR__.'/'.$dir.'/', 0777);
+        echo "File perm. of ". __DIR__.'/'.$dir.'/' . " : " .substr(sprintf('%o', fileperms(__DIR__.'/'.$dir.'/')), -4) . "\n";
+
     }
 }

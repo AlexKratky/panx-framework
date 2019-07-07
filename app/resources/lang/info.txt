@@ -1,0 +1,10 @@
+**************************************************************
+|        Do not edit the files starting with 'default_'      |
+**************************************************************
+
+These translation files are from panx framework used for default templates, e.g. errors page etc.
+Each update, these files are overwritten, so if you write something to them, you will lose all your work!
+Also, do not name the files with 'default_' prefix.
+The files should be for example 'cz.lang', 'en.lang' etc.
+The default language files are cached for 1 day.
+On every update, the cache will be destroyed automatically.

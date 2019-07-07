@@ -18,9 +18,10 @@ APP_NAME = $APP_NAME
 APP_URL = $APP_URL
 APP_DEBUG = $APP_DEBUG
 APP_HTML_BEAUTIFY = false
-APP_LANGUAGE = en
+APP_LANGUAGE = auto
 APP_INFO = true
 APP_LANG_CACHE_TIME = 60
+APP_ROUTES_CASE_SENSITIVE = true
 
 [database]
 ; If DB_HOST is empty, no connection will be created

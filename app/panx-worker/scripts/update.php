@@ -215,3 +215,8 @@ if (file_exists($PATH . "/temp/$version/changelog")) {
 unlink($PATH . "/temp/$version.zip");
 
 rrmdir($PATH . "/temp/$version/");
+
+require $PATH . "/app/classes/Cache.php";
+require $PATH . "/app/classes/Logger.php";
+
+Cache::clearAll($PATH);

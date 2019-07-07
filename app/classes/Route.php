@@ -20,6 +20,10 @@ class Route {
      */
     private static $MIDDLEWARES = array();
     /**
+     * @var array The array of controllers.
+     */
+    private static $CONTROLLERS = array();
+    /**
      * @var array The array of locks (which will limit routes to certain methods).
      */
     private static $LOCK = array();
@@ -39,6 +43,10 @@ class Route {
      * @var array The array of URL parameters (Accesible using Route::getValue()).
      */
     private static $VALUES = array();
+    /**
+     * @var string The string containing the Route.
+     */
+    public $ROUTE;
 
     /**
      * Error class constants
@@ -73,11 +81,19 @@ class Route {
     const ERROR_NOT_LOGGED_IN = "NOT_LOGGED_IN";
 
     /**
+     * Creates a new instance of Route object containing the route.
+     * @param string $ROUTE
+     */
+    public function __construct($ROUTE) {
+        $this->ROUTE = $ROUTE;
+    }
+
+    /**
      * Saves route to $ROUTES.
      * @param string $ROUTE The URI to handle.
      * @param function|string|array $TEMPLATE_FILE Handler of URI, it can be single file, multiple files using array or function.
      * @param array|null $LOCK The array of supported methods for this route. If is set to null, the route will not be locked, so it can be accessed from any http method.
-     * @return string The function returns $ROUTE passed in argument, so you can easily set middleware on it.
+     * @return Route The object representing the route.
      */
     public static function set($ROUTE, $TEMPLATE_FILE, $LOCK = null) {
         /**
@@ -85,10 +101,12 @@ class Route {
          * $matches[1][0] : id
          */
         //preg_match_all("/{(.+?)}/", $ROUTE, $matches);
-        
+        if(isset($GLOBALS["CONFIG"]["basic"]["APP_ROUTES_CASE_SENSITIVE"]) && $GLOBALS["CONFIG"]["basic"]["APP_ROUTES_CASE_SENSITIVE"] !== "1") {
+            $ROUTE = strtolower($ROUTE);
+        }
         self::$ROUTES[$ROUTE] = $TEMPLATE_FILE;
         if($LOCK !== null) self::$LOCK[$ROUTE] = $LOCK;
-        return $ROUTE;
+        return new Route($ROUTE);
     }
 
     /**
@@ -179,6 +197,10 @@ class Route {
 
         foreach (self::$ROUTES as $ROUTE => $VALUE) {
             $CURRENT = new URL();
+            if (isset($GLOBALS["CONFIG"]["basic"]["APP_ROUTES_CASE_SENSITIVE"]) && $GLOBALS["CONFIG"]["basic"]["APP_ROUTES_CASE_SENSITIVE"] !== "1") {
+                $CURRENT = new URL(strtolower($_SERVER["REQUEST_URI"]));
+            }
+
             $x = new URL($ROUTE."", false);
 
             if(count($x->getLink()) > count($CURRENT->getLink())) {
@@ -245,6 +267,101 @@ class Route {
     }
 
     /**
+     * Convert the URI to route
+     * For example, if you set route '/example/+/edit' in route.php and you pass the URI to this function (e.g., /example/13/edit), it will returns the route with wildcard -> '/example/+/edit'
+     * @param string|null $route The URI, if sets to null, then will use the current URI.
+     * @return string The route coresponding to URI.
+     */
+    public static function convertRoute($route = null) {
+        foreach (self::$ROUTES as $ROUTE => $VALUE) {
+            $CURRENT = new URL($route);
+            if (isset($GLOBALS["CONFIG"]["basic"]["APP_ROUTES_CASE_SENSITIVE"]) && $GLOBALS["CONFIG"]["basic"]["APP_ROUTES_CASE_SENSITIVE"] !== "1") {
+                $ROUTE = strtolower($ROUTE);
+            } else {
+                
+            }
+
+            $x = new URL($ROUTE."", false);
+
+            if(count($x->getLink()) > count($CURRENT->getLink())) {
+                continue;
+            }
+
+            $match = true;
+            $x = $x->getLink();
+            $CURRENT_LINK = $CURRENT->getLink();
+            for($i = 0; $i < count($x); $i++) {
+                if($x[$i] == "*") {
+                    return $ROUTE;
+                }
+                if($x[$i] == "+") {
+                    continue;
+                }
+                preg_match("/{(.+?)}/", $x[$i], $matches);
+                if(count($matches) > 0) {
+                    self::$VALUES[$matches[1]] = $CURRENT_LINK[$i];
+                    continue;
+                }
+                if(!isset($CURRENT_LINK[$i]) || $x[$i] != $CURRENT_LINK[$i]) {
+                    $match = false;
+
+                    break;
+                }
+            }
+            if($match && count($x) == count($CURRENT_LINK)) {
+                return $ROUTE;
+            }
+
+        }
+        return $CURRENT->getString();
+    }
+
+    /**
+     * Sets controller for single route.
+     * @param string $controller The controller name.
+     * @return Route Reference to this object.
+     */
+    public function setController($controller) {
+        self::$CONTROLLERS[$this->ROUTE] = $controller;
+        return $this;
+    }
+
+    /**
+     * Returns the contoller name for specified route
+     * @param string|null $ROUTE
+     * @return string|null Returns the controller. If there is no controller sets, try to lookup for default, e.g. requesting /action/edit will include ActionController. If no default controller found, returns null.
+     */
+    public static function getController($ROUTE = null) {
+        if($ROUTE === null) {
+            $ROUTE = $GLOBALS["request"]->getUrl()->getString();
+            $ROUTE = self::convertRoute($ROUTE);
+        }
+
+        if(isset(self::$CONTROLLERS[$ROUTE])) {
+            return self::$CONTROLLERS[$ROUTE]; 
+        } else {
+            //try to lookup for default controller or return empty array
+            $url = new URL($ROUTE);
+            $default = ucfirst(strtolower($url->getLink()[1])) . "Controller";
+            if(file_exists($_SERVER['DOCUMENT_ROOT']."/../app/controllers/$default.php")) {
+                return $default;
+            }
+            return null;
+        }
+    }
+
+    /**
+     * Sets controller for multiple routes.
+     * @param array $ROUTES For each route it will sets controllers.
+     * @param string $controller The controller name.
+     */
+    public static function setControllers($ROUTES, $controller) {
+        foreach ($ROUTES as $ROUTE) {
+            self::$CONTROLLERS[$ROUTE->ROUTE] = $controller;
+        }
+    }
+
+    /**
      * Sets route for ERROR CODE
      * @param string|int $ERROR_CODE The code of error. Can be int (e.g. 404) or string (e.g. "NOT_FOUND").
      * @param string|array|function The handler of error, it can be single file, multiple files using array or function. You should use single file only.
@@ -263,18 +380,23 @@ class Route {
     }
 
     /**
+     * Sets middlewares for single route.
+     * @param array $MIDDLEWARES The array of middlewares.
+     * @return Route Reference to this object.
+     */
+    public function setMiddleware($MIDDLEWARES) {
+        self::$MIDDLEWARES[$this->ROUTE] = $MIDDLEWARES;
+        return $this;
+    }
+
+    /**
      * Sets middlewares for routes.
-     * @param array|string $ROUTES It can be array of routes, so for each route it will sets middlewares, or it can be route, which will sets middlewares just for this route.
+     * @param array $ROUTES For each route it will sets middlewares.
      * @param array $MIDDLEWARES The array of middlewares.
      */
-    public static function setMiddleware($ROUTES, $MIDDLEWARES) {
-        if(!is_array($ROUTES)) {
-            self::$MIDDLEWARES[$ROUTES] = $MIDDLEWARES;
-        } else {
-            foreach ($ROUTES as $ROUTE) {
-                self::$MIDDLEWARES[$ROUTE] = $MIDDLEWARES;
-
-            }
+    public static function setMiddlewares($ROUTES, $MIDDLEWARES) {
+        foreach ($ROUTES as $ROUTE) {
+            self::$MIDDLEWARES[$ROUTE->ROUTE] = $MIDDLEWARES;
         }
     }
 
@@ -284,7 +406,7 @@ class Route {
      * @param array $MIDDLEWARES The array containing all middlewares for API group.
      */
     public static function setApiMiddleware($API_GROUP, $MIDDLEWARES) {
-            self::$API_MIDDLEWARES[$API_GROUP] = $MIDDLEWARES;
+        self::$API_MIDDLEWARES[$API_GROUP] = $MIDDLEWARES;
     }
 
     /**
@@ -304,14 +426,14 @@ class Route {
     public static function getDataTable() {
         $data = array();
         foreach (self::$ROUTES as $ROUTE => $FILE) {
-            array_push($data, array('TYPE' => 'ROUTE', 'URI/CODE' => $ROUTE, 'ACTION' => (is_object($FILE) && ($FILE instanceof Closure) ? "function" : (is_array($FILE) ? "[".implode(", ", $FILE) . "]" :  $FILE)), 'LOCK' => (isset(self::$LOCK[$ROUTE]) ? "[".implode(", ", self::$LOCK[$ROUTE])."]" : "[]"), 'MIDDLEWARES' => (isset(self::$MIDDLEWARES[$ROUTE]) ? "[".implode(", ", self::$MIDDLEWARES[$ROUTE])."]" : "[]")));
+            array_push($data, array('TYPE' => 'ROUTE', 'URI/CODE' => $ROUTE, 'ACTION' => (is_object($FILE) && ($FILE instanceof Closure) ? "function" : (is_array($FILE) ? "[".implode(", ", $FILE) . "]" :  $FILE)), 'LOCK' => (isset(self::$LOCK[$ROUTE]) ? "[".implode(", ", self::$LOCK[$ROUTE])."]" : "[]"), 'MIDDLEWARES' => (isset(self::$MIDDLEWARES[$ROUTE]) ? "[".implode(", ", self::$MIDDLEWARES[$ROUTE])."]" : "[]"), 'CONTROLLERS' => (isset(self::$CONTROLLERS[$ROUTE]) ? (is_array(self::$CONTROLLERS[$ROUTE]) ? "[".implode(", ", self::$CONTROLLERS[$ROUTE])."]" : self::$CONTROLLERS[$ROUTE]) : '[]')));
         }
 
         //var_dump(self::$API_ROUTES);
         foreach (self::$API_ROUTES as $API_ROUTE => $API) {
    
             foreach ($API as $route => $value) {
-                array_push($data, array('TYPE' => 'API', 'URI/CODE' => "/api/" . $API_ROUTE . "/" . $value[0], 'ACTION' => (is_object($value[1]) && ($value[1] instanceof Closure) ? "function" : (is_array($value[1]) ? "[" . implode(", ", $value[1]) . "]" : $value[1])), 'LOCK' => (isset($value[2]) ? "[" . implode(", ", $value[2]) . "]" : "[]"), 'MIDDLEWARES' => "[]"));
+                array_push($data, array('TYPE' => 'API', 'URI/CODE' => "/api/" . $API_ROUTE . "/" . $value[0], 'ACTION' => (is_object($value[1]) && ($value[1] instanceof Closure) ? "function" : (is_array($value[1]) ? "[" . implode(", ", $value[1]) . "]" : $value[1])), 'LOCK' => (isset($value[2]) ? "[" . implode(", ", $value[2]) . "]" : "[]"), 'MIDDLEWARES' => (isset(self::$API_MIDDLEWARES[$API_ROUTE]) ? "[" . implode(", ", self::$API_MIDDLEWARES[$API_ROUTE]) . "]" : "[]"), 'CONTROLLERS' => "[]"));
 
             }
             
@@ -320,7 +442,7 @@ class Route {
 
         foreach (self::$ERRORS as $ERROR => $ACTION) {
             //'LOCK' => (isset(self::$LOCK[$ROUTE]) ? "[" . implode(", ", self::$LOCK[$ROUTE]) . "]" : "[]"),
-            array_push($data, array('TYPE' => 'ERROR', 'URI/CODE' => $ERROR, 'ACTION' => (is_object($ACTION) && ($ACTION instanceof Closure) ? "function" : (is_array($ACTION) ? "[" . implode(", ", $ACTION) . "]" : $ACTION)), 'LOCK' => "[]", 'MIDDLEWARES' => "[]"));
+            array_push($data, array('TYPE' => 'ERROR', 'URI/CODE' => $ERROR, 'ACTION' => (is_object($ACTION) && ($ACTION instanceof Closure) ? "function" : (is_array($ACTION) ? "[" . implode(", ", $ACTION) . "]" : $ACTION)), 'LOCK' => "[]", 'MIDDLEWARES' => "[]", 'CONTROLLERS' => "[]"));
         }
 
 

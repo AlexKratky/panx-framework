@@ -1,11 +1,10 @@
 <?php
 Route::set("/", "home.php", ["POST", "GET"]);
-Route::setMiddleware(
-    Route::set("/logined", function () {
-        echo "Yep!";
-    }), 
-    ["AuthMiddleware"])
-;
+
+Route::set("/logined", function () {
+    echo "Yep!";
+})->setMiddleware(["AuthMiddleware"])->setController(["xd", "xd2"]);
+
 Route::set("/post/", ["post-list.php"]);
 Route::set("/login", "login.php");
 Route::set("/signin", function() {
@@ -15,5 +14,8 @@ Route::set("/test/*", "test.php");
 Route::set("/lang", function() {
     echo __("welcome");
 });
-Route::set("/Handler", ["handler.latte", "test.latte"]);
-Route::set("/Handler2", ["handler.latte", "xd.latte", "onemore.latte"]);
+Route::set("/Handler", ["handler.latte", "test.latte"])->setController("MainController");
+Route::set("/Handler2/*", ["handler.latte"])->setController("MainController");
+Route::set("/MAIN/*", function() {
+    var_dump(Route::getController());
+});
