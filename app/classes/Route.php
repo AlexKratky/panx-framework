@@ -341,6 +341,9 @@ class Route {
             return self::$CONTROLLERS[$ROUTE]; 
         } else {
             //try to lookup for default controller or return empty array
+            if(!isset($url->getLink()[1])) {
+                return null;
+            }
             $url = new URL($ROUTE);
             $default = ucfirst(strtolower($url->getLink()[1])) . "Controller";
             if(file_exists($_SERVER['DOCUMENT_ROOT']."/../app/controllers/$default.php")) {
