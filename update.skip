@@ -20,5 +20,6 @@ tests/
 app/controllers/
 app/handlers/
 !app/handlers/Handler.php
+!app/handlers/LatteHandler.php
 app/middlewares/
 app/models/
