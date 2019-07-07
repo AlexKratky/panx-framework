@@ -12,7 +12,11 @@ if($CONFIG["basic"]["APP_DEBUG"] == "1") {
 }
 function load($class)
 {
-    require $_SERVER['DOCUMENT_ROOT']."/../app/classes/$class.php";
+    if(file_exists($_SERVER['DOCUMENT_ROOT']."/../app/classes/$class.php")) {
+        require $_SERVER['DOCUMENT_ROOT']."/../app/classes/$class.php";
+    } else {
+        require_once $_SERVER['DOCUMENT_ROOT'] . "/../app/models/$class.php";
+    }
 }
 spl_autoload_register("load");
 if(!empty($CONFIG["database"]["DB_HOST"]))

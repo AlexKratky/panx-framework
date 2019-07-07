@@ -59,4 +59,21 @@ class Cache {
     public static function destroy(string $name): bool {
         return unlink($_SERVER['DOCUMENT_ROOT']. "/../cache/" . $name);
     }
+
+    /**
+     * Clear all cache files. Used in updates.
+     * Can be called using php panx-worker cache clear.
+     * @param string $dir The basedir, used when called from terminal.
+     */
+    public static function clearAll($dir = null) {
+        if($dir === null) {
+            $dir = $_SERVER['DOCUMENT_ROOT'] . "/..";
+        }
+        $c = scandir($dir . "/cache/");
+        foreach ($c as $f) {
+            if($f == "." || $f == "..") continue;
+            unlink($dir . "/cache/" . $f);
+        }
+        //Logger::log("Cache was cleared.", "main.log", $dir);
+    }
 }

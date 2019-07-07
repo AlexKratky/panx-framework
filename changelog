@@ -1,20 +1,29 @@
-?panx-framework v0.1.2
+
+
+?panx-framework v0.2
 -------------------
 
-?This is next release of panx-framework (v0.1.2).
+?This is next release of panx-framework (v0.2). This is major version release.
 
 ?The documentation is available on https://panx.eu/docs/
-!(In future, it will available only using https://panx.eu/docs/v0.1.2/)
+!(In future, it will available only using https://panx.eu/docs/v0.2/)
 
 ?New features
-- Fixed bugs
-- Added Request class
-- Clean install without specifing the version
-- Update command - You can now pass a version (Fix)
-- Auto language
-- Added comments to /app/classes/
+- Fixed bugs.
+- Fixed display_changelog, Post class.
+- Translation of errors.
+- Support for Latte Template system and others.
+- Added support for controllers.
+- Added support for models.
+- Added convertRoute() function to Route class.
+- Added option to case insensitive routes.
+- Updated Cache (clearAll()).
+- Added default translation.
+- After installation, the panx-worker will setup chmod (0777) to some folders. Also creates empty directories that are needed.
+- And more!
 
 ?After installation
 After installation, you need to run following commands:
 ?composer install
 ?php panx-worker config
+

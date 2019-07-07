@@ -17,7 +17,10 @@ class Logger {
      * @param string $file The name of log file, default is main.log.
      * @return false|int This function returns the number of bytes that were written to the log file, or FALSE on failure.
      */
-    public static function log($text, $file = "main.log") {
-        return file_put_contents ( $_SERVER['DOCUMENT_ROOT'] . "/../logs/" . $file , "[".date("d/m/Y H:i:s")."] ".$text . " -  ".debug_backtrace()[0]['file']."@" . debug_backtrace()[1]['function'] ."() \r\n", FILE_APPEND | LOCK_EX);
+    public static function log($text, $file = "main.log", $dir = null) {
+        if($dir === null) {
+            $dir = $_SERVER['DOCUMENT_ROOT'] . "/..";
+        }
+        return file_put_contents ( $dir . "/logs/" . $file , "[".date("d/m/Y H:i:s")."] ".$text . " -  ".debug_backtrace()[0]['file']."@" . debug_backtrace()[1]['function'] ."() \r\n", FILE_APPEND | LOCK_EX);
     }
 }

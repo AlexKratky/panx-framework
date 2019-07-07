@@ -433,7 +433,7 @@ class Route {
         foreach (self::$API_ROUTES as $API_ROUTE => $API) {
    
             foreach ($API as $route => $value) {
-                array_push($data, array('TYPE' => 'API', 'URI/CODE' => "/api/" . $API_ROUTE . "/" . $value[0], 'ACTION' => (is_object($value[1]) && ($value[1] instanceof Closure) ? "function" : (is_array($value[1]) ? "[" . implode(", ", $value[1]) . "]" : $value[1])), 'LOCK' => (isset($value[2]) ? "[" . implode(", ", $value[2]) . "]" : "[]"), 'MIDDLEWARES' => "[]", 'CONTROLLERS' => "[]"));
+                array_push($data, array('TYPE' => 'API', 'URI/CODE' => "/api/" . $API_ROUTE . "/" . $value[0], 'ACTION' => (is_object($value[1]) && ($value[1] instanceof Closure) ? "function" : (is_array($value[1]) ? "[" . implode(", ", $value[1]) . "]" : $value[1])), 'LOCK' => (isset($value[2]) ? "[" . implode(", ", $value[2]) . "]" : "[]"), 'MIDDLEWARES' => (isset(self::$API_MIDDLEWARES[$API_ROUTE]) ? "[" . implode(", ", self::$API_MIDDLEWARES[$API_ROUTE]) . "]" : "[]"), 'CONTROLLERS' => "[]"));
 
             }
             

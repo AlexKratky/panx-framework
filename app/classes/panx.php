@@ -180,9 +180,10 @@ function html() {
 /**
  * Function to obtain translation of key. The language is specified in .config
  * @param string $key The name of key.
+ * @param bool $default Determine, if the translation is located in default language files.
  * @return string|false The translation of key or false if the translation does not exists.
  */
-function __($key) {
+function __($key, $default = false) {
     if(!isset($CONFIG))
         $CONFIG = parse_ini_file($_SERVER['DOCUMENT_ROOT']."/../.config", true);
 
@@ -200,7 +201,10 @@ function __($key) {
     if(isset($_COOKIE["language"])) {
         $lang = $_COOKIE["language"];
     }
-    $c = Cache::get("lang_$lang.json", $CONFIG["basic"]["APP_LANG_CACHE_TIME"]);
+    if($default) {
+        $lang = "default_$lang";
+    }
+    $c = Cache::get("lang_$lang.json", ($default ? 86400 : $CONFIG["basic"]["APP_LANG_CACHE_TIME"]));
     if($c !== false) {
         return (empty($c[$key]) ? false : $c[$key]);
     } else {

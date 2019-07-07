@@ -1,6 +1,6 @@
 <?php
 /**
- * @name AuthMiddleware.php
+ * @name MainController.php
  * @link https://alexkratky.cz                          Author website
  * @link https://panx.eu/docs/                          Documentation
  * @link https://github.com/AlexKratky/panx-framework/  Github Repository
@@ -12,11 +12,13 @@
 
 class MainController {
     private static $handler;
+    private static $mainModel;
 
     public static function main($handler) {
         self::$handler = $handler;
+        self::$mainModel = new MainModel();
 
-        self::$handler::setParameters($parameters = [
+        self::$handler::setParameters([
             'items' => ['one', 'two', 'three', 'latxteeeeeeeeeeeee'],
         ]);
         
@@ -30,9 +32,13 @@ class MainController {
     }
 
     public static function test() {
-        self::$handler::setParameters($parameters = [
+        self::$handler::setParameters([
             'items' => ['test', 'function'],
         ]);
         echo "called";
+    }
+
+    public static function select() {
+        self::$handler::setParameters(self::$mainModel->selectFromDb());
     }
 }
