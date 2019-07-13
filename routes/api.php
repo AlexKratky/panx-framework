@@ -15,6 +15,11 @@ Route::apiGroup("v1", array(
         echo json(json_encode(Post::listPosts()));
     }),
 
+    array("getposts/{TOPIC}", function () {
+        //dump("test");
+        echo json(json_encode(Post::listPosts(Route::getValue('TOPIC'))));
+    }),
+
     array('server', function () {
         dump($_SERVER);
     }),
@@ -66,6 +71,10 @@ Route::apiGroup("v1", array(
         echo var_dump($GLOBALS["request"]->workWith('GET', ['xd', 'lel']));
         echo "<br>";
         echo var_dump($GLOBALS["request"]->getMostPreferredLanguage());
+    }),
+
+    array('username', function() {
+        echo $GLOBALS["auth"]->user('name');
     }),
 ));
 

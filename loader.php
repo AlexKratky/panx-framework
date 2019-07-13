@@ -14,7 +14,7 @@ function load($class)
 {
     if(file_exists($_SERVER['DOCUMENT_ROOT']."/../app/classes/$class.php")) {
         require $_SERVER['DOCUMENT_ROOT']."/../app/classes/$class.php";
-    } else {
+    } else if (file_exists($_SERVER['DOCUMENT_ROOT']."/../app/models/$class.php")){
         require_once $_SERVER['DOCUMENT_ROOT'] . "/../app/models/$class.php";
     }
 }
@@ -35,7 +35,8 @@ foreach ($route_files as $route_file) {
     require($_SERVER['DOCUMENT_ROOT']."/../routes/".$route_file);
 }
 $request = new Request();
-
+$auth = new Auth();
+$auth->loginFromCookies();
 $UC = $request->getUrl();
 //echo $UC->getString();
 $template_files = Route::search($UC->getString());
@@ -160,7 +161,14 @@ if ($CONFIG["basic"]["APP_HTML_BEAUTIFY"] == "1") {
 }
 
 if ($CONFIG["basic"]["APP_INFO"] == "1") {
-    echo "\n<!-- Powered by panx framework -->";
-    echo "\n<!-- https://panx.eu/ -->";
+    if($CONFIG["basic"]["APP_INFO_ONLY_HOME"] == "1") {
+        if($request->getUrl()->getString() == "/") {
+            echo "\n<!-- Powered by panx framework -->";
+            echo "\n<!-- https://panx.eu/ -->";
+        }
+    } else {
+        echo "\n<!-- Powered by panx framework -->";
+        echo "\n<!-- https://panx.eu/ -->";
+    }
 }
 

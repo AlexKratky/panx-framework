@@ -86,10 +86,15 @@ class Post {
 
     /**
      * Lists all posts and saves them to cache for 60s.
+     * @param string|null $topic The posts topic. Leave empty to global topic. (If is topic sets, then load only posts with specified topic).
      * @return array Array of all posts. All posts are sorted using your choosen sorting method. Each element have attribute 'name' and 'created_at'
      */
-    public static function listPosts() {
-        $p = Cache::get("posts", 60);
+    public static function listPosts($topic = null) {
+        if($topic === null) {
+            $p = Cache::get("posts", 60);
+        } else {
+            $p = Cache::get("posts-$topic", 60);
+        }
         if($p !== false) {
             Logger::log("Using cached posts");
             return $p;
@@ -101,6 +106,23 @@ class Post {
 
         foreach($f as $file) {
             if($file == "." || $file == "..") continue;
+            $ext = pathinfo($file, PATHINFO_EXTENSION);
+            if($ext == "info") {
+                continue;
+            }
+            if($topic !== null) {
+                $i = self::loadInfo(basename($file, '.'.$ext));
+                
+                if($i === false) {
+                    continue; //no info file, no topic sets
+                }
+                if(!isset($i["topic"])) {
+                    continue;
+                }
+                if(trim($i["topic"]) != strtolower($topic)) {
+                    continue;
+                }
+            }
             if(pathinfo($file, PATHINFO_EXTENSION) != "php") continue;
             array_push($f_arr, array("name" => basename($file, ".php"), "created_at" => filectime($_SERVER['DOCUMENT_ROOT']."/../template/posts/$file")));
 
@@ -109,7 +131,13 @@ class Post {
         
 
         usort($f_arr, 'self::compareTime');
-        Cache::save("posts", $f_arr);
+        if($topic === null) {
+            Cache::save("posts", $f_arr);
+
+        } else {
+            Cache::save("posts-$topic", $f_arr);
+
+        }
         Logger::log("Cache saved");
         return $f_arr;
 
@@ -147,7 +175,7 @@ class Post {
             foreach($f as $line) {
                 if(isset($line[0]) && $line[0] == "#") continue; //skip comments
                 $line = explode(': ', $line, 2);
-                $info[strtolower($line[0])] = $line[1];
+                $info[strtolower($line[0])] = trim($line[1]);
             }
             return $info;
         } else {

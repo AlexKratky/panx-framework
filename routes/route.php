@@ -6,10 +6,6 @@ Route::set("/logined", function () {
 })->setMiddleware(["AuthMiddleware"])->setController(["xd", "xd2"]);
 
 Route::set("/post/", ["post-list.php"]);
-Route::set("/login", "login.php");
-Route::set("/signin", function() {
-    redirect("/login");
-});
 Route::set("/test/*", "test.php");
 Route::set("/lang", function() {
     echo __("welcome");
