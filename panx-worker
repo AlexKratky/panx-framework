@@ -2,6 +2,9 @@
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
+
+$PANX_VERSION = "0.2.1";
+
 $PATH = __DIR__;
 $SCRIPT_PATH = __DIR__."/app/panx-worker/scripts/";
 
@@ -10,13 +13,13 @@ if(file_exists(__DIR__."/app/panx-worker/TS_CMD.php")) {
     require(__DIR__."/app/panx-worker/TextTable.php");
 
     $PROGRAM_INFO["name"] = "panx-worker";
-    $PROGRAM_INFO["version"] = "v0.1 (30-04-2019) [dd-mm-yyyy]";
+    $PROGRAM_INFO["version"] = "v$PANX_VERSION (19-07-2019) [dd-mm-yyyy]";
     $CONFIG = (file_exists(".config")) ? parse_ini_file(".config", true) : null;
 
-    $BINDS = array('route-list');
+    $BINDS = array('route-list', '-v', '--v', 'v');
 
     if ($ARGS_COUNT == 0) {
-        info_msg("panx-worker v0.1. Use argument ? to see help.");
+        info_msg("panx-worker v$PANX_VERSION. Use argument ? to see help.");
     } else {
         if($ARGS[0] == "?") {
             //HELP
@@ -32,6 +35,11 @@ if(file_exists(__DIR__."/app/panx-worker/TS_CMD.php")) {
                 case 'route-list':
                     routelist();
                     break;
+                case 'v':
+                case '-v':
+                case '--v':
+                    version();
+                    break;
                 default:
                     error_msg("Invalid argument.");
                     break;
@@ -39,13 +47,16 @@ if(file_exists(__DIR__."/app/panx-worker/TS_CMD.php")) {
         }
     }
 } else {
-    echo "Class TS_CMD was not found. The only argument you can call is 'install [VERSION]'" . "\n";
+    echo "Class TS_CMD was not found. The only argument you can call is 'install [VERSION]' or 'info [extension]'" . "\n";
     $ARGS = $argv;
     array_shift($ARGS);
 
     if(isset($ARGS[0])) {
         if($ARGS[0] == "install") {
             install($ARGS);
+        }
+        if($ARGS[0] == "info") {
+            info($ARGS);
         }
     }
 }
@@ -65,8 +76,14 @@ function create() {
 
     } else if($ARGS[1] == "version") {
         require $SCRIPT_PATH."create/version.php";
-
-
+    } else if($ARGS[1] == "auth") {
+        require $SCRIPT_PATH."create/auth.php";
+    } else if($ARGS[1] == "api") {
+        require $SCRIPT_PATH."create/api.php";
+    } else if($ARGS[1] == "model") {
+        require $SCRIPT_PATH."create/model.php";
+    } else if($ARGS[1] == "controller") {
+        require $SCRIPT_PATH."create/controller.php";
     }
 }
 
@@ -267,11 +284,6 @@ function update() {
 
 }
 
-function api() {
-    global $ARGS_COUNT;
-    global $ARGS;
-}
-
 function extension() {
     global $ARGS_COUNT;
     global $ARGS;
@@ -282,6 +294,8 @@ function extension() {
     } else {
         if($ARGS[1] == "install") {
             require($SCRIPT_PATH . "extension/install.php");
+        } else if ($ARGS[1] == "uninstall") {
+            require $SCRIPT_PATH . "extension/uninstall.php";
         } else {
             if(file_exists($SCRIPT_PATH . "extension/".strtolower($ARGS[1]).".php")) {
                 require $SCRIPT_PATH . "extension/".strtolower($ARGS[1]).".php";
@@ -311,13 +325,48 @@ function clear() {
     require $SCRIPT_PATH."clear.php";
 }
 
-function info() {
-    global $ARGS_COUNT;
-    global $ARGS;
+function info($ARGS = null) {
     global $PATH;
-    global $SCRIPT_PATH;
+    if($ARGS === null) {
+        $ARGS = $GLOBALS["ARGS"];
+    }
+    $ext = false;
+    echo("You can also generate info file for extension using argument 'extension'\n");
+    if (isset($ARGS[1]) && ($ARGS[1] == "ext" || $ARGS[1] == "extension")) {
+        $ext = readline("Extension name: ");
+    }
+    $info = array();
 
-    require $SCRIPT_PATH."info.php";    
+    $path = $PATH . "/";
+    $index = 0;
+    $folders = array($path);
+    while (count($folders) > $index) {
+        $f = scandir($folders[$index]);
+        for ($i = 2; $i < count($f); $i++) {
+            if ($ext !== false) {
+                if ($f[$i] == "panx-worker") {
+                    continue;
+                }
+            }
+            // #+?\ .+?\n <- Match title
+            if (is_dir($folders[$index] . $f[$i])) {
+                if ($f[$i] == ".git") {
+                    continue;
+                }
+
+                array_push($folders, $folders[$index] . $f[$i] . "/");
+                continue;
+            }
+            $info[str_replace($PATH, "", $folders[$index] . $f[$i])] = array(filemtime($folders[$index] . $f[$i]), filesize($folders[$index] . $f[$i]));
+        }
+        $index++;
+    }
+    if($ext === false) {
+        file_put_contents($PATH . "/info.json", json_encode($info));
+    } else {
+        file_put_contents($PATH . "/app/panx-worker/scripts/extension/" . strtolower($ext) . ".json", json_encode($info));
+    }
+
 }
 
 function config() {
@@ -335,7 +384,18 @@ function serve() {
     require $SCRIPT_PATH."serve.php";
 }
 
+/**
+ * Creates empty dirs needed by panx framework with specified chmod (777).
+ */
+function setup() {
+    createDirs(array('temp', 'cache', 'logs', 'template/posts', 'app/controllers', 'app/middlewares', 'app/models'));
 
+}
+
+function version() {
+    global $PANX_VERSION;
+    info_msg("Current version: $PANX_VERSION (".hash_file('md5', 'panx-worker').")");
+}
 
 
 
@@ -400,6 +460,7 @@ function createDirs($dirs) {
             }
         }
         chmod( __DIR__.'/'.$dir.'/', 0777);
+        chgrp( __DIR__.'/'.$dir.'/', 'www-data');
         echo "File perm. of ". __DIR__.'/'.$dir.'/' . " : " .substr(sprintf('%o', fileperms(__DIR__.'/'.$dir.'/')), -4) . "\n";
 
     }

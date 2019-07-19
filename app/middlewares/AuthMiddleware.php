@@ -16,11 +16,13 @@ class AuthMiddleware {
      * @return bool Returns true, if the request is valid, returns false otherwise.
      */
     public static function handle() {
-        if(isset($_SESSION["username"]) && isset($_SESSION["password"])) {
+        /*if(isset($_SESSION["username"]) && isset($_SESSION["password"])) {
             return true;
         } else {
             return false;
-        }
+        }*/
+        $a = new Auth();
+        return $a->isLogined();
     }
 
     /**
@@ -28,7 +30,8 @@ class AuthMiddleware {
      * @return int|string The error code. If return value is '-1', it won't include any other files.
      */
     public static function error() {
-        echo "NOT AUTHENTICATED";
-        return -1;
+        /*echo "NOT AUTHENTICATED";
+        return -1;*/
+        redirect('/login');
     }
 }

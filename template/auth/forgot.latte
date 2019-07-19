@@ -1,0 +1,48 @@
+{include 'form.latte'}
+<div class="form">
+    <div class="container" style="background-image: url('/res/img/auth/bg.jpg');">
+        <div class="wrapper">
+            <form class="login-form" method="POST" action="/login/forgot-password/submit">
+                <span class="login-form-title">
+                    Reset password
+                </span>
+
+                <span class="invalid-feedback" role="alert" style="text-align: center;">
+                    <strong>{Auth::displayError()}</strong>
+                </span>
+
+                <div class="wrapper-input">
+                    <span class="label-input">Email</span>
+                    <input class="input" type="email" name="email" placeholder="Type your email" required autofocus>
+                    <span class="focus-input" data-symbol="&#xF159;"></span>
+                </div>
+                
+                <div class="wrapper-captcha">
+                    <div class="g-recaptcha" data-callback="captchaPassed" data-sitekey="{$GLOBALS["CONFIG"]["auth"]["GOOGLE_RECAPTCHA"]}"  required></div>
+                </div>
+
+
+
+                <div class="container-button">
+                    <div class="wrapper-button">
+                        <div class="button-bg"></div>
+                        <button class="button" id="submit" disabled>
+                            Send reset mail
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex">
+                    <span class="txt1" style="padding-bottom: 15px;">
+                        Want to login?
+                    </span>
+
+                    <a href="/login" class="txt2">
+                        Sign in
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{include 'footer.latte'}

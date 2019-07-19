@@ -7,12 +7,17 @@ Route::apiGroup("v1", array(
     }),
     
     array("getlatestversion", function() {
-        echo "0.2";
+        echo "0.2.1";
     }),
 
     array("getposts", function () {
         //dump("test");
         echo json(json_encode(Post::listPosts()));
+    }),
+
+    array("getposts/{TOPIC}", function () {
+        //dump("test");
+        echo json(json_encode(Post::listPosts(Route::getValue('TOPIC'))));
     }),
 
     array('server', function () {
@@ -67,6 +72,10 @@ Route::apiGroup("v1", array(
         echo "<br>";
         echo var_dump($GLOBALS["request"]->getMostPreferredLanguage());
     }),
+
+    array('username', function() {
+        echo $GLOBALS["auth"]->user('name');
+    }),
 ));
 
 Route::apiGroup("v2", array(
@@ -85,12 +94,16 @@ Route::apiGroup("v3", array(
         error(403);
     }),
 
-    array("view/post/+", function () {
-        echo "view post";
+    array("view/post/{ID}", function () {
+        return [
+            "action" => "view-post",
+            "id" => Route::getValue('ID')
+        ];
     }),
 
     array("delete/post/*", function () {
         echo "delete post";
     }),
-
+    array("templatefile", "home.php"),
 ));
+Route::setApiEndpoint("v3", new API("v3"));

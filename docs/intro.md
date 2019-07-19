@@ -8,15 +8,19 @@
 
 * panx have some basic features like:
 
-  * Simple routing engine
+  * Simple routing engine (With middlewares)
   * Database wrapper
+  * Authentification system
+  * API interface
   * Documentation generator
   * Post manager (Useful for small blogs)
   * Multi language webs support
-  * Cache system
+  * Cache system + Log system
   * Extension support
+  * Template systems support (By default supports Latte)
+  * Controllers and Model support (MVC)
   * And more useful functions
-
+  
   
 
 ## Getting started
@@ -31,6 +35,7 @@ To get started using panx framework, see [Creating first project using panx fram
 
 Some websites that runs on panx framework:
 
+* [panx.eu](https://panx.eu/)
 * [AlexKratky.cz](https://www.alexkratky.cz/)
 * [AlexKratky.com](https://alexkratky.com/)
 

@@ -36,6 +36,10 @@ class Route {
      */
     private static $API_MIDDLEWARES = array();
     /**
+     * @var array The API endpoints class
+     */
+    private static $API_ENDPOINTS = array();
+    /**
      * @var array The array of error routes.
      */
     private static $ERRORS = array();
@@ -141,6 +145,13 @@ class Route {
                                 return $MIDDLEWARE::error();
                             return self::ERROR_MIDDLEWARE;
                         }
+                    }
+                }
+
+                if(!empty(self::$API_ENDPOINTS[$L[2]])) {
+                    if(!self::$API_ENDPOINTS[$L[2]]->request($C)) {
+                        echo json(self::$API_ENDPOINTS[$L[2]]->error());
+                        exit();
                     }
                 }
 
@@ -264,6 +275,63 @@ class Route {
 
         }
         return (isset(self::$ROUTES[$SEARCH_ROUTE]) ? self::$ROUTES[$SEARCH_ROUTE] : self::ERROR_NOT_FOUND);
+    }
+
+    /**
+     * The function will return template file(s)/function without limitation of middlewares etc.
+     */
+    public static function searchWithNoLimits() {
+        $C = new URL();
+        $L = $C->getLink();
+        if (count($L) > 2 && $L[1] == "api") {
+            //e.g. $API_ROUTES["v2"]
+            if(isset(self::$API_ROUTES[$L[2]])) {
+                foreach(self::$API_ROUTES[$L[2]] as $API_ROUTE) {
+                    $CURRENT = new URL();
+                    $x = new URL("/api/".$L[2]."/".trim($API_ROUTE[0], "/"), false);
+
+                    if(count($x->getLink()) > count($CURRENT->getLink())) {
+                        continue;
+                    }
+
+                    $match = true;
+                    $x = $x->getLink();
+                    $CURRENT = $CURRENT->getLink();
+                    for($i = 0; $i < count($x); $i++) {
+                        if($x[$i] == "*") {
+                            if (!empty($API_ROUTE[2])) {
+                                if (!in_array($_SERVER["REQUEST_METHOD"], $API_ROUTE[2])) {
+                                    return self::ERROR_BAD_REQUEST;
+                                }
+                            }
+
+                            return $API_ROUTE[1];
+                        }
+                        if($x[$i] == "+") {
+                            continue;
+                        }
+                        preg_match("/{(.+?)}/", $x[$i], $matches);
+                        if(count($matches) > 0) {
+                            self::$VALUES[$matches[1]] = $CURRENT[$i];
+                            continue;
+                        }
+                        if(!isset($CURRENT[$i]) || $x[$i] != $CURRENT[$i]) {
+                            $match = false;
+
+                            break;
+                        }
+                    }
+                    if($match && count($x) == count($CURRENT)) {
+                        if (!empty($API_ROUTE[2])) {
+                            if (!in_array($_SERVER["REQUEST_METHOD"], $API_ROUTE[2])) {
+                                return self::ERROR_BAD_REQUEST;
+                            }
+                        }
+                        return $API_ROUTE[1];
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -412,13 +480,17 @@ class Route {
         self::$API_MIDDLEWARES[$API_GROUP] = $MIDDLEWARES;
     }
 
+    public static function setApiEndpoint($endpoint, $handler) {
+        self::$API_ENDPOINTS[$endpoint] = $handler;
+    }
+
     /**
      * Obtain value from URL (Using {paramater}).
      * @param string $VALUE_NAME The parameter's name used in routes.
-     * @return string The parameter's value.
+     * @return string|false The parameter's value or false if the key doesnt exist.
      */
     public static function getValue($VALUE_NAME) {
-        return self::$VALUES[$VALUE_NAME];
+        return isset(self::$VALUES[$VALUE_NAME]) ? self::$VALUES[$VALUE_NAME] : false;
 
     }
 
