@@ -1,25 +1,27 @@
 
 
-?panx-framework v0.2
--------------------
+?panx-framework v0.2.1
+---------------------
 
-?This is next release of panx-framework (v0.2). This is major version release.
+?This is next release of panx-framework (v0.2.1). This is major version release.
 
-?The documentation is available on https://panx.eu/docs/
-!(In future, it will available only using https://panx.eu/docs/v0.2/)
+?The documentation is available on https://panx.eu/docs/.
+!(In future, it will available only using https://panx.eu/docs/v0.2.1/)
 
 ?New features
 - Fixed bugs.
-- Fixed display_changelog, Post class.
-- Translation of errors.
-- Support for Latte Template system and others.
-- Added support for controllers.
-- Added support for models.
-- Added convertRoute() function to Route class.
-- Added option to case insensitive routes.
-- Updated Cache (clearAll()).
-- Added default translation.
-- After installation, the panx-worker will setup chmod (0777) to some folders. Also creates empty directories that are needed.
+- Added support for multi language posts.
+- Added authentification.
+- Added 'php panx-worker create auth'.
+- Added API class.
+- Added 'php panx-worker create api'.
+- Added crons support.
+- Added folder support in documentation.
+- Added Mail classes.
+- Added topics to Post classes.
+- Added 'php panx-worker extension uninstall [NAME]'.
+- Added 'php panx-worker info extension' to create info file about your extension.
+- Added support for multi language posts.
 - And more!
 
 ?After installation

@@ -61,8 +61,27 @@ class Cache {
     }
 
     /**
+     * Clear all cache files older then $time.
+     * Can be called using php panx-worker clear cache old.
+     * @param string $dir The basedir, used when called from terminal.
+     * @param int $time The time in seconds, default value is 86400 (1 day).
+     */
+    public static function clearUnused($dir = null, $time = 86400) {
+        if($dir === null) {
+            $dir = $_SERVER['DOCUMENT_ROOT'] . "/..";
+        }
+        $c = scandir($dir . "/cache/");
+        foreach ($c as $f) {
+            if($f == "." || $f == "..") continue;
+            if(filemtime($dir . "/cache/" . $f) + $time < time()) {
+                unlink($dir . "/cache/" . $f);
+            }
+        }
+    }
+
+    /**
      * Clear all cache files. Used in updates.
-     * Can be called using php panx-worker cache clear.
+     * Can be called using php panx-worker clear cache
      * @param string $dir The basedir, used when called from terminal.
      */
     public static function clearAll($dir = null) {

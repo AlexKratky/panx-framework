@@ -12,9 +12,9 @@ List of functions:
 
 * loadPost() - Load post provided by url (`/post/{ID}`, where `{ID}` is post name).
 
-* getTitle($post) - Return title of post provided by `$post` (name of post). If the post does not exists, it returns `Route::ERROR_NOT_FOUND`.
+* getTitle($post, $language = null) - Return title of post provided by `$post` (name of post). If the post does not exists, it returns `Route::ERROR_NOT_FOUND`.
 
-* listPosts() - Return array that contains all posts. It will cache the result for 60 seconds. Example output:
+* listPosts($topic = null, $language = null) - Return array that contains all posts with specified $topic (If is set to null, use global topic). It will cache the result for 60 seconds. Example output:
 
   ```json
   [
@@ -30,3 +30,12 @@ List of functions:
   ```
 
   
+  
+* deletePost($language = null) - Deletes the post specified by URL (Route::getValue("ID")).
+
+* loadInfo($post, $language = null) - Load info about post from .info file or return false.
+
+
+
+If you set `APP_MULTI_LANGUAGE_POSTS` to `true` in `.config`, the post class will use multi language posts, e.g. the url will be /post/{LANGUAGE}/{ID} ...
+

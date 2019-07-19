@@ -4,13 +4,13 @@ Route::set('/login/verify', function() {
     $auth = $GLOBALS["auth"];
     ($auth->login()) ? redirect($GLOBALS["CONFIG"]["auth"]["LANDING_PAGE"]) : redirect('/login');
 }, ["POST"]);
-Route::set('/login/forgot-password', 'auth/forgot.latte');
+Route::set('/login/forgot-password', 'auth/forgot.latte')->setController("AuthController");
 Route::set('/login/forgot-password/submit', function() {
     $auth = $GLOBALS["auth"];
     ($auth->forgot()) ? redirect("/login") : redirect('/login/forgot-password');
 
 }, ["POST"]);
-Route::set('/login/forgot-password/{TOKEN}', 'auth/forgot-new.latte');
+Route::set('/login/forgot-password/{TOKEN}', 'auth/forgot-new.latte')->setController("AuthController");
 Route::set('/login/forgot-password/{TOKEN}/save', function () {
     $auth = $GLOBALS["auth"];
     ($auth->forgotSave()) ? redirect("/login") : redirect('/login/forgot-password/' . Route::getValue('TOKEN'));

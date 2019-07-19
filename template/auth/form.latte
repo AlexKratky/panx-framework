@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>auth</title>
+    <title>{$GLOBALS["CONFIG"]["basic"]["APP_NAME"]} | {((!isset($GLOBALS["request"]->getUrl()->getLink()[2]) || $GLOBALS["request"]->getUrl()->getLink()[2] != "forgot-password") ? ucfirst($GLOBALS["request"]->getUrl()->getLink()[1]) : "Reset password")}</title>
     <link rel="shortcut icon" href="/res/img/auth/favicon.ico" type="image/x-icon">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 

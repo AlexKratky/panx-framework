@@ -116,3 +116,51 @@ As the first parameter, you specify the version of API, for example `v1`, second
 Why you should use API routes instead of classic routes? If the first element in URI is `/api/`, it will check all API routes first, after it will check all classic routes. So it will increase the speed of response.
 
 `Route::apiGroup()` function will generate route by following patern: `/api/{VERSION}/{URI}`, where `{VERSION}` is for example `v1`, and `{URI}` is for example `list` or `getlatestversion/stable` as in example above.
+
+### Controllers
+
+You can setup controller using setController() function:
+
+ ```php
+Route::set('/login', 'auth/login.latte')->setController("AuthController");
+ ```
+
+To get more info about controller, see [Controllers](https://panx.eu/docs/controllers)
+
+### Middlewares
+
+You can setup controller using setMiddleware() function:
+
+```php
+Route::set('/verifymail/{TOKEN}', function() {
+    
+})->setMiddleware(['AuthMiddleware']);
+```
+
+The parameter must be always array, even if you set only one middleware.
+
+To get more info about middlewares, see [Middlewares](https://panx.eu/docs/middlewares)
+
+### API Endpoints
+
+You can set API endpoint using function Route::setApiEndpoint():
+
+```php
+Route::setApiEndpoint("v3", new API("v3"));
+```
+
+To get more info about API endpoints, see [API Endpoints](https://panx.eu/docs/api-endpoints)
+
+
+
+## Other functions of Route class
+
+### Route::searchWithNoLimits()
+
+This function will return template file(s)/function without limitation of middlewares etc.
+
+### Route::convertRoute($route = null)
+
+Convert the URI to route.
+
+- For example, if you set route '/example/+/edit' in route.php and you pass the URI to this function (e.g., /example/13/edit), it will returns the route with wildcard -> '/example/+/edit'

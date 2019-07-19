@@ -34,6 +34,9 @@ if (!file_exists($PATH . "/routes/posts.php")) {
 Route::set('/post/{ID}', function () {
     Post::loadPost();
 });
+Route::set('/post/{LANGUAGE}/{ID}', function () {
+    Post::loadPost();
+});
 ");
 }
 

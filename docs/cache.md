@@ -29,3 +29,8 @@ Logger::log("Cache saved");
 return $f_arr;
 ```
 
+
+
+* `Cache::destroy(string $name): bool` - Deletes specified cache file.
+* `Cache::clearUnused($dir = null, $time = 86400)` - Deletes unused cache files (Older then $time). The $dir parameter must be specified only from terminal (\__DIR__).
+* `Cache::clearAll($dir = null)` - Deletes whole cache directory. The $dir parameter must be specified only from terminal (\__DIR__).

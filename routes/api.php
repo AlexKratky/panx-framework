@@ -94,12 +94,16 @@ Route::apiGroup("v3", array(
         error(403);
     }),
 
-    array("view/post/+", function () {
-        echo "view post";
+    array("view/post/{ID}", function () {
+        return [
+            "action" => "view-post",
+            "id" => Route::getValue('ID')
+        ];
     }),
 
     array("delete/post/*", function () {
         echo "delete post";
     }),
-
+    array("templatefile", "home.php"),
 ));
+Route::setApiEndpoint("v3", new API("v3"));

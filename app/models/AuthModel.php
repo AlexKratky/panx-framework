@@ -15,14 +15,7 @@ class AuthModel
     public function __construct() {
 
     }
-
-    public function loadUserData() {
-        return [
-            'ID' => '',
-
-        ];
-    }
-
+    
     public function verifyLogin($username, $password, $login_from_session = false) {
         $username = strtolower($username);
         $p = db::select("SELECT `PASSWORD` FROM users WHERE `USERNAME`=?", array($username));

@@ -20,7 +20,6 @@ class AuthController
         self::$handler = $handler;
         self::$authModel = new AuthModel();
         self::$auth = $GLOBALS["auth"];
-
         if (isset($GLOBALS["request"]->getUrl()->getLink()[1])) {
             switch($GLOBALS["request"]->getUrl()->getLink()[1]) {
                 case 'login':

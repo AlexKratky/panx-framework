@@ -187,6 +187,7 @@ class Auth {
             $_SESSION["password"] = $p;
         }
         $_SESSION["username"] = $user;
+        $_SESSION["AUTH_ERROR"] = "Profile has been updated";
     }
 
     public static function displayError() {

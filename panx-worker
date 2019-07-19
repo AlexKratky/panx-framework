@@ -76,8 +76,14 @@ function create() {
 
     } else if($ARGS[1] == "version") {
         require $SCRIPT_PATH."create/version.php";
-
-
+    } else if($ARGS[1] == "auth") {
+        require $SCRIPT_PATH."create/auth.php";
+    } else if($ARGS[1] == "api") {
+        require $SCRIPT_PATH."create/api.php";
+    } else if($ARGS[1] == "model") {
+        require $SCRIPT_PATH."create/model.php";
+    } else if($ARGS[1] == "controller") {
+        require $SCRIPT_PATH."create/controller.php";
     }
 }
 
@@ -276,11 +282,6 @@ function update() {
 
     require $SCRIPT_PATH."update.php";
 
-}
-
-function api() {
-    global $ARGS_COUNT;
-    global $ARGS;
 }
 
 function extension() {
