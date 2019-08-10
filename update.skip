@@ -23,8 +23,13 @@ docs/
 cache/
 tests/
 app/controllers/
+!app/controllers/AuthController.php
+!app/middlewares/AuthMiddleware.php
+!app/models/AuthModel.php
+!app/models/APIModel.php
 app/handlers/
 !app/handlers/Handler.php
 !app/handlers/LatteHandler.php
 app/middlewares/
+app/migrations/
 app/models/
