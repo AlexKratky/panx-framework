@@ -57,7 +57,9 @@ class Cache {
      * @param string $name The name of variable.
      */
     public static function destroy(string $name): bool {
-        return unlink($_SERVER['DOCUMENT_ROOT']. "/../cache/" . $name);
+        if(file_exists($_SERVER['DOCUMENT_ROOT']. "/../cache/" . $name))
+            return unlink($_SERVER['DOCUMENT_ROOT']. "/../cache/" . $name);
+        else return false;
     }
 
     /**

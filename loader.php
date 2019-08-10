@@ -9,6 +9,8 @@ $CONFIG = parse_ini_file(".config", true);
 if($CONFIG["basic"]["APP_DEBUG"] == "1") {
     error_reporting(E_ALL);
     ini_set("display_errors", 1);
+    set_error_handler("errorHandler");
+
 }
 function load($class)
 {
@@ -19,10 +21,17 @@ function load($class)
     }
 }
 spl_autoload_register("load");
-if(!empty($CONFIG["database"]["DB_HOST"]))
+FileStream::init();
+if(!empty($CONFIG["database"]["DB_HOST"])) {
     db::connect($CONFIG["database"]["DB_HOST"], $CONFIG["database"]["DB_USERNAME"], $CONFIG["database"]["DB_PASSWORD"], $CONFIG["database"]["DB_DATABASE"]);
+    if(($CONFIG["basic"]["APP_DEBUG"] == "1" && $CONFIG["debug"]["DEBUG_VISITS"] == "1") || $CONFIG["debug"]["DEBUG_VISITS_WITHOUT_DEBUG"] == "1") {
+        db::query("INSERT INTO debug_visits (`IP`, `URL_STRING`) VALUES (?, ?);", array($_SERVER['REMOTE_ADDR'], "http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}"));
+    }
+}
 
 load('panx'); //not class
+
+
 require_once $_SERVER['DOCUMENT_ROOT']."/../app/handlers/Handler.php";
 
 $route_files = scandir($_SERVER['DOCUMENT_ROOT']."/../routes");
@@ -76,9 +85,29 @@ if (is_callable($template_files)) {
                 if(!empty($handlers[$ext])) {
                     require_once $_SERVER['DOCUMENT_ROOT']."/../app/handlers/$handlers[$ext].php";
                     $controller = Route::getController();
+                    if($controller === null) {
+                        $controller = Route::getRouteController();
+                    }
                     if($controller !== null) {
-                        require_once $_SERVER['DOCUMENT_ROOT']."/../app/controllers/$controller.php";
+                        if(file_exists($_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php")) {
+                            require_once $_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php";
+                        } else {
+                            $controller = ucfirst(strtolower($controller)) . "Controller";
+                            if(file_exists($_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php")) {
+                                require_once $_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php";
+                            } else {
+                                error($CONFIG["basic"]["APP_ERROR_CODE_OF_MISSING_CONTROLLER_OR_ACTION"]);
+                            }
+                        }
                         $controller::main($handlers[$ext]);
+                        $action = Route::getRouteAction();
+                        if($action !== null) {
+                            if(method_exists($controller, $action)) {
+                                call_user_func_array(array($controller, $action), getArrayOfParameters(new ReflectionMethod($controller, $action)));                               
+                            } else {
+                                error($CONFIG["basic"]["APP_ERROR_CODE_OF_MISSING_CONTROLLER_OR_ACTION"]);
+                            }
+                        }
                     }
                     $handlers[$ext]::handle($template_files);
                 } else {
@@ -87,9 +116,29 @@ if (is_callable($template_files)) {
                         require_once $_SERVER['DOCUMENT_ROOT']."/../app/handlers/".$ext."Handler.php";
                         $ext = $ext."Handler";
                         $controller = Route::getController();
+                        if($controller === null) {
+                            $controller = Route::getRouteController();
+                        }
                         if($controller !== null) {
-                            require_once $_SERVER['DOCUMENT_ROOT']."/../app/controllers/$controller.php";
+                            if(file_exists($_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php")) {
+                                require_once $_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php";
+                            } else {
+                                $controller = ucfirst(strtolower($controller)) . "Controller";
+                                if(file_exists($_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php")) {
+                                    require_once $_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php";
+                                } else {
+                                    error($CONFIG["basic"]["APP_ERROR_CODE_OF_MISSING_CONTROLLER_OR_ACTION"]);
+                                }
+                            }
                             $controller::main($ext);
+                            $action = Route::getRouteAction();
+                            if($action !== null) {
+                                if(method_exists($controller, $action)) {
+                                    call_user_func_array(array($controller, $action), getArrayOfParameters(new ReflectionMethod($controller, $action)));                                   
+                                } else {
+                                    error($CONFIG["basic"]["APP_ERROR_CODE_OF_MISSING_CONTROLLER_OR_ACTION"]);
+                                }
+                            }
                         }
                         $ext::handle($template_files);
                     }
@@ -106,9 +155,29 @@ if (is_callable($template_files)) {
                         if(!empty($handlers[$ext])) {
                             require_once $_SERVER['DOCUMENT_ROOT']."/../app/handlers/$handlers[$ext].php";
                             $controller = Route::getController();
+                            if ($controller === null) {
+                                $controller = Route::getRouteController();
+                            }
                             if ($controller !== null) {
-                                require_once $_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php";
+                                if(file_exists($_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php")) {
+                                    require_once $_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php";
+                                } else {
+                                    $controller = ucfirst(strtolower($controller)) . "Controller";
+                                    if(file_exists($_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php")) {
+                                        require_once $_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php";
+                                    } else {
+                                        error($CONFIG["basic"]["APP_ERROR_CODE_OF_MISSING_CONTROLLER_OR_ACTION"]);
+                                    }
+                                }
                                 $controller::main($handlers[$ext]);
+                                $action = Route::getRouteAction();
+                                if($action !== null) {
+                                    if(method_exists($controller, $action)) {
+                                           call_user_func_array(array($controller, $action), getArrayOfParameters(new ReflectionMethod($controller, $action)));                                                                          
+                                    } else {
+                                        error($CONFIG["basic"]["APP_ERROR_CODE_OF_MISSING_CONTROLLER_OR_ACTION"]);
+                                    }
+                                }
                             }
                             $handlers[$ext]::handle($template_files[$i]);
                         } else {
@@ -117,9 +186,29 @@ if (is_callable($template_files)) {
                                 require_once $_SERVER['DOCUMENT_ROOT']."/../app/handlers/".$ext."Handler.php";
                                 $ext = $ext."Handler";
                                 $controller = Route::getController();
+                                if($controller === null) {
+                                    $controller = Route::getRouteController();
+                                }
                                 if ($controller !== null) {
-                                    require_once $_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php";
+                                    if(file_exists($_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php")) {
+                                        require_once $_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php";
+                                    } else {
+                                        $controller = ucfirst(strtolower($controller)) . "Controller";
+                                        if(file_exists($_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php")) {
+                                            require_once $_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php";
+                                        } else {
+                                            error($CONFIG["basic"]["APP_ERROR_CODE_OF_MISSING_CONTROLLER_OR_ACTION"]);
+                                        }
+                                    }
                                     $controller::main($ext);
+                                    $action = Route::getRouteAction();
+                                    if($action !== null) {
+                                        if(method_exists($controller, $action)) {
+                                           call_user_func_array(array($controller, $action), getArrayOfParameters(new ReflectionMethod($controller, $action)));                                            
+                                        } else {
+                                            error($CONFIG["basic"]["APP_ERROR_CODE_OF_MISSING_CONTROLLER_OR_ACTION"]);
+                                        }
+                                    }
                                 }
                                 $ext::handle($template_files[$i]);
                             }
@@ -131,6 +220,7 @@ if (is_callable($template_files)) {
         }
     }
 }
+
 $time_end = microtime(true);
 $ru = getrusage();
 
@@ -139,6 +229,64 @@ function rutime($ru, $rus, $index)
 {
     return ($ru["ru_$index.tv_sec"] * 1000 + intval($ru["ru_$index.tv_usec"] / 1000))
          - ($rus["ru_$index.tv_sec"] * 1000 + intval($rus["ru_$index.tv_usec"] / 1000));
+}
+
+function errorHandler($errno, $errstr, $errfile, $errline) {
+    global $CONFIG;
+    if (!(error_reporting() & $errno)) {
+        return false;
+    }
+
+    if ($CONFIG["debug"]["DEBUG_LOG_ERR"] == "1") {
+        Logger::log("[$errno] $errstr in $errfile at line $errline", "errors.log");
+    }
+
+    switch ($errno) {
+        case E_USER_ERROR:
+            if(!empty($CONFIG["database"]["DB_HOST"]) && $CONFIG["debug"]["DEBUG_SAVE"] == "1") 
+                db::query("INSERT INTO debug_errors (`ERR_LEVEL`, `ERR_MESSAGE`, `ERR_FILE`, `ERR_LINE`) VALUES (?, ?, ?, ?);", array('ERROR', $errstr, $errfile, $errline));
+            if($CONFIG["debug"]["DEBUG_PRINT_ERR"] == "1") {
+                echo "<b>ERROR</b> [$errno] $errstr<br />\n";
+                echo "  Fatal error on line $errline in file $errfile";
+                echo ", PHP " . PHP_VERSION . " (" . PHP_OS . ")<br />\n";
+                echo "Aborting...<br />\n";
+            }
+        
+            exit(1);
+            break;
+
+        case E_USER_WARNING:
+            if(!empty($CONFIG["database"]["DB_HOST"]) && $CONFIG["debug"]["DEBUG_SAVE"] == "1")
+                db::query("INSERT INTO debug_errors (`ERR_LEVEL`, `ERR_MESSAGE`, `ERR_FILE`, `ERR_LINE`) VALUES (?, ?, ?, ?);", array('WARNING', $errstr, $errfile, $errline));
+            if($CONFIG["debug"]["DEBUG_PRINT_ERR"] == "1") {
+                echo "<b>WARNING</b> [$errno] $errstr<br />\n";
+            }
+           
+            break;
+
+        case E_USER_NOTICE:
+            if(!empty($CONFIG["database"]["DB_HOST"]) && $CONFIG["debug"]["DEBUG_SAVE"] == "1")
+                db::query("INSERT INTO debug_errors (`ERR_LEVEL`, `ERR_MESSAGE`, `ERR_FILE`, `ERR_LINE`) VALUES (?, ?, ?, ?);", array('NOTICE', $errstr, $errfile, $errline));
+            if($CONFIG["debug"]["DEBUG_PRINT_ERR"] == "1") {
+                echo "<b>NOTICE</b> [$errno] $errstr<br />\n";
+            }
+            
+
+            break;
+
+        default:
+            if(!empty($CONFIG["database"]["DB_HOST"]) && $CONFIG["debug"]["DEBUG_SAVE"] == "1")
+                db::query("INSERT INTO debug_errors (`ERR_LEVEL`, `ERR_MESSAGE`, `ERR_FILE`, `ERR_LINE`) VALUES (?, ?, ?, ?);", array('OTHER', $errstr, $errfile, $errline));
+            if($CONFIG["debug"]["DEBUG_PRINT_ERR"] == "1") {
+                echo "Unknown error type: [$errno] $errstr<br />\n";
+            }
+            
+
+            break;
+    }
+
+    /* Don't execute PHP internal error handler */
+    return true;
 }
 
 if ($CONFIG["basic"]["APP_DEBUG"] == "1") {
@@ -172,3 +320,15 @@ if ($CONFIG["basic"]["APP_INFO"] == "1") {
     }
 }
 
+function getArrayOfParameters($r) {
+    $a = array();
+    $params = $r->getParameters();
+    foreach ($params as $param) {
+        if(Route::getValue($param->getName()) === false) {
+            error(400);
+        }
+        array_push($a, Route::getValue($param->getName()));
+        
+    }
+    return $a;
+}

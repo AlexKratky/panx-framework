@@ -66,8 +66,9 @@ class Auth {
             $this->verify_key = $data["VERIFY_KEY"];
             $this->created_at = $data["CREATED_AT"];
             $this->edited_at = $data["EDITED_AT"];
+
             if(!$login_from_session && $this->request->getPost('remember') === "on") {
-                $token = $this->authModel->updateRememberToken($data["USERNAME"]);
+                $token = $this->authModel->updateRememberToken($data["ID"]);
                 setcookie("REMEMBER_TOKEN", $token, time() + 86400 * 30, "/", "", false, true);
                 setcookie("USERNAME", $data["USERNAME"], time() + 86400 * 30, "/", "", false, true);
             }
@@ -206,6 +207,8 @@ class Auth {
         setcookie("PHPSESSID", null, -1, "/");
         setcookie("USERNAME", null, -1, "/");
         setcookie("REMEMBER_TOKEN", null, -1, "/");
+        $this->authModel->clearTokens($this->id);
+
         redirect($GLOBALS["CONFIG"]["auth"]["LOGOUT_PAGE"]);
         exit();
     }

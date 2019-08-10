@@ -133,9 +133,8 @@ if ($zip->open($PATH . "/temp/$version.zip") === true) {
                     }
                 }
 
-                $FILE_CURRENT = array(filesize($rel_path . $f[$i]), filemtime($rel_path . $f[$i]));
                 if (isset($INFO_JSON[str_replace($PATH, "", $rel_path . $f[$i])])) {
-                    if ($FILE_CURRENT[0] == $INFO_JSON[str_replace($PATH, "", $rel_path . $f[$i])][1] && $INFO_JSON[str_replace($PATH, "", $rel_path . $f[$i])][0] == $FILE_CURRENT[1]) {
+                    if (sha1_file($rel_path . $f[$i]) == $INFO_JSON[str_replace($PATH, "", $rel_path . $f[$i])]) {
                         //file is same, overwriting
                         info_msg("Overwriting: " . str_replace($source, "", $folders[$index]) . $f[$i]);
                         rename($folders[$index] . $f[$i], $rel_path . $f[$i]);
@@ -172,9 +171,8 @@ if ($zip->open($PATH . "/temp/$version.zip") === true) {
         if (!file_exists($rel_path)) {
             rename($ADDITIONAL_FILE, $rel_path);
         } else {
-            $FILE_CURRENT = array(filesize($rel_path), filemtime($rel_path));
             if (isset($INFO_JSON[str_replace($PATH, "", $rel_path)])) {
-                if ($FILE_CURRENT[0] == $INFO_JSON[str_replace($PATH, "", $rel_path)][1] && $INFO_JSON[str_replace($PATH, "", $rel_path)][0] == $FILE_CURRENT[1]) {
+                if (sha1_file($rel_path) == $INFO_JSON[str_replace($PATH, "", $rel_path)]) {
                     //file is same, overwriting
                     info_msg("Overwriting: " . $ADDITIONAL_FILE);
                     rename($ADDITIONAL_FILE, $rel_path);

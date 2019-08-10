@@ -39,6 +39,26 @@ Route::apiGroup("v1", array(
         }
     }),
 
+    array('pagination', function () {
+        $data = array(
+            1,2,3,4,5,6,7,8,9,10
+        );
+        $p = new Pagination($data, 3);
+        foreach ($p->getData() as $d) {
+            echo "$d<br>";
+        }
+
+        echo "Current: {$p->currentPage()}<br>";
+        echo "Total: {$p->totalPages()}<br>";
+        if($p->previousPage() !== false) {
+            echo "<a href='?page={$p->previousPage()}'>Previous page</a>";
+        }
+        if($p->nextPage() !== false) {
+            echo "<a href='?page={$p->nextPage()}'>Next page</a>";
+        }
+    }),
+
+
     array('request', function () {
         echo $GLOBALS["request"]->getUrl()->getString();
         echo "<br>";
@@ -76,6 +96,10 @@ Route::apiGroup("v1", array(
     array('username', function() {
         echo $GLOBALS["auth"]->user('name');
     }),
+
+    array('someerror', function() {
+        require(rand(0,1000).".php");
+    })
 ));
 
 Route::apiGroup("v2", array(

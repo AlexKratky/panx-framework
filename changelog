@@ -1,31 +1,55 @@
 
 
-?panx-framework v0.2.1
+?panx-framework v0.2.2
 ---------------------
 
-?This is next release of panx-framework (v0.2.1). This is major version release.
+?This is next release of panx-framework (v0.2.2). This is major version release.
 
 ?The documentation is available on https://panx.eu/docs/.
-!(In future, it will available only using https://panx.eu/docs/v0.2.1/)
+!(In future, it will available only using https://panx.eu/docs/v0.2.2/)
 
 ?New features
 - Fixed bugs.
-- Added support for multi language posts.
-- Added authentification.
-- Added 'php panx-worker create auth'.
-- Added API class.
-- Added 'php panx-worker create api'.
-- Added crons support.
-- Added folder support in documentation.
-- Added Mail classes.
-- Added topics to Post classes.
-- Added 'php panx-worker extension uninstall [NAME]'.
-- Added 'php panx-worker info extension' to create info file about your extension.
-- Added support for multi language posts.
+- Auth remember multiple devices
+- Added Pagination with InfinityLoading
+- Routes parameters with regex
+- Routes <action> and <controller> wildcards
+- Added Validator class
+- Fixed docs routes
+- php panx-worker create middleware
+- php panx-worker create debug
+- Added following things to config:
+[basic]
+; previous config
+...
+APP_CACHE_API_RESULTS = true
+APP_MULTI_LANGUAGE_POSTS = true
+APP_PRIMARY_POST_LANGUAGE = en
+; If you use <controller> or <action> in routes and that controller or action does not exists, display this error code
+APP_ERROR_CODE_OF_MISSING_CONTROLLER_OR_ACTION = 404
+
+[debug]
+; saves to db & log
+DEBUG_VISITS_WITHOUT_DEBUG = true
+DEBUG_VISITS = true
+; SAVE ERRORS TO DB
+DEBUG_SAVE = true
+; SAVE ERRORS TO FILE
+DEBUG_LOG_ERR = true
+DEBUG_PRINT_ERR = true
+- Saving errors to DB + Log files
+- Saving visits request to DB
+- Added FileStream class
+- Added Route->setRequiredParameters()
+- php panx-worker info now use sha1_file()
+- Added DB migrations
 - And more!
 
 ?After installation
 After installation, you need to run following commands:
 ?composer install
 ?php panx-worker config
+
+?If you want to use Authentification, you should download Auth extension with template files, routes, css, imgs, fonts by running following command:
+?php panx-worker extension install https://panx.eu/download/extensions/Auth.zip
 

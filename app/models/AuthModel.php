@@ -55,10 +55,9 @@ class AuthModel
         return $pass;
     }
 
-    public function updateRememberToken($username) {
-        $username = strtolower($username);
+    public function updateRememberToken($id) {
         $token = substr(str_replace(['+', '/', '='], '', base64_encode(random_bytes(64))), 0, 63);
-        db::query("UPDATE `users` SET REMEMBER_TOKEN=? WHERE `USERNAME`=?", array($token, $username));
+        db::query("INSERT INTO users_tokens (`USER_ID`, `TOKEN`) VALUES (?, ?)", array($id, $token));
         return $token;
     }
 
@@ -66,7 +65,11 @@ class AuthModel
         if(empty($_COOKIE["USERNAME"]) || empty($_COOKIE["REMEMBER_TOKEN"])) {
             return false;
         }
-        return (db::count("SELECT COUNT(*) FROM `users` WHERE `USERNAME`=? AND `REMEMBER_TOKEN`=?", array($_COOKIE["USERNAME"], $_COOKIE["REMEMBER_TOKEN"])) == 0 ? false : true);
+        return (db::count("SELECT COUNT(*) FROM `users_tokens` WHERE `USER_ID`=(SELECT ID FROM users WHERE `USERNAME`=?) AND `TOKEN`=?", array($_COOKIE["USERNAME"], $_COOKIE["REMEMBER_TOKEN"])) == 0 ? false : true);
+    }
+
+    public function clearTokens($id) {
+        db::query("DELETE FROM users_tokens WHERE `USER_ID`=?", array($id));
     }
 
     public function edit($id, $mail,$user,$newpass,$was_email_changed) {
