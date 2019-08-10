@@ -48,6 +48,18 @@ class Route {
      */
     private static $VALUES = array();
     /**
+     * @var string <controller>.
+     */
+    private static $ROUTE_CONTROLLER = null;
+    /**
+     * @var string <action>.
+     */
+    private static $ROUTE_ACTION = null;
+    /**
+     * @var array The array of required parameters. [0] => $_GET, [1] => $_POST, [2] => ERROR_CODE.
+     */
+    private static $REQUIRED_PARAMETERS = array();
+    /**
      * @var string The string containing the Route.
      */
     public $ROUTE;
@@ -183,10 +195,31 @@ class Route {
                         if($x[$i] == "+") {
                             continue;
                         }
-                        preg_match("/{(.+?)}/", $x[$i], $matches);
+                        preg_match("/{(.+?)\s?(\[(.+?)\])?}/", $x[$i], $matches);
+
                         if(count($matches) > 0) {
-                            self::$VALUES[$matches[1]] = $CURRENT[$i];
-                            continue;
+                            if(isset($matches[3])) {
+                                preg_match("/".$matches[3]."/", $CURRENT[$i], $m);
+                                if(count($m) > 0) {
+                                    self::$VALUES[$matches[1]] = $CURRENT[$i];
+                                    continue;
+                                }
+                            } else {
+                                self::$VALUES[$matches[1]] = $CURRENT[$i];
+                                continue;
+                            }
+                        }
+                        if(strtolower($x[$i]) == "<controller>") {
+                            if(ctype_alnum($CURRENT[$i])) {      
+                                self::$ROUTE_CONTROLLER = $CURRENT[$i];
+                                continue;
+                            }
+                        }
+                        if(strtolower($x[$i]) == "<action>") {
+                            if(ctype_alnum($CURRENT[$i])) {                            
+                                self::$ROUTE_ACTION = $CURRENT[$i];
+                                continue;
+                            }
                         }
                         if(!isset($CURRENT[$i]) || $x[$i] != $CURRENT[$i]) {
                             $match = false;
@@ -243,10 +276,31 @@ class Route {
                 if($x[$i] == "+") {
                     continue;
                 }
-                preg_match("/{(.+?)}/", $x[$i], $matches);
+                preg_match("/{(.+?)\s?(\[(.+?)\])?}/", $x[$i], $matches);
+
                 if(count($matches) > 0) {
-                    self::$VALUES[$matches[1]] = $CURRENT[$i];
-                    continue;
+                    if(isset($matches[3])) {
+                        preg_match("/".$matches[3]."/", $CURRENT[$i], $m);
+                        if(count($m) > 0) {
+                            self::$VALUES[$matches[1]] = $CURRENT[$i];
+                            continue;
+                        }
+                    } else {
+                        self::$VALUES[$matches[1]] = $CURRENT[$i];
+                        continue;
+                    }
+                }
+                if(strtolower($x[$i]) == "<controller>") {
+                    if(ctype_alnum($CURRENT[$i])) {
+                        self::$ROUTE_CONTROLLER = $CURRENT[$i];
+                        continue;
+                    }
+                }
+                if(strtolower($x[$i]) == "<action>") {
+                    if(ctype_alnum($CURRENT[$i])) {
+                        self::$ROUTE_ACTION = $CURRENT[$i];
+                        continue;
+                    }
                 }
                 if(!isset($CURRENT[$i]) || $x[$i] != $CURRENT[$i]) {
                     $match = false;
@@ -270,6 +324,19 @@ class Route {
                         }
                     }
                 }
+                if (!empty(self::$REQUIRED_PARAMETERS[$ROUTE])) {
+                    foreach (self::$REQUIRED_PARAMETERS[$ROUTE][0] as $get) {
+                        if(empty($_GET[$get])) {
+                            return self::$REQUIRED_PARAMETERS[$ROUTE][2];
+                        }
+                    }
+                    foreach (self::$REQUIRED_PARAMETERS[$ROUTE][1] as $post) {
+                        if(empty($_POST[$post])) {
+                            return self::$REQUIRED_PARAMETERS[$ROUTE][2];
+                        }
+                    }
+                }
+
                 return $VALUE;
             }
 
@@ -310,10 +377,29 @@ class Route {
                         if($x[$i] == "+") {
                             continue;
                         }
-                        preg_match("/{(.+?)}/", $x[$i], $matches);
+                        preg_match("/{(.+?)\s?(\[(.+?)\])?}/", $x[$i], $matches);
+
                         if(count($matches) > 0) {
-                            self::$VALUES[$matches[1]] = $CURRENT[$i];
-                            continue;
+                            if(isset($matches[3])) {
+                                preg_match("/".$matches[3]."/", $CURRENT[$i], $m);
+                                if(count($m) > 0) {
+                                    //self::$VALUES[$matches[1]] = $CURRENT[$i];
+                                    continue;
+                                }
+                            } else {
+                                //self::$VALUES[$matches[1]] = $CURRENT[$i];
+                                continue;
+                            }
+                        }
+                        if(strtolower($x[$i]) == "<controller>") {
+                            if(ctype_alnum($CURRENT[$i])) {
+                                continue;
+                            }
+                        }
+                        if(strtolower($x[$i]) == "<action>") {
+                            if(ctype_alnum($CURRENT[$i])) {                            
+                                continue;
+                            }
                         }
                         if(!isset($CURRENT[$i]) || $x[$i] != $CURRENT[$i]) {
                             $match = false;
@@ -365,10 +451,29 @@ class Route {
                 if($x[$i] == "+") {
                     continue;
                 }
-                preg_match("/{(.+?)}/", $x[$i], $matches);
+                preg_match("/{(.+?)\s?(\[(.+?)\])?}/", $x[$i], $matches);
+
                 if(count($matches) > 0) {
-                    self::$VALUES[$matches[1]] = $CURRENT_LINK[$i];
-                    continue;
+                    if(isset($matches[3])) {
+                        preg_match("/".$matches[3]."/", $CURRENT_LINK[$i], $m);
+                        if(count($m) > 0) {
+                            //self::$VALUES[$matches[1]] = $CURRENT[$i];
+                            continue;
+                        }
+                    } else {
+                        //self::$VALUES[$matches[1]] = $CURRENT[$i];
+                        continue;
+                    }
+                }
+                if(strtolower($x[$i]) == "<controller>") {
+                    if(ctype_alnum($CURRENT_LINK[$i])) {                    
+                        continue;
+                    }
+                }
+                if(strtolower($x[$i]) == "<action>") {
+                    if(ctype_alnum($CURRENT_LINK[$i])) {                    
+                        continue;
+                    }
                 }
                 if(!isset($CURRENT_LINK[$i]) || $x[$i] != $CURRENT_LINK[$i]) {
                     $match = false;
@@ -433,6 +538,18 @@ class Route {
     }
 
     /**
+     * Sets required parameters ($_GET & $_POST) for single route.
+     * @param array $get The required $_GET parameters names.
+     * @param array $post The required $_POST parameters names. 
+     * @param int|string $error The error code when the route does not contain all parameters. By default: 400.
+     * @return Route Reference to this object.
+     */
+    public function setRequiredParameters($get = array(), $post = array(), $error = 400) {
+        self::$REQUIRED_PARAMETERS[$this->ROUTE] = array($get, $post, $error);
+        return $this;
+    }    
+
+    /**
      * Sets route for ERROR CODE
      * @param string|int $ERROR_CODE The code of error. Can be int (e.g. 404) or string (e.g. "NOT_FOUND").
      * @param string|array|function The handler of error, it can be single file, multiple files using array or function. You should use single file only.
@@ -492,6 +609,22 @@ class Route {
     public static function getValue($VALUE_NAME) {
         return isset(self::$VALUES[$VALUE_NAME]) ? self::$VALUES[$VALUE_NAME] : false;
 
+    }
+
+    /**
+     * Obtain controller from route (Using <controller>).
+     * @return string|null The controller or null if the the Route does not contain one.
+     */
+    public static function getRouteController() {
+        return self::$ROUTE_CONTROLLER;
+    }
+
+    /**
+     * Obtain action from route (Using <action>).
+     * @return string|null The action or null if the the Route does not contain one.
+     */
+    public static function getRouteAction() {
+        return self::$ROUTE_ACTION;
     }
 
     /**

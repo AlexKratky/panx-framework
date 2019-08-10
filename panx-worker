@@ -3,7 +3,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-$PANX_VERSION = "0.2.1";
+$PANX_VERSION = "0.2.2";
 
 $PATH = __DIR__;
 $SCRIPT_PATH = __DIR__."/app/panx-worker/scripts/";
@@ -84,6 +84,12 @@ function create() {
         require $SCRIPT_PATH."create/model.php";
     } else if($ARGS[1] == "controller") {
         require $SCRIPT_PATH."create/controller.php";
+    } else if($ARGS[1] == "debug") {
+        require $SCRIPT_PATH."create/debug.php";
+    } else if($ARGS[1] == "middleware") {
+        require $SCRIPT_PATH."create/middleware.php";
+    }else if($ARGS[1] == "migration") {
+        require $SCRIPT_PATH."create/migration.php";
     }
 }
 
@@ -357,7 +363,9 @@ function info($ARGS = null) {
                 array_push($folders, $folders[$index] . $f[$i] . "/");
                 continue;
             }
-            $info[str_replace($PATH, "", $folders[$index] . $f[$i])] = array(filemtime($folders[$index] . $f[$i]), filesize($folders[$index] . $f[$i]));
+            //$info[str_replace($PATH, "", $folders[$index] . $f[$i])] = array(filemtime($folders[$index] . $f[$i]), filesize($folders[$index] . $f[$i]));
+            $info[str_replace($PATH, "", $folders[$index] . $f[$i])] = sha1_file($folders[$index] . $f[$i]);
+
         }
         $index++;
     }
@@ -382,6 +390,16 @@ function serve() {
     global $SCRIPT_PATH;
     
     require $SCRIPT_PATH."serve.php";
+}
+
+function migrate() {
+    global $ARGS_COUNT;
+    global $ARGS;
+    global $PATH;
+    global $SCRIPT_PATH;
+    global $CONFIG;
+    
+    require $SCRIPT_PATH."migrate.php";
 }
 
 /**

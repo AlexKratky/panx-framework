@@ -127,7 +127,11 @@ if($version != "/") {
     $rx = "<?php
 Route::set('/docs/', function() {
     redirect('/docs$version');
-});";
+});
+Route::set('/docs/{FILE}', function () {
+    redirect('/docs/$version/' . Route::getValue('FILE'));
+});
+";
     file_put_contents($PATH . "/routes/xdocs.php", $rx);
 } else {
     if(file_exists($PATH . "/routes/xdocs.php")) {
