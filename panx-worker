@@ -274,7 +274,7 @@ function install($ARGS) {
     /**
      * Now creates dirs, setup chmod
      */
-    createDirs(array('temp', 'cache', 'logs', 'template/posts', 'app/controllers', 'app/middlewares', 'app/models'));
+    createDirs(array('temp', 'cache', 'logs', 'template/posts', 'app/controllers', 'app/middlewares', 'app/models', 'app/migrations'));
     echo "\nNow you just need to run command 'composer install' and create '.config' file (You can do it by running command: 'php panx-worker config').\n";
     unlink(__DIR__."/temp/$version.zip");
     rrmdir(__DIR__."/temp/$version/");
@@ -406,7 +406,7 @@ function migrate() {
  * Creates empty dirs needed by panx framework with specified chmod (777).
  */
 function setup() {
-    createDirs(array('temp', 'cache', 'logs', 'template/posts', 'app/controllers', 'app/middlewares', 'app/models'));
+    createDirs(array('temp', 'cache', 'logs', 'template/posts', 'app/controllers', 'app/middlewares', 'app/models', 'app/migrations'));
 
 }
 
