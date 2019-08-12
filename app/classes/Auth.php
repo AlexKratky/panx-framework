@@ -21,10 +21,14 @@ class Auth {
     private $verify_key;
     private $created_at;
     private $edited_at;
+    private $two_auth_enabled;
+    private $twoFA;
 
     public function __construct($logout = false) {
         $this->request = $GLOBALS["request"];
         $this->authModel = new AuthModel();
+        require $_SERVER['DOCUMENT_ROOT'] . "/../vendor/autoload.php";
+        $this->twoFA = new PragmaRX\Google2FAQRCode\Google2FA();
         if(!$logout) {
             if(!empty($_SESSION["username"]) && !empty($_SESSION["password"])) {
                 $this->login($_SESSION["username"], $_SESSION["password"]);
@@ -59,22 +63,42 @@ class Auth {
         }
         if($this->authModel->verifyLogin($username, $password, $login_from_session)) {
             $data = $this->authModel->loadData($username);
-            $this->id = $data["ID"];
-            $this->username = $data["USERNAME"];
-            $this->email = $data["EMAIL"];
-            $this->verified = $data["VERIFIED"];
-            $this->verify_key = $data["VERIFY_KEY"];
-            $this->created_at = $data["CREATED_AT"];
-            $this->edited_at = $data["EDITED_AT"];
+            if(!$this->authModel->isEnabled2FA($data["ID"]) || $this->request->getPost('2fa_code') !== null || $_SESSION["2fa_passed"] == true) {
+                if($this->request->getPost('2fa_code') !== null) {
+                    //validate code
+                    $secret = $this->authModel->get2FASecret($data["ID"]);
+                    if (!$this->twoFA->verifyKey($secret, $this->request->getPost('2fa_code'))) {
+                        $_SESSION["AUTH_ERROR"] = "Invalid 2FA code.";
+                        return false;
+                    } else {
+                        $_SESSION["2fa_passed"] = true;
+                    }
+                }
+                $this->id = $data["ID"];
+                $this->username = $data["USERNAME"];
+                $this->email = $data["EMAIL"];
+                $this->verified = $data["VERIFIED"];
+                $this->verify_key = $data["VERIFY_KEY"];
+                $this->created_at = $data["CREATED_AT"];
+                $this->edited_at = $data["EDITED_AT"];
+                $this->two_auth_enabled = $this->authModel->isEnabled2FA($data["ID"]);
 
-            if(!$login_from_session && $this->request->getPost('remember') === "on") {
-                $token = $this->authModel->updateRememberToken($data["ID"]);
-                setcookie("REMEMBER_TOKEN", $token, time() + 86400 * 30, "/", "", false, true);
-                setcookie("USERNAME", $data["USERNAME"], time() + 86400 * 30, "/", "", false, true);
+                if(!$login_from_session && $this->request->getPost('remember') === "on") {
+                    $token = $this->authModel->updateRememberToken($data["ID"]);
+                    setcookie("REMEMBER_TOKEN", $token, time() + 86400 * 30, "/", "", false, true);
+                    setcookie("USERNAME", $data["USERNAME"], time() + 86400 * 30, "/", "", false, true);
+                }
+                $_SESSION["username"] = $data["USERNAME"];
+                $_SESSION["password"] = $data["PASSWORD"];
+                return true;
+            } else {
+                $_SESSION["username"] = $data["USERNAME"];
+                $_SESSION["password"] = $data["PASSWORD"];
+                $_SESSION["2fa_passed"] = false;
+                if($GLOBALS["request"]->getUrl()->getLink()[1] != "login-2fa") {
+                    redirect('/login-2fa');
+                }
             }
-            $_SESSION["username"] = $data["USERNAME"];
-            $_SESSION["password"] = $data["PASSWORD"];
-            return true;
         } else {
             $_SESSION["username"] = null;
             $_SESSION["password"] = null;
@@ -101,6 +125,39 @@ class Auth {
         } else {
             return false;
         }
+    }
+
+    public function twoFactorAuthData() {
+        if(empty($_SESSION["2fa_secret"])) {
+            $secret = $this->twoFA->generateSecretKey();
+            $_SESSION["2fa_secret"] = $secret;
+        } else {
+            $secret = $_SESSION["2fa_secret"];
+        }
+        //$this->twoFA->setAllowInsecureCallToGoogleApis(true);
+
+        $url = $this->twoFA->getQRCodeInline(
+            $GLOBALS["CONFIG"]["basic"]["APP_NAME"],
+            $this->username,
+            $secret
+        );
+
+        return [$secret, $url];
+    }
+
+    public function save2FA() {
+        $secret = $_SESSION["2fa_secret"];
+        if (!$this->twoFA->verifyKey($secret, $this->request->getPost('code'))) {
+            $_SESSION["AUTH_ERROR"] = "Invalid 2FA code.";
+            return false;
+        } else {
+            $this->authModel->setUp2FA($this->id, $secret);
+            return true;
+        }
+    }
+
+    public function disable2FA() {
+        $this->authModel->disable2FA($this->id);
     }
 
     public function register() {
@@ -278,6 +335,9 @@ class Auth {
                 break;
             case 'edited_at':
                 return $this->edited_at;
+                break;
+            case '2fa':
+                return $this->two_auth_enabled;
                 break;
         }
     }

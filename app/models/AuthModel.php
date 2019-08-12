@@ -107,6 +107,23 @@ class AuthModel
         }
     }
 
+    public function isEnabled2FA($id) {
+        return (db::count("SELECT COUNT(*) from `users_2fa` WHERE `USER_ID`=?", array($id)) > 0 ? true : false);
+    }
+
+    public function setUp2FA($id, $secret) {
+        db::query("INSERT INTO users_2fa (`USER_ID`, `SECRET`) VALUES (?, ?)", array($id, $secret));
+    }
+
+    public function disable2FA($id) {
+        db::query("DELETE FROM users_2fa WHERE `USER_ID`=?", array($id));
+    }
+
+    public function get2FASecret($id) {
+        $x = db::select("SELECT `SECRET` FROM `users_2fa` WHERE `USER_ID`=?", array($id));
+        return $x["SECRET"];
+    }
+
     public function forgot($mail) {
         if(db::count("SELECT COUNT(*) FROM `users` WHERE EMAIL=?", array($mail)) > 0) {
             $token = substr(str_replace(['+', '/', '='], '', base64_encode(random_bytes(64))), 0, 63);
