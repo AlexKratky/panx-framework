@@ -31,6 +31,9 @@ class AuthController
                 case 'edit':
                     self::edit();
                     break;
+                case '2fa':
+                    self::twoFA();
+                    break;
             }
         }
     }
@@ -57,8 +60,23 @@ class AuthController
         }
         self::$handler::setParameters([
             'name'=>self::$auth->user('name'),
-            'mail'=>self::$auth->user('mail')
+            'mail'=>self::$auth->user('mail'),
+            'twofa'=>self::$auth->user("2fa")
         ]);
 
+    }
+
+    public static function twoFA() {
+        if(!self::$auth->isLogined()) {
+            redirect("/login");
+        }
+        if(self::$auth->user("2fa")) {
+            redirect('/edit');
+        }
+        $x = self::$auth->twoFactorAuthData();
+        self::$handler::setParameters([
+            'url_code'=>$x[1],
+            'secret'=>$x[0]
+        ]);
     }
 }
