@@ -25,7 +25,7 @@ FileStream::init();
 if(!empty($CONFIG["database"]["DB_HOST"])) {
     db::connect($CONFIG["database"]["DB_HOST"], $CONFIG["database"]["DB_USERNAME"], $CONFIG["database"]["DB_PASSWORD"], $CONFIG["database"]["DB_DATABASE"]);
     if(($CONFIG["basic"]["APP_DEBUG"] == "1" && $CONFIG["debug"]["DEBUG_VISITS"] == "1") || $CONFIG["debug"]["DEBUG_VISITS_WITHOUT_DEBUG"] == "1") {
-        db::query("INSERT INTO debug_visits (`IP`, `URL_STRING`) VALUES (?, ?);", array($_SERVER['REMOTE_ADDR'], "http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}"));
+        db::query("INSERT INTO debug_visits (`IP`, `USER_USERNAME`, `URL_STRING`) VALUES (?, ?, ?);", array($_SERVER['REMOTE_ADDR'], (isset($_SESSION["username"]) ? $_SESSION["username"] : NULL), "http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}"));
     }
 }
 

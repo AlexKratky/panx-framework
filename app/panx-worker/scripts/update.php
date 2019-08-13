@@ -140,6 +140,7 @@ if ($zip->open($PATH . "/temp/$version.zip") === true) {
                         rename($folders[$index] . $f[$i], $rel_path . $f[$i]);
 
                     } else {
+                        info_msg("Checking file " . $rel_path . $f[$i] . " (".sha1_file($rel_path . $f[$i]).") and " . str_replace($PATH, "", $rel_path . $f[$i]) . "(".$INFO_JSON[str_replace($PATH, "", $rel_path . $f[$i])].")");
                         info_msg("File: " . str_replace($source, "", $folders[$index]) . $f[$i] . "  was edited. Do you want to overwrite it [Y/n]");
                         $OW = read("");
                         if (strtolower($OW) != "n") {

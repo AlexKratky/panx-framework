@@ -66,6 +66,11 @@ class Auth {
             if(!$this->authModel->isEnabled2FA($data["ID"]) || $this->request->getPost('2fa_code') !== null || $_SESSION["2fa_passed"] == true) {
                 if($this->request->getPost('2fa_code') !== null) {
                     //validate code
+                    if (!$this->validRecaptcha($this->request->getPost('g-recaptcha-response'))) {
+                        $_SESSION["AUTH_ERROR"] = "Invalid recaptcha";
+                        return false;
+                    }
+
                     $secret = $this->authModel->get2FASecret($data["ID"]);
                     if (!$this->twoFA->verifyKey($secret, $this->request->getPost('2fa_code'))) {
                         $_SESSION["AUTH_ERROR"] = "Invalid 2FA code.";
@@ -146,12 +151,18 @@ class Auth {
     }
 
     public function save2FA() {
+        if(!$this->validRecaptcha($this->request->getPost('g-recaptcha-response'))) {
+            $_SESSION["AUTH_ERROR"] = "Invalid recaptcha";
+            return false;
+        }
         $secret = $_SESSION["2fa_secret"];
         if (!$this->twoFA->verifyKey($secret, $this->request->getPost('code'))) {
             $_SESSION["AUTH_ERROR"] = "Invalid 2FA code.";
             return false;
         } else {
             $this->authModel->setUp2FA($this->id, $secret);
+            $_SESSION["2fa_passed"] = true;
+
             return true;
         }
     }
