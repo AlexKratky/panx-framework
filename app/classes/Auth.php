@@ -77,6 +77,11 @@ class Auth {
                         return false;
                     } else {
                         $_SESSION["2fa_passed"] = true;
+                        if($_SESSION["remember_login"] == true) {
+                            $token = $this->authModel->updateRememberToken($data["ID"]);
+                            setcookie("REMEMBER_TOKEN", $token, time() + 86400 * 30, "/", "", false, true);
+                            setcookie("USERNAME", $data["USERNAME"], time() + 86400 * 30, "/", "", false, true);
+                        }
                     }
                 }
                 $this->id = $data["ID"];
@@ -105,6 +110,7 @@ class Auth {
                 }
             }
         } else {
+            $_SESSION["remember_login"] = ($this->request->getPost('remember') === "on" ? true : false);
             $_SESSION["username"] = null;
             $_SESSION["password"] = null;
             $_SESSION["AUTH_ERROR"] = "Username or password is invalid";
