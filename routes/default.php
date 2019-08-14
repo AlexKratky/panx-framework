@@ -6,7 +6,7 @@ Route::setError(Route::ERROR_NOT_FOUND, "default/errors/404.php");
 Route::setError(Route::ERROR_NOT_LOGGED_IN, "default/errors/not_logged_in.php");
 Route::set('/git-deploy', function() {
     //if($GLOBALS["request"]->getHeader("x-hub-signature") == "sha1=4bed6d143679f8a71db502ad22585a1d1530a597") {
-exec("ssh-agent bash -c 'ssh-add /var/www/panx-framework; git pull git develop'");
+Logger::log(shell_exec("ssh-agent bash -c 'ssh-add /var/www/panx-framework; git pull git develop'"), "git.log");
 Logger::log("Pulled.", "git.log");
 //} else {
 Logger::log($GLOBALS["request"]->getHeader("x-hub-signature"), "git.log");
