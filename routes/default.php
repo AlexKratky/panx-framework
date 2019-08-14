@@ -14,5 +14,6 @@ Logger::log($GLOBALS["request"]->getHeader("x-hub-signature"), "git.log");
 Logger::log(json_encode(file_get_contents('php://input')), "git.log");
 Logger::log(json_encode($GLOBALS["request"]->getHeaders()), "git.log");
 dump(file_get_contents('php://input'));
+//xd?
 
 });
