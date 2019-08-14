@@ -89,5 +89,5 @@ foreach ($commands as $command) {
 </body>
 </html>
 <?php
-//test of auto deploy
+//test of auto deploy :)
 });
