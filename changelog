@@ -1,16 +1,22 @@
 
 
-?panx-framework v0.2.3
+?panx-framework v0.2.4
 ---------------------
 
-?This is next release of panx-framework (v0.2.3). This is major version release.
+?This is next release of panx-framework (v0.2.4). This is major version release.
 
 ?The documentation is available on https://panx.eu/docs/.
-!(In future, it will available only using https://panx.eu/docs/v0.2.3/)
+!(In future, it will available only using https://panx.eu/docs/v0.2.4/)
 
 ?New features
 - Fixed bugs.
 - Added 2FA
+- Displaying recaptcha after failed login etc.
+- Added _ga() - Google Analytics
+- Logging accesses
+- Previous URL remember
+- dump() with no param
+- n:link (Route aliases)
 - Logging visits with username
 
 ?After installation

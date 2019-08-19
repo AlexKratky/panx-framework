@@ -16,9 +16,12 @@ class API {
     private $apiModel;
 
     public function __construct($endpoint) {
-        $this->endpoint = $endpoint;
-        $this->request = new Request();
-        $this->apiModel = new APIModel();
+        //if ran from terminal, prevent to all aciton
+        if(!empty($_SERVER["REQUEST_URI"])) {
+            $this->endpoint = $endpoint;
+            $this->request = new Request();
+            $this->apiModel = new APIModel();
+        }
     }
 
     public function request($URL) {

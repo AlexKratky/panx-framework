@@ -60,6 +60,10 @@ class Route {
      */
     private static $REQUIRED_PARAMETERS = array();
     /**
+     * @var array The array of aliases. ALIAS => ROUTE.
+     */
+    private static $ALIASES = array();
+    /**
      * @var string The string containing the Route.
      */
     public $ROUTE;
@@ -535,6 +539,86 @@ class Route {
         foreach ($ROUTES as $ROUTE) {
             self::$CONTROLLERS[$ROUTE->ROUTE] = $controller;
         }
+    }
+
+    /**
+     * Returns the URL from Route alias.
+     * @param string $alias The alias of the route.
+     * @param string $parmas The Route parameters. Write like this param1:param2:[1,2,3]:comment=true. The 'name=value' syntax is just for you, in route will be used just value.
+     * @param string $get The GET parameters (eg. ?x=x). Write like this x=true:y=false:debug => ?x=true&y=false&debug
+     * @return string url.
+     */
+    public static function alias($alias, $params = null, $get = null) {
+        if(!isset(self::$ALIASES[$alias])) return null;
+        $r = new URL(self::$ALIASES[$alias], false);
+        $l = $r->getLink();
+        $params = explode(":", $params);
+        $params_index = 0;
+        $link = "/";
+        //params
+        for($i = 1; $i < count($l); $i++) {
+            if($l[$i] == "<controller>" || $l[$i] == "<action>" || $l[$i] == "+") {
+
+                (isset($params[$params_index]) ? : error(400));
+                $link .= (strpos($params[$params_index], "=") !== false ? explode("=", $params[$params_index], 2)[1] : $params[$params_index]) . "/";
+                $params_index++;
+                continue;
+            }
+            //parse array []
+            if($l[$i] == "*") {
+                (isset($params[$params_index]) ?: error(400));
+                $x = (strpos($params[$params_index], "=") !== false ? explode("=", $params[$params_index], 2)[1] : $params[$params_index]);
+                $x = trim($x, "[]");
+                $x = preg_replace('/\s+/', '', $x);
+                $x = explode(",",$x);
+                foreach ($x as $v) {
+                    $link .= $v."/";
+                }
+                $params_index++;
+                continue;
+            }
+            //regex
+            preg_match("/{(.+?)\s?(\[(.+?)\])?}/", $l[$i], $matches);
+
+            if(count($matches) > 0) {
+                (isset($params[$params_index]) ? : error(400));
+                $link .= (strpos($params[$params_index], "=") !== false ? explode("=", $params[$params_index], 2)[1] : $params[$params_index]) . "/";
+                $params_index++;
+                continue;
+            } else {
+                $link .= $l[$i] . "/";
+                continue;
+            }
+        }
+        //get params
+        if($get !== null) {
+            $link .= "?";
+            $add_ampersand = false;
+            $get = explode(":", $get);
+            foreach($get as $get_param) {
+                $link .= ($add_ampersand ? "&" : "") . $get_param;
+                $add_ampersand = true;
+            }
+        }
+        return $link;
+    }
+
+    /**
+     * Sets the alias for Route.
+     * @param string $alias
+     */
+    public function setAlias($alias) {
+        self::$ALIASES[$alias] = $this->ROUTE;
+        return $this;
+    }
+
+    /**
+     * Sets the alias for Route.
+     * @param string $ROUTE The route.
+     * @param string $alias
+     */
+    public static function setRouteAlias($ROUTE, $alias) {
+        self::$ALIASES[$alias] = $ROUTE;
     }
 
     /**

@@ -149,6 +149,14 @@ if ($zip->open($PATH . "/temp/$version.zip") === true) {
                         }
                     }
                 } else {
+                    var_dump($INFO_JSON[str_replace($PATH, "", $rel_path . $f[$i])]);
+                    var_dump(str_replace($PATH, "", $rel_path . $f[$i]));
+                    echo "\n";
+                    echo "\n";
+                    echo "\n";
+echo "\n";
+                    echo "\n";
+                    var_dump($INFO_JSON);
                     //No data in info, need to confirm overwrite
                     info_msg("File: " . str_replace($source, "", $folders[$index]) . $f[$i] . "  already exists. Do you want to overwrite it [Y/n]");
                     $OW = read("");

@@ -1,5 +1,6 @@
 <?php
 require $PATH . "/app/classes/Route.php";
+require $PATH . "/app/classes/API.php";
 
 $route_files = scandir($PATH . "/routes/");
 foreach ($route_files as $route_file) {

@@ -274,7 +274,7 @@ function install($ARGS) {
     /**
      * Now creates dirs, setup chmod
      */
-    createDirs(array('temp', 'cache', 'logs', 'template/posts', 'app/controllers', 'app/middlewares', 'app/models', 'app/migrations'));
+    createDirs(array('temp', 'cache', 'logs', 'template/posts', 'app/controllers', 'app/middlewares', 'app/models', 'app/migrations'. 'crons'));
     echo "\nNow you just need to run command 'composer install' and create '.config' file (You can do it by running command: 'php panx-worker config').\n";
     unlink(__DIR__."/temp/$version.zip");
     rrmdir(__DIR__."/temp/$version/");
@@ -359,11 +359,15 @@ function info($ARGS = null) {
                 if ($f[$i] == ".git") {
                     continue;
                 }
+                if ($f[$i] == ".vscode") {
+                    continue;
+                }
 
                 array_push($folders, $folders[$index] . $f[$i] . "/");
                 continue;
             }
             //$info[str_replace($PATH, "", $folders[$index] . $f[$i])] = array(filemtime($folders[$index] . $f[$i]), filesize($folders[$index] . $f[$i]));
+            if($f[$i] == ".config") continue;
             $info[str_replace($PATH, "", $folders[$index] . $f[$i])] = sha1_file($folders[$index] . $f[$i]);
 
         }
@@ -406,7 +410,7 @@ function migrate() {
  * Creates empty dirs needed by panx framework with specified chmod (777).
  */
 function setup() {
-    createDirs(array('temp', 'cache', 'logs', 'template/posts', 'app/controllers', 'app/middlewares', 'app/models', 'app/migrations'));
+    createDirs(array('temp', 'cache', 'logs', 'template/posts', 'app/controllers', 'app/middlewares', 'app/models', 'app/migrations', 'crons'));
 
 }
 
@@ -446,10 +450,17 @@ function rrmdir($dir)
 function addFolderToZip($dir, $zipArchive, $zipdir = '') {
     $relativePath = str_replace(__DIR__."/","",$dir);
 
+    //public & .git
     if(preg_match('/public\/download\/.*/', $relativePath) || preg_match('/public\\\download\\\.*/', $relativePath) || preg_match('/\.git\/.*/', $relativePath) || preg_match('/\.git\\.*/', $relativePath)) {
         echo "Skipping: " . $relativePath ."\n";
         return;
     }
+    //.vscode
+    if (preg_match('/\.vscode\/.*/', $relativePath) || preg_match('/\.vscode\\.*/', $relativePath)) {
+    echo "Skipping: " . $relativePath . "\n";
+    return;
+}
+
 
     if (is_dir($dir)) {
         if ($dh = opendir($dir)) {
@@ -462,7 +473,11 @@ function addFolderToZip($dir, $zipArchive, $zipdir = '') {
                         addFolderToZip($dir . $file . "/", $zipArchive, $zipdir . $file . "/");
                     }
                 } else {
-                    $zipArchive->addFile($dir . $file, $zipdir . $file);
+                    if($file != ".config") {
+                        $zipArchive->addFile($dir . $file, $zipdir . $file);
+                    } else {
+                        echo "Skipping: .config \n";
+                    }
                 }
             }
         }

@@ -21,6 +21,7 @@ function load($class)
     }
 }
 spl_autoload_register("load");
+$DI = new DI();
 FileStream::init();
 if(!empty($CONFIG["database"]["DB_HOST"])) {
     db::connect($CONFIG["database"]["DB_HOST"], $CONFIG["database"]["DB_USERNAME"], $CONFIG["database"]["DB_PASSWORD"], $CONFIG["database"]["DB_DATABASE"]);
@@ -28,7 +29,9 @@ if(!empty($CONFIG["database"]["DB_HOST"])) {
         db::query("INSERT INTO debug_visits (`IP`, `USER_USERNAME`, `URL_STRING`) VALUES (?, ?, ?);", array($_SERVER['REMOTE_ADDR'], (isset($_SESSION["username"]) ? $_SESSION["username"] : NULL), "http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}"));
     }
 }
-
+if($CONFIG["basic"]["APP_LOG_ACCESS"] == "1") {
+    Logger::log("[{$_SERVER['REMOTE_ADDR']}][".(isset($_SESSION["username"]) ? $_SESSION["username"] : "")."] - http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}", "access.log");
+}
 load('panx'); //not class
 
 
@@ -45,6 +48,7 @@ foreach ($route_files as $route_file) {
 }
 $request = new Request();
 $auth = new Auth();
+
 $auth->loginFromCookies();
 $UC = $request->getUrl();
 //echo $UC->getString();
@@ -300,6 +304,7 @@ if ($CONFIG["basic"]["APP_DEBUG"] == "1") {
 
         //execution time of the script
         echo '<b>Total Execution Time:</b> ' . $execution_time . 'ms <br>';
+        echo '<b>Previous:</b> ' . ($_SESSION["PREVIOUS_URL"] ?? "null");
 
     }
 }
@@ -332,3 +337,9 @@ function getArrayOfParameters($r) {
     }
     return $a;
 }
+//after all files and scripts are executed, save current url to session, so on new request it can be used as previoused url. Prevent logging favicon.ico (Chrome tries to implement the favicon without any html tag)
+$x = $request->getUrl()->getString();
+if(strpos("favicon.ico", $x) === false)
+    //prevent replacing previous url with the same url
+    if(!isset($_SESSION["PREVIOUS_URL"]) || $_SESSION["PREVIOUS_URL"] != $x)
+        $_SESSION["PREVIOUS_URL"] = $x;
