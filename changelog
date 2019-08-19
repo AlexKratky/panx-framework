@@ -16,6 +16,7 @@
 - Logging accesses
 - Previous URL remember
 - dump() with no param
+- n:link (Route aliases)
 - Logging visits with username
 
 ?After installation
