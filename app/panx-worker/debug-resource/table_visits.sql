@@ -8,5 +8,5 @@ CREATE TABLE `debug_visits` (
 )
 COLLATE='utf8mb4_bin'
 ENGINE=InnoDB
-AUTO_INCREMENT=1861
+AUTO_INCREMENT=1
 ;

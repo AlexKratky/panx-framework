@@ -10,5 +10,5 @@ CREATE TABLE `users_tokens` (
 )
 COLLATE='utf8mb4_bin'
 ENGINE=InnoDB
-AUTO_INCREMENT=9
+AUTO_INCREMENT=1
 ;
