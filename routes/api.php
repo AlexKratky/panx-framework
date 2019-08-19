@@ -94,12 +94,18 @@ Route::apiGroup("v1", array(
     }),
 
     array('username', function() {
-        echo $GLOBALS["auth"]->user('name');
+        echo "Username: ". $GLOBALS["auth"]->user('name');
     }),
 
     array('someerror', function() {
         require(rand(0,1000).".php");
-    })
+    }),
+
+    array('dump', function() {
+        $random = "X";
+        dump(get_defined_vars());
+    }),
+
 ));
 
 Route::apiGroup("v2", array(
@@ -131,3 +137,11 @@ Route::apiGroup("v3", array(
     array("templatefile", "home.php"),
 ));
 Route::setApiEndpoint("v3", new API("v3"));
+
+
+Route::apiGroup("v4", array(
+    array('<action>/*', function () {
+        echo Route::getRouteAction();
+    })
+
+));

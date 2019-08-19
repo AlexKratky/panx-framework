@@ -68,8 +68,12 @@ class AuthModel
         return (db::count("SELECT COUNT(*) FROM `users_tokens` WHERE `USER_ID`=(SELECT ID FROM users WHERE `USERNAME`=?) AND `TOKEN`=?", array($_COOKIE["USERNAME"], $_COOKIE["REMEMBER_TOKEN"])) == 0 ? false : true);
     }
 
-    public function clearTokens($id) {
-        db::query("DELETE FROM users_tokens WHERE `USER_ID`=?", array($id));
+    public function clearTokens($id, $t = null) {
+        if($t === null) {
+            db::query("DELETE FROM users_tokens WHERE `USER_ID`=?", array($id));
+        } else {
+            db::query("DELETE FROM users_tokens WHERE `USER_ID`=? AND `TOKEN`=?", array($id, $t));            
+        }
     }
 
     public function edit($id, $mail,$user,$newpass,$was_email_changed) {
@@ -145,5 +149,19 @@ class AuthModel
         } else {
             return false;
         }
+    }
+
+    public function captchaFailed($ip) {
+        if(db::count("SELECT COUNT(*) FROM `recaptcha_fails` WHERE `IP`=?", array($ip)) < 1) {
+            db::query("INSERT INTO `recaptcha_fails` (`IP`) VALUES (?)", array($ip));
+        }
+    }
+
+    public function isCaptchaNeeded($ip) {
+        return (db::count("SELECT COUNT(*) FROM `recaptcha_fails` WHERE `IP`=?", array($ip)) > 0 ? true : false);
+    }
+
+    public function captchaPassed($ip) {
+        db::query("DELETE FROM recaptcha_fails WHERE `IP`=?", array($ip));
     }
 }

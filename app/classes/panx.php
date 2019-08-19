@@ -33,7 +33,6 @@ function error($code) {
  * @param boolean|string $goto If is equal to TRUE, saves to session the current URL. If is equal to FALSE, it will not saves anything to session. Otherwise, it will save string passed to session.
  */
 function redirect($url, $goto = false) {
-    //var_dump(debug_backtrace());
     if($goto != false) {
         if($goto) {
             $_SESSION["REDIRECT_TO"] = $_SERVER['REQUEST_URI'];
@@ -72,21 +71,33 @@ function goToPrevious() {
 
 /**
  * Dumps the variable.
- * @param mixed $var The variable to be dumped.
+ * @param mixed $var The variable to be dumped. If the $var is = 23000, dump all defined vars
  * @param boolean $should_exit If it sets to TRUE, the function will stop executing, otherwise it will not. Default is TRUE.
  */
-function dump($var, $should_exit = true) {
+function dump($var = 21300, $should_exit = true) {
     if(!isset($CONFIG))
         $CONFIG = parse_ini_file($_SERVER['DOCUMENT_ROOT']."/../.config", true);
 
     if($CONFIG["basic"]["APP_DEBUG"] == "1") {
-        echo "<pre>";
-        //var_dump($var);
-        highlight_string("<?php\n" . var_export($var, true) . "\n");
-        
-        echo "</pre>";
-        //echo '<script>document.getElementsByTagName("code")[0].getElementsByTagName("span")[1].remove() ;document.getElementsByTagName("code")[0].getElementsByTagName("span")[document.getElementsByTagName("code")[0].getElementsByTagName("span").length - 1].remove() ; </script>';
+        if($var === 21300) {
+            foreach (get_defined_vars() as $k => $v) {
+            echo "<pre>";
+            //var_dump($var);
+            echo $k . ": ";
+            highlight_string("<?php\n" . var_export($v, true) . "\n");
 
+            echo "</pre>";
+            //echo '<script>d
+
+            }
+        } else {
+            echo "<pre>";
+            //var_dump($var);
+            highlight_string("<?php\n" . var_export($var, true) . "\n");
+            
+            echo "</pre>";
+            //echo '<script>document.getElementsByTagName("code")[0].getElementsByTagName("span")[1].remove() ;document.getElementsByTagName("code")[0].getElementsByTagName("span")[document.getElementsByTagName("code")[0].getElementsByTagName("span").length - 1].remove() ; </script>';
+        }
         $args = array();
         for($i = 0; $i < count(debug_backtrace()[1]['args']); $i++) {
             array_push($args, "\"". debug_backtrace()[1]['args'][$i] . "\"");
@@ -226,4 +237,35 @@ function __($key, $default = false) {
         Cache::save("lang_$lang.json", $translation);
         return (empty($translation[$key]) ? false : $translation[$key]);
     }
+}
+
+/**
+ * Prints the JS code with GoogleAnalytics. You need specife the UA code in config.
+ */
+function _ga() {
+    //dump();
+        $CONFIG = parse_ini_file($_SERVER['DOCUMENT_ROOT']."/../.config", true);
+        if(!empty($CONFIG["google-analytics"]["UA_CODE"])) {
+        $UA = $CONFIG["google-analytics"]["UA_CODE"];
+        echo "<!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src=\"https://www.googletagmanager.com/gtag/js?id=$UA\"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', '$UA');
+    </script>
+    ";
+        }
+}
+
+/**
+ * Shortcut for Route::alias. Prints: href="{ROUTE}".
+ * @param string $alias The alias of the route.
+ * @param string $parmas The Route parameters. Write like this param1:param2:[1,2,3]:comment=true
+ * @param string $get The GET parameters (eg. ?x=x). Write like this x=true:y=false
+ */
+function href($alias, $params = null, $get = null) {
+    echo 'href="'.Route::alias($alias,$params,$get).'"';
 }

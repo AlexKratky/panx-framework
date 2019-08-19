@@ -1,5 +1,5 @@
 <?php
-Route::set("/", "home.php", ["POST", "GET"]);
+Route::set("/", "home.php", ["POST", "GET"])->setAlias("home");
 
 Route::set("/logined", function () {
     echo "Yep!";
@@ -7,13 +7,15 @@ Route::set("/logined", function () {
 
 Route::set("/post/", ["post-list.php"]);
 Route::set("/test/*", "test.php");
+Route::set("/macro/*", "test.latte");
+
 Route::set("/lang", function() {
     echo __("welcome");
 });
 Route::set("/Handler", ["handler.latte", "test.latte"])->setController("MainController");
 Route::set("/route/<controller>/<action>", ["handler.latte", "test.latte"]);
 Route::set("/route-test/<action>/{TEST}", ["handler.latte", "test.latte"])->setController("ExampleController")->setRequiredParameters(array("xd"));
-Route::set("/route-test/<action>/{NAME}/{ID[^[0-9]*$]}", ["handler.latte", "test.latte"])->setController("ExampleController");
+Route::set("/route-test/<action>/{NAME}/{ID[^[0-9]*$]}/*", ["handler.latte", "test.latte"])->setController("ExampleController")->setAlias("test");
 Route::set("/Handler2/*", ["handler.latte"])->setController("MainController");
 Route::set("/MAIN/*", function() {
     var_dump(Route::getController());
