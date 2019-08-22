@@ -44,6 +44,22 @@ Route::set("/", "home.php");
 
 The result will be different. It will display `test.php` to all users, whatever user request. So if user tries to request `/`, framework will display `test.php` instead of `home.php`. So in this case, the second route is useless, and should be deleted to keep route file clear.
 
+### <action> and <controller> wildcards
+These wildcards will automatically include controller and call the contoller method specified by action. For example, you will have following route
+```php
+ Route::set("/admin/<controller>/<action>", "form.php");
+```
+and the user will visit with this URI: `/admin/auth/login/`. This will include AuthController and call the contoller's method specified by action - login() (AuthContoller::login()).
+
+### Parameters with regex rule
+You can limit the route parameter by regular expression. For example, you want to use parameter {ID}, which should be just number, so you can do it by this:
+
+```php
+Route::set("example/{ID[^[0-9]*$]}", "id.php");
+```
+
+If you enter something different then just ID, it will try to find other route, otherwise display 404.
+
 ### Including multiple files
 
 If you want to include more template files, then you need to pass array, for example:
