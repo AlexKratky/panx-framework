@@ -16,3 +16,6 @@ Route::set('/cron-execute/{SECRET}', function() {
         error(400);
     }
 });
+Route::set('/error/{CODE}', function() {
+    error(Route::getValue("CODE"));
+})->setAlias("error");

@@ -20,8 +20,9 @@ class AuthController
         self::$handler = $handler;
         self::$authModel = new AuthModel();
         self::$auth = $GLOBALS["auth"];
-        if (isset($GLOBALS["request"]->getUrl()->getLink()[1])) {
-            switch($GLOBALS["request"]->getUrl()->getLink()[1]) {
+        if (Route::getAlias() !== null) {
+            // NEED TO ADD SUPPORT FOR ALIASES ( LOAD ALIAS, THEN GET URL OF THAT ROUTE AND COMPARE THE THE LINK WITH CURRENT LINK )
+            switch(Route::getAlias()) {
                 case 'login':
                     self::login();  
                     break;
@@ -31,7 +32,7 @@ class AuthController
                 case 'edit':
                     self::edit();
                     break;
-                case '2fa':
+                case '2fa-setup':
                     self::twoFA();
                     break;
                 case 'login-2fa':
@@ -66,7 +67,7 @@ class AuthController
     public static function edit() {
         //self::$handler::setParameters(self::$authModel->selectFromDb());
         if(!self::$auth->isLogined()) {
-            redirect("/login");
+            aliasredirect("login");
         }
         self::$handler::setParameters([
             'name'=>self::$auth->user('name'),
@@ -78,10 +79,10 @@ class AuthController
 
     public static function twoFA() {
         if(!self::$auth->isLogined()) {
-            redirect("/login");
+            aliasredirect("login");
         }
         if(self::$auth->user("2fa")) {
-            redirect('/edit');
+            aliasredirect('edit');
         }
         $x = self::$auth->twoFactorAuthData();
         self::$handler::setParameters([
@@ -97,7 +98,7 @@ class AuthController
                 'recaptcha_needed'=>self::$auth->isCaptchaNeeded(),
             ]);
         } else {
-            redirect('/login');
+            aliasredirect('login');
         }
     }
 }

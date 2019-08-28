@@ -12,6 +12,15 @@ if($CONFIG["basic"]["APP_DEBUG"] == "1") {
     set_error_handler("errorHandler");
 
 }
+
+if (isset($CONFIG["addintional_loader_files_before"]["file"])) {
+    foreach ($CONFIG["addintional_loader_files_before"]["file"] as $f) {
+        if (file_exists($_SERVER['DOCUMENT_ROOT'] . "/../" . $f)) {
+            require $_SERVER['DOCUMENT_ROOT'] . "/../" . $f;
+        }
+    }
+}
+
 function load($class)
 {
     if(file_exists($_SERVER['DOCUMENT_ROOT']."/../app/classes/$class.php")) {
@@ -21,6 +30,13 @@ function load($class)
     }
 }
 spl_autoload_register("load");
+if(file_exists($_SERVER["DOCUMENT_ROOT"] . "/../app/classes/R.php")) {
+    if(!empty($CONFIG["database"]["DB_HOST"])) {
+        load("R.php");
+        R::setup( 'mysql:host='.$CONFIG["database"]["DB_HOST"].';dbname=' . $CONFIG["database"]["DB_DATABASE"],
+            $CONFIG["database"]["DB_USERNAME"], $CONFIG["database"]["DB_PASSWORD"]);
+    }
+}
 $DI = new DI();
 FileStream::init();
 if(!empty($CONFIG["database"]["DB_HOST"])) {
@@ -34,6 +50,7 @@ if($CONFIG["basic"]["APP_LOG_ACCESS"] == "1") {
 }
 load('panx'); //not class
 
+cors();
 
 require_once $_SERVER['DOCUMENT_ROOT']."/../app/handlers/Handler.php";
 
@@ -44,7 +61,9 @@ foreach ($route_files as $route_file) {
     if(is_dir($_SERVER['DOCUMENT_ROOT']."/../routes/".$route_file)) {
         continue;
     }
-    require($_SERVER['DOCUMENT_ROOT']."/../routes/".$route_file);
+    if(pathinfo($_SERVER['DOCUMENT_ROOT']."/../routes/".$route_file)["extension"] === "php") {
+        require($_SERVER['DOCUMENT_ROOT']."/../routes/".$route_file);
+    }
 }
 $request = new Request();
 $auth = new Auth();
@@ -292,6 +311,15 @@ function errorHandler($errno, $errstr, $errfile, $errline) {
     /* Don't execute PHP internal error handler */
     return true;
 }
+
+if (isset($CONFIG["addintional_loader_files_after"]["file"])) {
+    foreach ($CONFIG["addintional_loader_files_after"]["file"] as $f) {
+        if (file_exists($_SERVER['DOCUMENT_ROOT'] . "/../" . $f)) {
+            require $_SERVER['DOCUMENT_ROOT'] . "/../" . $f;
+        }
+    }
+}
+
 
 if ($CONFIG["basic"]["APP_DEBUG"] == "1") {
     if($request->getQuery('debug') !== null) {

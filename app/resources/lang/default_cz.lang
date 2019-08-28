@@ -4,3 +4,4 @@ forbidden1: Bohužel k zobrazení
 forbidden2: nemáte přístup.
 notfound1: Ať hledám, jak hledám tak
 notfound2: nemohu najít. Buď neexistuje, a nebo v minulosti existoval, ale byl smazán nebo přesunut.
+e404: Ať hledám, jak hledám tak %s nemohu najít. Buď neexistuje, a nebo v minulosti existoval, ale byl smazán nebo přesunut.

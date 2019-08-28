@@ -103,7 +103,11 @@ Route::apiGroup("v1", array(
 
     array('dump', function() {
         $random = "X";
-        dump(get_defined_vars());
+        dump(get_defined_vars(), false);
+        dump($random, false);
+        dump(null, false);
+        dump(false, false);
+
     }),
 
 ));

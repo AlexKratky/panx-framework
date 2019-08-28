@@ -29,3 +29,5 @@ app/handlers/
 app/middlewares/
 app/migrations/
 app/models/
+app/classes/R.php
+tracy.php

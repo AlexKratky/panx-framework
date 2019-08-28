@@ -10,14 +10,9 @@
 
 ?New features
 - Fixed bugs.
-- Added 2FA
-- Displaying recaptcha after failed login etc.
-- Added _ga() - Google Analytics
-- Logging accesses
-- Previous URL remember
-- dump() with no param
-- n:link (Route aliases)
-- Logging visits with username
+- Readbean support
+- CORS
+- LANG %s
 
 ?After installation
 After installation, you need to run following commands:

@@ -56,6 +56,17 @@ function redirect($url, $goto = false) {
 }
 
 /**
+ * Redirects to Route alias.
+ * @param string $alias The Route alias where will be the user redirected.
+ * @param string|null $params The string of Route params.
+ * @param string|null $get The string of GET params. 
+ * @param boolean|string $goto If is equal to TRUE, saves to session the current URL. If is equal to FALSE, it will not saves anything to session. Otherwise, it will save string passed to session.
+ */
+function aliasredirect($alias, $params = null, $get = null, $goto = false) {
+    redirect(Route::alias($alias, $params, $get), $goto);
+}
+
+/**
  * Go to URL before redirect - Specified by $goto in redirect()
  * @return false|redirect If $_SESSION["REDIRECT_TO"] does not contain any URL, it will return FALSE, otherwise the user will be redirected to that URL.
  */
@@ -69,16 +80,42 @@ function goToPrevious() {
     }
 }
 
+$_DUMP_CSS_ALREADY_INCLUDED = false;
+
 /**
  * Dumps the variable.
  * @param mixed $var The variable to be dumped. If the $var is = 23000, dump all defined vars
  * @param boolean $should_exit If it sets to TRUE, the function will stop executing, otherwise it will not. Default is TRUE.
  */
-function dump($var = 21300, $should_exit = true) {
+function d($var = 21300, $should_exit = true, $var_name_manual = null) {
+    global $_DUMP_CSS_ALREADY_INCLUDED;
+    $varName = $var;
+    foreach ($GLOBALS as $var_name => $value) {
+        if ($value === $var) {
+            $varName = $var_name;
+        }
+    }
+    if($var === 21300) $varName = "dump";
+    if(!is_string($varName)) {
+        $varName = "dump";
+    } else {
+        $varName = "\$". $varName;
+    }
+    $varName = $var_name_manual ?? $varName;
+
     if(!isset($CONFIG))
         $CONFIG = parse_ini_file($_SERVER['DOCUMENT_ROOT']."/../.config", true);
-
+    $id = generateRandomString();
+    
     if($CONFIG["basic"]["APP_DEBUG"] == "1") {
+        if(!$_DUMP_CSS_ALREADY_INCLUDED) {
+            echo '<link href="https://fonts.googleapis.com/css?family=Poppins&display=swap" rel="stylesheet">';
+            $_DUMP_CSS_ALREADY_INCLUDED = true;
+        }
+        echo "<div style='border: 1px solid #1a1a1d; padding: 5px; border-radius:5px;font-family: \"Poppins\", sans-serif; background: white; position: relative; z-index: 9999; margin-top:5px;' id='{$id}_main'>";
+        echo "<div onclick='document.getElementById(\"$id\").style.display = (document.getElementById(\"$id\").style.display == \"block\" ? \"none\" : \"block\")' style='width: 100%; color:red; cursor: pointer;'>$varName > <span onclick='document.getElementById(\"{$id}_main\").style.display = \"none\"' style='float: right; margin-right: 10px; font-size: 18px;'>&times;</span></div>";
+        echo "<div id='$id' style='display:none'>";
+
         if($var === 21300) {
             foreach (get_defined_vars() as $k => $v) {
             echo "<pre>";
@@ -102,14 +139,18 @@ function dump($var = 21300, $should_exit = true) {
         for($i = 0; $i < count(debug_backtrace()[1]['args']); $i++) {
             array_push($args, "\"". debug_backtrace()[1]['args'][$i] . "\"");
         }
+        echo "<div style='color:black';>";
         echo "<br><br><b>Source</b>: ".  debug_backtrace()[0]['file']."@" . debug_backtrace()[1]['function'] ."(".implode(", ", $args).")";
         echo "<hr>";
         echo "<pre>";
         print_r(debug_backtrace());
         echo "</pre>";
-
+        echo "</div>";
+        echo "</div>";
+        echo "</div>";
         if($should_exit) exit();
     }
+    
 }
 
 
@@ -192,9 +233,10 @@ function html() {
  * Function to obtain translation of key. The language is specified in .config
  * @param string $key The name of key.
  * @param bool $default Determine, if the translation is located in default language files.
+ * @param array $replacement Replace %s with the value from replacement.
  * @return string|false The translation of key or false if the translation does not exists.
  */
-function __($key, $default = false) {
+function __($key, $default = false, $replacement = array()) {
     if(!isset($CONFIG))
         $CONFIG = parse_ini_file($_SERVER['DOCUMENT_ROOT']."/../.config", true);
 
@@ -217,7 +259,15 @@ function __($key, $default = false) {
     }
     $c = Cache::get("lang_$lang.json", ($default ? 86400 : $CONFIG["basic"]["APP_LANG_CACHE_TIME"]));
     if($c !== false) {
-        return (empty($c[$key]) ? false : $c[$key]);
+        if(empty($c[$key])) {
+            return false;
+        } else {
+            $x = $c[$key];
+            for ($i = 0; $i < count($replacement); $i++) {
+                $x = preg_replace("/%s/", $replacement[$i], $x, 1);
+            }
+            return $x;
+        }
     } else {
         $translation = array();
         if(!file_exists($_SERVER['DOCUMENT_ROOT']."/../app/resources/lang/$lang.lang")) {
@@ -235,7 +285,15 @@ function __($key, $default = false) {
             $translation[$line[0]] = $line[1];
         }
         Cache::save("lang_$lang.json", $translation);
-        return (empty($translation[$key]) ? false : $translation[$key]);
+        if(empty($translation[$key])) {
+            return false;
+        } else {
+            $x = $translation[$key];
+            for ($i = 0; $i < count($replacement); $i++) {
+                $x = preg_replace("/%s/", $replacement[$i], $x, 1);
+            }
+            return $x;
+        }
     }
 }
 
@@ -268,4 +326,54 @@ function _ga() {
  */
 function href($alias, $params = null, $get = null) {
     echo 'href="'.Route::alias($alias,$params,$get).'"';
+}
+
+/**
+ * Shortcut for Route::alias. Prints: {ROUTE}
+ * @param string $alias The alias of the route.
+ * @param string $parmas The Route parameters. Write like this param1:param2:[1,2,3]:comment=true
+ * @param string $get The GET parameters (eg. ?x=x). Write like this x=true:y=false
+ */
+function l($alias, $params = null, $get = null) {
+    echo Route::alias($alias,$params,$get);
+}
+
+function generateRandomString($length = 10) {
+    return substr(str_shuffle(str_repeat($x = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', ceil($length / strlen($x)))), 1, $length);
+}
+
+function cors()
+{
+    $CONFIG = parse_ini_file($_SERVER['DOCUMENT_ROOT']."/../.config", true);
+    if($CONFIG["basic"]["APP_CORS"] != "1") return;
+    if($CONFIG["basic"]["APP_CORS_ONLY_API"] == "1") {
+        $u = new URL();
+        if(!isset($u->getLink()[1]) || $u->getLink()[1] != "api") {
+            return;
+        }
+    }
+    // Allow from any origin
+    if (isset($_SERVER['HTTP_ORIGIN'])) {
+        // Decide if the origin in $_SERVER['HTTP_ORIGIN'] is one
+        // you want to allow, and if so:
+        header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
+        header('Access-Control-Allow-Credentials: true');
+        header('Access-Control-Max-Age: 86400'); // cache for 1 day
+    }
+
+    // Access-Control headers are received during OPTIONS requests
+    if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+
+        if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD']))
+        // may also be using PUT, PATCH, HEAD etc
+        {
+            header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+        }
+
+        if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'])) {
+            header("Access-Control-Allow-Headers: {$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}");
+        }
+
+        exit(0);
+    }
 }

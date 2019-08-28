@@ -64,6 +64,10 @@ class Route {
      */
     private static $ALIASES = array();
     /**
+     * @var array The info about current Route.
+     */
+    private static $CURRENT_ROUTE_INFO;
+    /**
      * @var string The string containing the Route.
      */
     public $ROUTE;
@@ -193,7 +197,11 @@ class Route {
                                     return self::ERROR_BAD_REQUEST;
                                 }
                             }
-
+                            self::$CURRENT_ROUTE_INFO = array(
+                                "api" => true,
+                                "route" => "/api/".$L[2]."/".trim($API_ROUTE[0], "/"),
+                                "action" => $API_ROUTE[1]
+                            );
                             return $API_ROUTE[1];
                         }
                         if($x[$i] == "+") {
@@ -237,6 +245,11 @@ class Route {
                                 return self::ERROR_BAD_REQUEST;
                             }
                         }
+                        self::$CURRENT_ROUTE_INFO = array(
+                            "api" => true,
+                            "route" => "/api/".$L[2]."/".trim($API_ROUTE[0], "/"),
+                            "action" => $API_ROUTE[1]
+                        );
                         return $API_ROUTE[1];
                     }
                 }
@@ -275,6 +288,11 @@ class Route {
                             }
                         }
                     }
+                    self::$CURRENT_ROUTE_INFO = array(
+                        "api" => false,
+                        "route" => $ROUTE,
+                        "action" => $VALUE
+                    );
                     return $VALUE;
                 }
                 if($x[$i] == "+") {
@@ -340,7 +358,11 @@ class Route {
                         }
                     }
                 }
-
+                self::$CURRENT_ROUTE_INFO = array(
+                    "api" => false,
+                    "route" => $ROUTE,
+                    "action" => $VALUE
+                );
                 return $VALUE;
             }
 
@@ -610,6 +632,19 @@ class Route {
     public function setAlias($alias) {
         self::$ALIASES[$alias] = $this->ROUTE;
         return $this;
+    }
+
+    /**
+     * Gets the name of alias for current route.
+     * @return string Alias name.
+     */
+    public static function getAlias() {
+        foreach (self::$ALIASES as $alias => $route) {
+            if($route == self::$CURRENT_ROUTE_INFO["route"]) {
+                return $alias;
+            }
+        }
+        return null;
     }
 
     /**

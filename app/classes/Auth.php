@@ -114,7 +114,7 @@ class Auth {
                 $_SESSION["password"] = $data["PASSWORD"];
                 $_SESSION["2fa_passed"] = false;
                 if($GLOBALS["request"]->getUrl()->getLink()[1] != "login-2fa" && $GLOBALS["request"]->getUrl()->getLink()[1] != "logout") {
-                    redirect('/login-2fa');
+                    aliasredirect("login-2fa");
                 }
             }
         } else {

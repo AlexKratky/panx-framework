@@ -47,3 +47,25 @@ Route::set("/images/load/{PAGE}", function() {
 
     echo json(json_encode($result, JSON_UNESCAPED_SLASHES));
 });
+
+Route::set("/sql/visits/{PAGE}", function () {
+    $p = new Pagination("FROM `debug_visits`", 25, Pagination::DATA_SQL);
+    $x = $p->getData();
+    for ($i = 0; $i < count($x); $i++) {
+        dump($x[$i], false, "visit: " . $x[$i]["ID"]);
+    }
+});
+
+Route::set("/log/access/{PAGE}", function () {
+    $p = new Pagination($_SERVER["DOCUMENT_ROOT"] . "/../logs/access.log", 100, Pagination::DATA_FILE);
+    $x = $p->getData();
+    for ($i = 0; $i < count($x); $i++) {
+        dump($x[$i], false, "access: " . ($i + ($p->currentPage()-1) * $p->perPage + 1));
+    }
+});
+
+
+Route::set("/redbean", function() {
+    dump(R::getAll('SELECT * FROM `debug_visits` LIMIT 100'));
+
+});
