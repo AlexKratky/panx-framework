@@ -18,6 +18,7 @@ logs/
 docs/
 cache/
 tests/
+!tests/Test.php
 app/controllers/
 !app/controllers/AuthController.php
 !app/middlewares/AuthMiddleware.php

@@ -10,12 +10,16 @@ Route::set("/test/*", "test.php");
 Route::set("/macro/*", "test.latte");
 
 Route::set("/lang", function() {
-    echo __("welcome");
+    echo __("welcome", true);
+    echo "<br>";
+    echo __("NoExistingTranslation", true);
+    echo "<br>";
+    dump(__("welcome"));
 });
 Route::set("/Handler", ["handler.latte", "test.latte"])->setController("MainController");
 Route::set("/route/<controller>/<action>", ["handler.latte", "test.latte"]);
 Route::set("/route-test/<action>/{TEST}", ["handler.latte", "test.latte"])->setController("ExampleController")->setRequiredParameters(array("xd"));
-Route::set("/route-test/<action>/{NAME}/{ID[^[0-9]*$]}/*", ["handler.latte", "test.latte"])->setController("ExampleController")->setAlias("test");
+Route::set("/route-test/<action>/{NAME#Validator::isEqualToAlex}/{ID[^[0-9]*$]}/*", ["handler.latte", "test.latte"])->setController("ExampleController")->setAlias("test");
 Route::set("/Handler2/*", ["handler.latte"])->setController("MainController");
 Route::set("/MAIN/*", function() {
     var_dump(Route::getController());
@@ -68,4 +72,14 @@ Route::set("/log/access/{PAGE}", function () {
 Route::set("/redbean", function() {
     dump(R::getAll('SELECT * FROM `debug_visits` LIMIT 100'));
 
+});
+
+Route::set("/url/*", function() {
+    $x = new URL();
+    dump($x);
+    foreach ($x as $a => $b) {
+        print "$a: $b\r\n<br>";
+    }
+    dump(Route::ERROR_NOT_LOGGED_IN);
+    d($GLOBALS["request"]->getClientID(), false);
 });

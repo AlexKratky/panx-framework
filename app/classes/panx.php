@@ -16,8 +16,16 @@
  */
 function error($code) {
     $template_files = Route::searchError($code);
+    if($template_files === null) {
+        error(500);
+
+    }
     if (!is_array($template_files)) {
-        require $_SERVER['DOCUMENT_ROOT'] . "/../template/" . $template_files;
+        if(file_exists($_SERVER['DOCUMENT_ROOT'] . "/../template/" . $template_files)) {
+            require $_SERVER['DOCUMENT_ROOT'] . "/../template/" . $template_files;
+        } else {
+            error(500);
+        }
     } else {
         for ($i = 0; $i < count($template_files); $i++) {
             require $_SERVER['DOCUMENT_ROOT'] . "/../template/" . $template_files[$i];
@@ -234,9 +242,11 @@ function html() {
  * @param string $key The name of key.
  * @param bool $default Determine, if the translation is located in default language files.
  * @param array $replacement Replace %s with the value from replacement.
+ * @param string $returnKeyOnFailure Returns the key instead of false, if no data found.
+ * @param string $keyFormat The format in which will be key returned if no data found. Use %s for $key. 
  * @return string|false The translation of key or false if the translation does not exists.
  */
-function __($key, $default = false, $replacement = array()) {
+function __($key, $default = false, $replacement = array(), $returnKeyOnFailure = true, $keyFormat = "__%s") {
     if(!isset($CONFIG))
         $CONFIG = parse_ini_file($_SERVER['DOCUMENT_ROOT']."/../.config", true);
 
@@ -260,7 +270,9 @@ function __($key, $default = false, $replacement = array()) {
     $c = Cache::get("lang_$lang.json", ($default ? 86400 : $CONFIG["basic"]["APP_LANG_CACHE_TIME"]));
     if($c !== false) {
         if(empty($c[$key])) {
-            return false;
+            if(!$returnKeyOnFailure)
+                return false;
+            return str_replace("%s", $key, $keyFormat);
         } else {
             $x = $c[$key];
             for ($i = 0; $i < count($replacement); $i++) {
@@ -272,7 +284,9 @@ function __($key, $default = false, $replacement = array()) {
         $translation = array();
         if(!file_exists($_SERVER['DOCUMENT_ROOT']."/../app/resources/lang/$lang.lang")) {
             if(!file_exists($_SERVER['DOCUMENT_ROOT']."/../app/resources/lang/en.lang")) {
-                return false;
+                if(!$returnKeyOnFailure)
+                    return false;
+                return str_replace("%s", $key, $keyFormat);
             } else {
                 $lang = "en";
             }
@@ -286,7 +300,9 @@ function __($key, $default = false, $replacement = array()) {
         }
         Cache::save("lang_$lang.json", $translation);
         if(empty($translation[$key])) {
-            return false;
+            if(!$returnKeyOnFailure)
+                return false;
+            return str_replace("%s", $key, $keyFormat);
         } else {
             $x = $translation[$key];
             for ($i = 0; $i < count($replacement); $i++) {
@@ -338,10 +354,16 @@ function l($alias, $params = null, $get = null) {
     echo Route::alias($alias,$params,$get);
 }
 
+/**
+ * Returns random string with specified $length.
+ */
 function generateRandomString($length = 10) {
     return substr(str_shuffle(str_repeat($x = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', ceil($length / strlen($x)))), 1, $length);
 }
 
+/**
+ * Sets the CORS headers by config. E.g. accept any origin on /api/xx/xxxxx
+ */
 function cors()
 {
     $CONFIG = parse_ini_file($_SERVER['DOCUMENT_ROOT']."/../.config", true);

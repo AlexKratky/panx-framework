@@ -11,12 +11,30 @@
  */
 
 class Pagination {
+    /**
+     * @var mixed $data The data that will be splitted to pages. It can be SQL query, array or file path.
+     */
     private $data = array();
+    /**
+     * @var string Specifies the $data type (SQL, File, array).
+     */
     public $type;
+    /**
+     * @var int The current page.
+     */
     public $currentPage = 1;
+    /**
+     * @var int The total pages.
+     */
     public $totalPages = 1;
+    /**
+     * @var int The entries per page.
+     */
     public $perPage = 10;
 
+    /**
+     * The class constants representing the type of $data.
+     */
     public const DATA_ARRAY = "DATA_ARRAY";
     public const DATA_SQL = "DATA_SQL";
     public const DATA_FILE = "DATA_FILE";
@@ -63,6 +81,10 @@ class Pagination {
         $this->currentPage = (Route::getValue("PAGE") !== false ? (int)Route::getValue("PAGE") : ($GLOBALS["request"]->getQuery("page") ?? 1));    
     }
 
+    /**
+     * Returns the part of data for current page.
+     * @return array
+     */
     public function getData() {
         $start = (($this->currentPage-1) * $this->perPage);
         $max = $this->perPage + (($this->currentPage-1) * $this->perPage);
@@ -93,18 +115,30 @@ class Pagination {
         return $res;
     }
 
+    /**
+     * Returns total pages count.
+     */
     public function totalPages() {
         return $this->totalPages;
     }
 
+    /**
+     * Returns current page.
+     */
     public function currentPage() {
         return $this->currentPage;
     }
 
+    /**
+     * Returns previous page number or false if it is on first page.
+     */
     public function previousPage() {
         return ($this->currentPage - 1 < 1 ? false : $this->currentPage - 1);
     }
 
+    /**
+     * Returns next page number or false if it is on last page.
+     */
     public function nextPage() {
         if ($this->currentPage + 1 > $this->totalPages) {
             return false;
@@ -113,12 +147,17 @@ class Pagination {
         }
     }
 
-
-    public static function infinityScroll($URI = null, $callback = null) {
+    /**
+     * Set up infinity scroll. Use this function inside the container where should be data loaded.
+     * @param string|null $URI The loader URI. By default $GLOBALS["request"]->getUrl()->getString() . "/load/"
+     * @param string|null $callback The JS callback that will be called on new page load. If sets to null, it will just append the data inside the container.
+     * @param int $PAGE The pre-set page. By default 1.
+     */
+    public static function infinityScroll($URI = null, $callback = null, $PAGE = 1) {
         if($URI === null) {
             $URI = $GLOBALS["request"]->getUrl()->getString() . "/load/";
         }
         echo '<script src="/res/js/InfinityScroll.js"></script>';
-        echo '<script>initInfinityScroll("'.$URI.'");</script>';
+        echo '<script>initInfinityScroll("'.$URI.'", '.$callback.', null, '.$PAGE.');</script>';
     }
 }

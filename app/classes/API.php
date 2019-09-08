@@ -11,10 +11,27 @@
  */
 
 class API {
+    /**
+     * @var string $endpoint The endpoint name in URI (e.g. v1)
+     */
     private $endpoint = ""; //e.g. v1
+    /**
+     * @var Request
+     */
     private $request;
+    /**
+     * @var APIModel
+     */
     private $apiModel;
+    /**
+     * @var int The cahce time of result per API key & request.
+     */
+    private const CACHE_TIME = 5;
 
+    /**
+     * Creates a new API endpoint. Prevent from running in terminal.
+     * @param string $endpoint The endpoint name in URI (e.g. v1)
+     */
     public function __construct($endpoint) {
         //if ran from terminal, prevent to all aciton
         if(!empty($_SERVER["REQUEST_URI"])) {
@@ -24,6 +41,11 @@ class API {
         }
     }
 
+    /**
+     * Determine if the request is valid and the data can be outputted or not.
+     * @param string $URL The requested URL (Used in cache).
+     * @return bool Returns true if the request is valid, false otherwise.
+     */
     public function request($URL) {
         if($this->validate()) {
             $this->updateRate();
@@ -47,6 +69,11 @@ class API {
         return false;
     }
 
+    /**
+     * This function is called when the request is not valid.
+     * @param string $msg The error message.
+     * @return string JSON string containing: (bool) 'success' => false; (string) 'error' => $msg
+     */
     public function error($msg = "Ivalid request. Check your API key and your rate limits.") {
         return json_encode(
             array(
@@ -56,6 +83,10 @@ class API {
         );
     }
 
+    /**
+     * Validates API_KEY from $_POST["API_KEY"].
+     * @return bool Returns true if the key is valid, false otherwise. If no key provided, execute and print json($this->error("No API_KEY provided.")) 
+     */
     public function validate() {
         if($this->request->getPost('API_KEY') !== null) {
             return $this->apiModel->validate($this->request->getPost('API_KEY'));
@@ -65,14 +96,27 @@ class API {
         }
     }
 
+    /**
+     * Caches result. Saves as {API_KEY}{URL}
+     * @param mixed $result The data to be saved.
+     * @param string $URL_STRING The URL string.
+     */
     public function cacheResult($result, $URL_STRING) {
         Cache::save($this->request->getPost('API_KEY') . str_replace('/', '_', $URL_STRING), $result);
     }
 
+    /**
+     * Obtain cached result.
+     * @param string $URL_STRING The URL String of cached result.
+     * @return mixed Returns false if no cache false, otherwise returns the result.
+     */
     public function getFromCache($URL_STRING) {
-        return Cache::get($this->request->getPost('API_KEY') . str_replace('/', '_', $URL_STRING), 10);
+        return Cache::get($this->request->getPost('API_KEY') . str_replace('/', '_', $URL_STRING), self::CACHE_TIME);
     }
 
+    /**
+     * Increses the Rate limit of API Key.
+     */
     public function updateRate() {
         $this->apiModel->updateRate($this->request->getPost('API_KEY'));
     }

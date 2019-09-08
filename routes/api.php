@@ -146,6 +146,8 @@ Route::setApiEndpoint("v3", new API("v3"));
 Route::apiGroup("v4", array(
     array('<action>/*', function () {
         echo Route::getRouteAction();
+    }),
+    array('convert-route', function() {
+        echo Route::convertRoute("/route-test/parameter/ALEDX/10/XD");
     })
-
 ));

@@ -10,63 +10,63 @@
  * @description Router engine. Part of panx-framework.
  */
 
-class Route {
+class Route extends RouteAction implements RouteErrors {
     /**
      * @var array The array of routes.
      */
-    private static $ROUTES = array();
+    protected static $ROUTES = array();
     /**
      * @var array The array of middlewares.
      */
-    private static $MIDDLEWARES = array();
+    protected static $MIDDLEWARES = array();
     /**
      * @var array The array of controllers.
      */
-    private static $CONTROLLERS = array();
+    protected static $CONTROLLERS = array();
     /**
      * @var array The array of locks (which will limit routes to certain methods).
      */
-    private static $LOCK = array();
+    protected static $LOCK = array();
     /**
      * @var array The array of API routes.
      */
-    private static $API_ROUTES = array();
+    protected static $API_ROUTES = array();
     /**
      * @var array The array of API middlewares.
      */
-    private static $API_MIDDLEWARES = array();
+    protected static $API_MIDDLEWARES = array();
     /**
      * @var array The API endpoints class
      */
-    private static $API_ENDPOINTS = array();
+    protected static $API_ENDPOINTS = array();
     /**
      * @var array The array of error routes.
      */
-    private static $ERRORS = array();
+    protected static $ERRORS = array();
     /**
      * @var array The array of URL parameters (Accesible using Route::getValue()).
      */
-    private static $VALUES = array();
+    protected static $VALUES = array();
     /**
      * @var string <controller>.
      */
-    private static $ROUTE_CONTROLLER = null;
+    protected static $ROUTE_CONTROLLER = null;
     /**
      * @var string <action>.
      */
-    private static $ROUTE_ACTION = null;
+    protected static $ROUTE_ACTION = null;
     /**
      * @var array The array of required parameters. [0] => $_GET, [1] => $_POST, [2] => ERROR_CODE.
      */
-    private static $REQUIRED_PARAMETERS = array();
+    protected static $REQUIRED_PARAMETERS = array();
     /**
      * @var array The array of aliases. ALIAS => ROUTE.
      */
-    private static $ALIASES = array();
+    protected static $ALIASES = array();
     /**
      * @var array The info about current Route.
      */
-    private static $CURRENT_ROUTE_INFO;
+    protected static $CURRENT_ROUTE_INFO;
     /**
      * @var string The string containing the Route.
      */
@@ -95,14 +95,10 @@ class Route {
      * @var int Error 404 - Not found.
      */
     const ERROR_NOT_FOUND = 404;
-
     /**
-     * Custom errors
+     * @var int Error 500 - Internal server error.
      */
-    /**
-     * @var string Example custom error.
-     */
-    const ERROR_NOT_LOGGED_IN = "NOT_LOGGED_IN";
+    const ERROR_INTERNAL_SERVER = 500;
 
     /**
      * Creates a new instance of Route object containing the route.
@@ -140,379 +136,6 @@ class Route {
      */
     public static function apiGroup($VERSION, $ROUTES) {
         self::$API_ROUTES[$VERSION] = $ROUTES;
-    }
-
-    /**
-     * Returns file(s) or function which responds to $SEARCH_ROUTE.
-     * Supports wildcards:
-     *  + : Mean one elements, eg: /post/+/edit -> match with /post/1/edit, /post/2/edit ...
-     *  * : Mean one or more element, eg: /post/* -> match with /post/1, /post/1/edit ... 
-     *  {VARIABLE} : Mean one element (Same as +), but the value will be saved and can be accessed by getValue()
-     * @param string $SEARCH_ROUTE The searched route.
-     * @return function|array|string Returns file(s) or function which responds to $SEARCH_ROUTE.
-     */
-    public static function search($SEARCH_ROUTE) {
-        $C = new URL();
-        $L = $C->getLink();
-        if (count($L) > 2 && $L[1] == "api") {
-            //e.g. $API_ROUTES["v2"]
-            if(isset(self::$API_ROUTES[$L[2]])) {
-                if (!empty(self::$API_MIDDLEWARES[$L[2]])) {
-                    foreach (self::$API_MIDDLEWARES[$L[2]] as $MIDDLEWARE) {
-                        require $_SERVER['DOCUMENT_ROOT'] . "/../app/middlewares/" . $MIDDLEWARE . ".php";
-                        if (!$MIDDLEWARE::handle()) {
-                            if(method_exists($MIDDLEWARE, "error"))
-                                return $MIDDLEWARE::error();
-                            return self::ERROR_MIDDLEWARE;
-                        }
-                    }
-                }
-
-                if(!empty(self::$API_ENDPOINTS[$L[2]])) {
-                    if(!self::$API_ENDPOINTS[$L[2]]->request($C)) {
-                        echo json(self::$API_ENDPOINTS[$L[2]]->error());
-                        exit();
-                    }
-                }
-
-                foreach(self::$API_ROUTES[$L[2]] as $API_ROUTE) {
-                    //var_dump($API_ROUTE);
-                    /*if($C->getString() == "/api/".$L[2]."/".trim($API_ROUTE[0], "/")){
-                        return $API_ROUTE[1];
-                    }*/
-                    $CURRENT = new URL();
-                    $x = new URL("/api/".$L[2]."/".trim($API_ROUTE[0], "/"), false);
-
-                    if(count($x->getLink()) > count($CURRENT->getLink())) {
-                        continue;
-                    }
-
-                    $match = true;
-                    $x = $x->getLink();
-                    $CURRENT = $CURRENT->getLink();
-                    for($i = 0; $i < count($x); $i++) {
-                        if($x[$i] == "*") {
-                            if (!empty($API_ROUTE[2])) {
-                                if (!in_array($_SERVER["REQUEST_METHOD"], $API_ROUTE[2])) {
-                                    return self::ERROR_BAD_REQUEST;
-                                }
-                            }
-                            self::$CURRENT_ROUTE_INFO = array(
-                                "api" => true,
-                                "route" => "/api/".$L[2]."/".trim($API_ROUTE[0], "/"),
-                                "action" => $API_ROUTE[1]
-                            );
-                            return $API_ROUTE[1];
-                        }
-                        if($x[$i] == "+") {
-                            continue;
-                        }
-                        preg_match("/{(.+?)\s?(\[(.+?)\])?}/", $x[$i], $matches);
-
-                        if(count($matches) > 0) {
-                            if(isset($matches[3])) {
-                                preg_match("/".$matches[3]."/", $CURRENT[$i], $m);
-                                if(count($m) > 0) {
-                                    self::$VALUES[$matches[1]] = $CURRENT[$i];
-                                    continue;
-                                }
-                            } else {
-                                self::$VALUES[$matches[1]] = $CURRENT[$i];
-                                continue;
-                            }
-                        }
-                        if(strtolower($x[$i]) == "<controller>") {
-                            if(ctype_alnum($CURRENT[$i])) {      
-                                self::$ROUTE_CONTROLLER = $CURRENT[$i];
-                                continue;
-                            }
-                        }
-                        if(strtolower($x[$i]) == "<action>") {
-                            if(ctype_alnum($CURRENT[$i])) {                            
-                                self::$ROUTE_ACTION = $CURRENT[$i];
-                                continue;
-                            }
-                        }
-                        if(!isset($CURRENT[$i]) || $x[$i] != $CURRENT[$i]) {
-                            $match = false;
-
-                            break;
-                        }
-                    }
-                    if($match && count($x) == count($CURRENT)) {
-                        if (!empty($API_ROUTE[2])) {
-                            if (!in_array($_SERVER["REQUEST_METHOD"], $API_ROUTE[2])) {
-                                return self::ERROR_BAD_REQUEST;
-                            }
-                        }
-                        self::$CURRENT_ROUTE_INFO = array(
-                            "api" => true,
-                            "route" => "/api/".$L[2]."/".trim($API_ROUTE[0], "/"),
-                            "action" => $API_ROUTE[1]
-                        );
-                        return $API_ROUTE[1];
-                    }
-                }
-            }
-        }
-
-        foreach (self::$ROUTES as $ROUTE => $VALUE) {
-            $CURRENT = new URL();
-            if (isset($GLOBALS["CONFIG"]["basic"]["APP_ROUTES_CASE_SENSITIVE"]) && $GLOBALS["CONFIG"]["basic"]["APP_ROUTES_CASE_SENSITIVE"] !== "1") {
-                $CURRENT = new URL(strtolower($_SERVER["REQUEST_URI"]));
-            }
-
-            $x = new URL($ROUTE."", false);
-
-            if(count($x->getLink()) > count($CURRENT->getLink())) {
-                continue;
-            }
-
-            $match = true;
-            $x = $x->getLink();
-            $CURRENT = $CURRENT->getLink();
-            for($i = 0; $i < count($x); $i++) {
-                if($x[$i] == "*") {
-                    if(!empty(self::$LOCK[$ROUTE])) {
-                        if(!in_array($_SERVER["REQUEST_METHOD"], self::$LOCK[$ROUTE])) {
-                            return self::ERROR_BAD_REQUEST;
-                        }
-                    }
-                    if (!empty(self::$MIDDLEWARES[$ROUTE])) {
-                        foreach (self::$MIDDLEWARES[$ROUTE] as $MIDDLEWARE) {
-                            require $_SERVER['DOCUMENT_ROOT']."/../app/middlewares/".$MIDDLEWARE.".php";
-                            if(!$MIDDLEWARE::handle()) {
-                                 if(method_exists($MIDDLEWARE, "error"))
-                                    return $MIDDLEWARE::error();
-                                return self::ERROR_MIDDLEWARE;
-                            }
-                        }
-                    }
-                    self::$CURRENT_ROUTE_INFO = array(
-                        "api" => false,
-                        "route" => $ROUTE,
-                        "action" => $VALUE
-                    );
-                    return $VALUE;
-                }
-                if($x[$i] == "+") {
-                    continue;
-                }
-                preg_match("/{(.+?)\s?(\[(.+?)\])?}/", $x[$i], $matches);
-
-                if(count($matches) > 0) {
-                    if(isset($matches[3])) {
-                        preg_match("/".$matches[3]."/", $CURRENT[$i], $m);
-                        if(count($m) > 0) {
-                            self::$VALUES[$matches[1]] = $CURRENT[$i];
-                            continue;
-                        }
-                    } else {
-                        self::$VALUES[$matches[1]] = $CURRENT[$i];
-                        continue;
-                    }
-                }
-                if(strtolower($x[$i]) == "<controller>") {
-                    if(ctype_alnum($CURRENT[$i])) {
-                        self::$ROUTE_CONTROLLER = $CURRENT[$i];
-                        continue;
-                    }
-                }
-                if(strtolower($x[$i]) == "<action>") {
-                    if(ctype_alnum($CURRENT[$i])) {
-                        self::$ROUTE_ACTION = $CURRENT[$i];
-                        continue;
-                    }
-                }
-                if(!isset($CURRENT[$i]) || $x[$i] != $CURRENT[$i]) {
-                    $match = false;
-
-                    break;
-                }
-            }
-            if($match && count($x) == count($CURRENT)) {
-                if (!empty(self::$LOCK[$ROUTE])) {
-                    if (!in_array($_SERVER["REQUEST_METHOD"], self::$LOCK[$ROUTE])) {
-                        return self::ERROR_BAD_REQUEST;
-                    }
-                }
-                if (!empty(self::$MIDDLEWARES[$ROUTE])) {
-                    foreach (self::$MIDDLEWARES[$ROUTE] as $MIDDLEWARE) {
-                        require $_SERVER['DOCUMENT_ROOT']."/../app/middlewares/".$MIDDLEWARE.".php";
-                        if(!$MIDDLEWARE::handle()) {
-                             if(method_exists($MIDDLEWARE, "error"))
-                                return $MIDDLEWARE::error();
-                            return self::ERROR_MIDDLEWARE;
-                        }
-                    }
-                }
-                if (!empty(self::$REQUIRED_PARAMETERS[$ROUTE])) {
-                    foreach (self::$REQUIRED_PARAMETERS[$ROUTE][0] as $get) {
-                        if(empty($_GET[$get])) {
-                            return self::$REQUIRED_PARAMETERS[$ROUTE][2];
-                        }
-                    }
-                    foreach (self::$REQUIRED_PARAMETERS[$ROUTE][1] as $post) {
-                        if(empty($_POST[$post])) {
-                            return self::$REQUIRED_PARAMETERS[$ROUTE][2];
-                        }
-                    }
-                }
-                self::$CURRENT_ROUTE_INFO = array(
-                    "api" => false,
-                    "route" => $ROUTE,
-                    "action" => $VALUE
-                );
-                return $VALUE;
-            }
-
-        }
-        return (isset(self::$ROUTES[$SEARCH_ROUTE]) ? self::$ROUTES[$SEARCH_ROUTE] : self::ERROR_NOT_FOUND);
-    }
-
-    /**
-     * The function will return template file(s)/function without limitation of middlewares etc.
-     */
-    public static function searchWithNoLimits() {
-        $C = new URL();
-        $L = $C->getLink();
-        if (count($L) > 2 && $L[1] == "api") {
-            //e.g. $API_ROUTES["v2"]
-            if(isset(self::$API_ROUTES[$L[2]])) {
-                foreach(self::$API_ROUTES[$L[2]] as $API_ROUTE) {
-                    $CURRENT = new URL();
-                    $x = new URL("/api/".$L[2]."/".trim($API_ROUTE[0], "/"), false);
-
-                    if(count($x->getLink()) > count($CURRENT->getLink())) {
-                        continue;
-                    }
-
-                    $match = true;
-                    $x = $x->getLink();
-                    $CURRENT = $CURRENT->getLink();
-                    for($i = 0; $i < count($x); $i++) {
-                        if($x[$i] == "*") {
-                            if (!empty($API_ROUTE[2])) {
-                                if (!in_array($_SERVER["REQUEST_METHOD"], $API_ROUTE[2])) {
-                                    return self::ERROR_BAD_REQUEST;
-                                }
-                            }
-
-                            return $API_ROUTE[1];
-                        }
-                        if($x[$i] == "+") {
-                            continue;
-                        }
-                        preg_match("/{(.+?)\s?(\[(.+?)\])?}/", $x[$i], $matches);
-
-                        if(count($matches) > 0) {
-                            if(isset($matches[3])) {
-                                preg_match("/".$matches[3]."/", $CURRENT[$i], $m);
-                                if(count($m) > 0) {
-                                    //self::$VALUES[$matches[1]] = $CURRENT[$i];
-                                    continue;
-                                }
-                            } else {
-                                //self::$VALUES[$matches[1]] = $CURRENT[$i];
-                                continue;
-                            }
-                        }
-                        if(strtolower($x[$i]) == "<controller>") {
-                            if(ctype_alnum($CURRENT[$i])) {
-                                continue;
-                            }
-                        }
-                        if(strtolower($x[$i]) == "<action>") {
-                            if(ctype_alnum($CURRENT[$i])) {                            
-                                continue;
-                            }
-                        }
-                        if(!isset($CURRENT[$i]) || $x[$i] != $CURRENT[$i]) {
-                            $match = false;
-
-                            break;
-                        }
-                    }
-                    if($match && count($x) == count($CURRENT)) {
-                        if (!empty($API_ROUTE[2])) {
-                            if (!in_array($_SERVER["REQUEST_METHOD"], $API_ROUTE[2])) {
-                                return self::ERROR_BAD_REQUEST;
-                            }
-                        }
-                        return $API_ROUTE[1];
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Convert the URI to route
-     * For example, if you set route '/example/+/edit' in route.php and you pass the URI to this function (e.g., /example/13/edit), it will returns the route with wildcard -> '/example/+/edit'
-     * @param string|null $route The URI, if sets to null, then will use the current URI.
-     * @return string The route coresponding to URI.
-     */
-    public static function convertRoute($route = null) {
-        foreach (self::$ROUTES as $ROUTE => $VALUE) {
-            $CURRENT = new URL($route);
-            if (isset($GLOBALS["CONFIG"]["basic"]["APP_ROUTES_CASE_SENSITIVE"]) && $GLOBALS["CONFIG"]["basic"]["APP_ROUTES_CASE_SENSITIVE"] !== "1") {
-                $ROUTE = strtolower($ROUTE);
-            } else {
-                
-            }
-
-            $x = new URL($ROUTE."", false);
-
-            if(count($x->getLink()) > count($CURRENT->getLink())) {
-                continue;
-            }
-
-            $match = true;
-            $x = $x->getLink();
-            $CURRENT_LINK = $CURRENT->getLink();
-            for($i = 0; $i < count($x); $i++) {
-                if($x[$i] == "*") {
-                    return $ROUTE;
-                }
-                if($x[$i] == "+") {
-                    continue;
-                }
-                preg_match("/{(.+?)\s?(\[(.+?)\])?}/", $x[$i], $matches);
-
-                if(count($matches) > 0) {
-                    if(isset($matches[3])) {
-                        preg_match("/".$matches[3]."/", $CURRENT_LINK[$i], $m);
-                        if(count($m) > 0) {
-                            //self::$VALUES[$matches[1]] = $CURRENT[$i];
-                            continue;
-                        }
-                    } else {
-                        //self::$VALUES[$matches[1]] = $CURRENT[$i];
-                        continue;
-                    }
-                }
-                if(strtolower($x[$i]) == "<controller>") {
-                    if(ctype_alnum($CURRENT_LINK[$i])) {                    
-                        continue;
-                    }
-                }
-                if(strtolower($x[$i]) == "<action>") {
-                    if(ctype_alnum($CURRENT_LINK[$i])) {                    
-                        continue;
-                    }
-                }
-                if(!isset($CURRENT_LINK[$i]) || $x[$i] != $CURRENT_LINK[$i]) {
-                    $match = false;
-
-                    break;
-                }
-            }
-            if($match && count($x) == count($CURRENT_LINK)) {
-                return $ROUTE;
-            }
-
-        }
-        return $CURRENT->getString();
     }
 
     /**
@@ -561,68 +184,6 @@ class Route {
         foreach ($ROUTES as $ROUTE) {
             self::$CONTROLLERS[$ROUTE->ROUTE] = $controller;
         }
-    }
-
-    /**
-     * Returns the URL from Route alias.
-     * @param string $alias The alias of the route.
-     * @param string $parmas The Route parameters. Write like this param1:param2:[1,2,3]:comment=true. The 'name=value' syntax is just for you, in route will be used just value.
-     * @param string $get The GET parameters (eg. ?x=x). Write like this x=true:y=false:debug => ?x=true&y=false&debug
-     * @return string url.
-     */
-    public static function alias($alias, $params = null, $get = null) {
-        if(!isset(self::$ALIASES[$alias])) return null;
-        $r = new URL(self::$ALIASES[$alias], false);
-        $l = $r->getLink();
-        $params = explode(":", $params);
-        $params_index = 0;
-        $link = "/";
-        //params
-        for($i = 1; $i < count($l); $i++) {
-            if($l[$i] == "<controller>" || $l[$i] == "<action>" || $l[$i] == "+") {
-
-                (isset($params[$params_index]) ? : error(400));
-                $link .= (strpos($params[$params_index], "=") !== false ? explode("=", $params[$params_index], 2)[1] : $params[$params_index]) . "/";
-                $params_index++;
-                continue;
-            }
-            //parse array []
-            if($l[$i] == "*") {
-                (isset($params[$params_index]) ?: error(400));
-                $x = (strpos($params[$params_index], "=") !== false ? explode("=", $params[$params_index], 2)[1] : $params[$params_index]);
-                $x = trim($x, "[]");
-                $x = preg_replace('/\s+/', '', $x);
-                $x = explode(",",$x);
-                foreach ($x as $v) {
-                    $link .= $v."/";
-                }
-                $params_index++;
-                continue;
-            }
-            //regex
-            preg_match("/{(.+?)\s?(\[(.+?)\])?}/", $l[$i], $matches);
-
-            if(count($matches) > 0) {
-                (isset($params[$params_index]) ? : error(400));
-                $link .= (strpos($params[$params_index], "=") !== false ? explode("=", $params[$params_index], 2)[1] : $params[$params_index]) . "/";
-                $params_index++;
-                continue;
-            } else {
-                $link .= $l[$i] . "/";
-                continue;
-            }
-        }
-        //get params
-        if($get !== null) {
-            $link .= "?";
-            $add_ampersand = false;
-            $get = explode(":", $get);
-            foreach($get as $get_param) {
-                $link .= ($add_ampersand ? "&" : "") . $get_param;
-                $add_ampersand = true;
-            }
-        }
-        return $link;
     }
 
     /**
@@ -716,6 +277,11 @@ class Route {
         self::$API_MIDDLEWARES[$API_GROUP] = $MIDDLEWARES;
     }
 
+    /**
+     * Sets the API endpoint and its handler.
+     * @param string $endpoint The API endpoint, e.g. 'v1' or 'v2'.
+     * @param object $handler The API handler, new API("v3")
+     */
     public static function setApiEndpoint($endpoint, $handler) {
         self::$API_ENDPOINTS[$endpoint] = $handler;
     }

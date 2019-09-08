@@ -1,6 +1,6 @@
 var page = 1;
 var container;
-var callback
+var callback;
 var URI;
 var loading = false;
 
@@ -13,7 +13,11 @@ var loadNext = function (first = false) {
     xhttp.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {
             let r = JSON.parse(this.responseText);
-            container.insertAdjacentHTML('beforeend', r.data);
+            if(callback === null) {
+                container.insertAdjacentHTML('beforeend', r.data);
+            } else {
+                callback(r.data);
+            }
             if(r.current_page < r.total_pages) {
                 loading = false;
             }
@@ -36,7 +40,8 @@ var loadNext = function (first = false) {
     xhttp.send();
 }
 
-function initInfinityScroll(U, cb = null, c = null) {
+function initInfinityScroll(U, cb = null, c = null, p = 1) {
+    page = p;
     URI = U;
     callback = cb;
     if (c === null) {

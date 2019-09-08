@@ -5,3 +5,5 @@ forbidden2: nemáte přístup.
 notfound1: Ať hledám, jak hledám tak
 notfound2: nemohu najít. Buď neexistuje, a nebo v minulosti existoval, ale byl smazán nebo přesunut.
 e404: Ať hledám, jak hledám tak %s nemohu najít. Buď neexistuje, a nebo v minulosti existoval, ale byl smazán nebo přesunut.
+form_error_empty: Prosím, vyplňte pole %s.
+form_not_valid: Prosím, zadejte platnou hodnotu do pole %s.

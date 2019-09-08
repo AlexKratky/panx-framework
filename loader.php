@@ -9,8 +9,8 @@ $CONFIG = parse_ini_file(".config", true);
 if($CONFIG["basic"]["APP_DEBUG"] == "1") {
     error_reporting(E_ALL);
     ini_set("display_errors", 1);
+    require $_SERVER['DOCUMENT_ROOT'] . "/../app/core/loader/error_handler.php";
     set_error_handler("errorHandler");
-
 }
 
 if (isset($CONFIG["addintional_loader_files_before"]["file"])) {
@@ -27,9 +27,15 @@ function load($class)
         require $_SERVER['DOCUMENT_ROOT']."/../app/classes/$class.php";
     } else if (file_exists($_SERVER['DOCUMENT_ROOT']."/../app/models/$class.php")){
         require_once $_SERVER['DOCUMENT_ROOT'] . "/../app/models/$class.php";
+    } else if(file_exists($_SERVER["DOCUMENT_ROOT"] . "/../app/forms/$class.php")) {
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/../app/forms/$class.php";
+    } else if(file_exists($_SERVER["DOCUMENT_ROOT"] . "/../app/themex/$class.php")) {
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/../app/themex/$class.php";
     }
 }
-spl_autoload_register("load");
+if(file_exists($_SERVER["DOCUMENT_ROOT"] . '/../vendor/autoload.php'))
+    require_once $_SERVER["DOCUMENT_ROOT"] . '/../vendor/autoload.php';
+spl_autoload_register("load", true, true);
 if(file_exists($_SERVER["DOCUMENT_ROOT"] . "/../app/classes/R.php")) {
     if(!empty($CONFIG["database"]["DB_HOST"])) {
         load("R.php");
@@ -72,177 +78,8 @@ $auth->loginFromCookies();
 $UC = $request->getUrl();
 //echo $UC->getString();
 $template_files = Route::search($UC->getString());
-
-//is function
-if (is_callable($template_files)) {
-    $template_files();
-} else {
-    $include = true;
-    switch($template_files){
-        case Route::DO_NOT_INCLUDE_ANY_FILE:
-            $include = false;
-            break;
-        case Route::ERROR_MIDDLEWARE:
-            $template_files = Route::searchError(Route::ERROR_MIDDLEWARE);
-            break;
-        case Route::ERROR_NOT_FOUND:
-            $template_files = Route::searchError(Route::ERROR_NOT_FOUND);
-            break;
-        case Route::ERROR_BAD_REQUEST:
-            $template_files = Route::searchError(Route::ERROR_BAD_REQUEST);
-            break;
-        case Route::ERROR_FORBIDDEN:
-            $template_files = Route::searchError(Route::ERROR_FORBIDDEN);
-            break;
-    }
-    if(file_exists($_SERVER['DOCUMENT_ROOT']."/../app/core/handlers.php")) {
-        require $_SERVER['DOCUMENT_ROOT']."/../app/core/handlers.php";
-    }
-    if($include) {
-        if(!is_array($template_files)) {
-            $ext = pathinfo($_SERVER['DOCUMENT_ROOT']."/../template/".$template_files)["extension"];
-            if($ext == "php") {
-                require $_SERVER['DOCUMENT_ROOT'] . "/../template/" . $template_files;
-            } else {
-                //Need to custom handler
-                if(!empty($handlers[$ext])) {
-                    require_once $_SERVER['DOCUMENT_ROOT']."/../app/handlers/$handlers[$ext].php";
-                    $controller = Route::getController();
-                    if($controller === null) {
-                        $controller = Route::getRouteController();
-                    }
-                    if($controller !== null) {
-                        if(file_exists($_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php")) {
-                            require_once $_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php";
-                        } else {
-                            $controller = ucfirst(strtolower($controller)) . "Controller";
-                            if(file_exists($_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php")) {
-                                require_once $_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php";
-                            } else {
-                                error($CONFIG["basic"]["APP_ERROR_CODE_OF_MISSING_CONTROLLER_OR_ACTION"]);
-                            }
-                        }
-                        $controller::main($handlers[$ext]);
-                        $action = Route::getRouteAction();
-                        if($action !== null) {
-                            if(method_exists($controller, $action)) {
-                                call_user_func_array(array($controller, $action), getArrayOfParameters(new ReflectionMethod($controller, $action)));                               
-                            } else {
-                                error($CONFIG["basic"]["APP_ERROR_CODE_OF_MISSING_CONTROLLER_OR_ACTION"]);
-                            }
-                        }
-                    }
-                    $handlers[$ext]::handle($template_files);
-                } else {
-                    $ext = ucfirst(strtolower($ext));
-                    if(file_exists($_SERVER['DOCUMENT_ROOT']."/../app/handlers/".$ext."Handler.php")) {
-                        require_once $_SERVER['DOCUMENT_ROOT']."/../app/handlers/".$ext."Handler.php";
-                        $ext = $ext."Handler";
-                        $controller = Route::getController();
-                        if($controller === null) {
-                            $controller = Route::getRouteController();
-                        }
-                        if($controller !== null) {
-                            if(file_exists($_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php")) {
-                                require_once $_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php";
-                            } else {
-                                $controller = ucfirst(strtolower($controller)) . "Controller";
-                                if(file_exists($_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php")) {
-                                    require_once $_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php";
-                                } else {
-                                    error($CONFIG["basic"]["APP_ERROR_CODE_OF_MISSING_CONTROLLER_OR_ACTION"]);
-                                }
-                            }
-                            $controller::main($ext);
-                            $action = Route::getRouteAction();
-                            if($action !== null) {
-                                if(method_exists($controller, $action)) {
-                                    call_user_func_array(array($controller, $action), getArrayOfParameters(new ReflectionMethod($controller, $action)));                                   
-                                } else {
-                                    error($CONFIG["basic"]["APP_ERROR_CODE_OF_MISSING_CONTROLLER_OR_ACTION"]);
-                                }
-                            }
-                        }
-                        $ext::handle($template_files);
-                    }
-                }
-            }
-        } else {
-            if($template_files !== null) {
-                for($i = 0; $i < count($template_files); $i++) {
-                    $ext = pathinfo($_SERVER['DOCUMENT_ROOT']."/../template/".$template_files[$i])["extension"];
-                    if ($ext == "php") {
-                        require $_SERVER['DOCUMENT_ROOT']."/../template/".$template_files[$i];
-                    } else {
-                        //Need to custom handler
-                        if(!empty($handlers[$ext])) {
-                            require_once $_SERVER['DOCUMENT_ROOT']."/../app/handlers/$handlers[$ext].php";
-                            $controller = Route::getController();
-                            if ($controller === null) {
-                                $controller = Route::getRouteController();
-                            }
-                            if ($controller !== null) {
-                                if(file_exists($_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php")) {
-                                    require_once $_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php";
-                                } else {
-                                    $controller = ucfirst(strtolower($controller)) . "Controller";
-                                    if(file_exists($_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php")) {
-                                        require_once $_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php";
-                                    } else {
-                                        error($CONFIG["basic"]["APP_ERROR_CODE_OF_MISSING_CONTROLLER_OR_ACTION"]);
-                                    }
-                                }
-                                $controller::main($handlers[$ext]);
-                                $action = Route::getRouteAction();
-                                if($action !== null) {
-                                    if(method_exists($controller, $action)) {
-                                           call_user_func_array(array($controller, $action), getArrayOfParameters(new ReflectionMethod($controller, $action)));                                                                          
-                                    } else {
-                                        error($CONFIG["basic"]["APP_ERROR_CODE_OF_MISSING_CONTROLLER_OR_ACTION"]);
-                                    }
-                                }
-                            }
-                            $handlers[$ext]::handle($template_files[$i]);
-                        } else {
-                            $ext = ucfirst(strtolower($ext));
-                            if(file_exists($_SERVER['DOCUMENT_ROOT']."/../app/handlers/".$ext."Handler.php")) {
-                                require_once $_SERVER['DOCUMENT_ROOT']."/../app/handlers/".$ext."Handler.php";
-                                $ext = $ext."Handler";
-                                $controller = Route::getController();
-                                if($controller === null) {
-                                    $controller = Route::getRouteController();
-                                }
-                                if ($controller !== null) {
-                                    if(file_exists($_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php")) {
-                                        require_once $_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php";
-                                    } else {
-                                        $controller = ucfirst(strtolower($controller)) . "Controller";
-                                        if(file_exists($_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php")) {
-                                            require_once $_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php";
-                                        } else {
-                                            error($CONFIG["basic"]["APP_ERROR_CODE_OF_MISSING_CONTROLLER_OR_ACTION"]);
-                                        }
-                                    }
-                                    $controller::main($ext);
-                                    $action = Route::getRouteAction();
-                                    if($action !== null) {
-                                        if(method_exists($controller, $action)) {
-                                           call_user_func_array(array($controller, $action), getArrayOfParameters(new ReflectionMethod($controller, $action)));                                            
-                                        } else {
-                                            error($CONFIG["basic"]["APP_ERROR_CODE_OF_MISSING_CONTROLLER_OR_ACTION"]);
-                                        }
-                                    }
-                                }
-                                $ext::handle($template_files[$i]);
-                            }
-                        }
-                    }
-
-                }
-            }
-        }
-    }
-}
+// code that requires all template files
+require $_SERVER['DOCUMENT_ROOT'] . "/../app/core/loader/template_files_loader.php";
 
 $time_end = microtime(true);
 $ru = getrusage();
@@ -254,63 +91,6 @@ function rutime($ru, $rus, $index)
          - ($rus["ru_$index.tv_sec"] * 1000 + intval($rus["ru_$index.tv_usec"] / 1000));
 }
 
-function errorHandler($errno, $errstr, $errfile, $errline) {
-    global $CONFIG;
-    if (!(error_reporting() & $errno)) {
-        return false;
-    }
-
-    if ($CONFIG["debug"]["DEBUG_LOG_ERR"] == "1") {
-        Logger::log("[$errno] $errstr in $errfile at line $errline", "errors.log");
-    }
-
-    switch ($errno) {
-        case E_USER_ERROR:
-            if(!empty($CONFIG["database"]["DB_HOST"]) && $CONFIG["debug"]["DEBUG_SAVE"] == "1") 
-                db::query("INSERT INTO debug_errors (`ERR_LEVEL`, `ERR_MESSAGE`, `ERR_FILE`, `ERR_LINE`) VALUES (?, ?, ?, ?);", array('ERROR', $errstr, $errfile, $errline));
-            if($CONFIG["debug"]["DEBUG_PRINT_ERR"] == "1") {
-                echo "<b>ERROR</b> [$errno] $errstr<br />\n";
-                echo "  Fatal error on line $errline in file <a href='file:///$errfile:$errline'>$errfile</a>";
-                echo ", PHP " . PHP_VERSION . " (" . PHP_OS . ")<br />\n";
-                echo "Aborting...<br />\n";
-            }
-        
-            exit(1);
-            break;
-
-        case E_USER_WARNING:
-            if(!empty($CONFIG["database"]["DB_HOST"]) && $CONFIG["debug"]["DEBUG_SAVE"] == "1")
-                db::query("INSERT INTO debug_errors (`ERR_LEVEL`, `ERR_MESSAGE`, `ERR_FILE`, `ERR_LINE`) VALUES (?, ?, ?, ?);", array('WARNING', $errstr, $errfile, $errline));
-            if($CONFIG["debug"]["DEBUG_PRINT_ERR"] == "1") {
-                echo "<b>WARNING</b> [$errno] $errstr on line $errline in file <a href='file:///$errfile:$errline'>$errfile</a><br />\n";
-            }
-           
-            break;
-
-        case E_USER_NOTICE:
-            if(!empty($CONFIG["database"]["DB_HOST"]) && $CONFIG["debug"]["DEBUG_SAVE"] == "1")
-                db::query("INSERT INTO debug_errors (`ERR_LEVEL`, `ERR_MESSAGE`, `ERR_FILE`, `ERR_LINE`) VALUES (?, ?, ?, ?);", array('NOTICE', $errstr, $errfile, $errline));
-            if($CONFIG["debug"]["DEBUG_PRINT_ERR"] == "1") {
-                echo "<b>NOTICE</b> [$errno] $errstr on line $errline in file <a href='file:///$errfile:$errline'>$errfile</a><br />\n";
-            }
-            
-
-            break;
-
-        default:
-            if(!empty($CONFIG["database"]["DB_HOST"]) && $CONFIG["debug"]["DEBUG_SAVE"] == "1")
-                db::query("INSERT INTO debug_errors (`ERR_LEVEL`, `ERR_MESSAGE`, `ERR_FILE`, `ERR_LINE`) VALUES (?, ?, ?, ?);", array('OTHER', $errstr, $errfile, $errline));
-            if($CONFIG["debug"]["DEBUG_PRINT_ERR"] == "1") {
-                echo "Unknown error type: [$errno] $errstr on line $errline in file <a href='file:///$errfile:$errline'>$errfile</a><br />\n";
-            }
-            
-
-            break;
-    }
-
-    /* Don't execute PHP internal error handler */
-    return true;
-}
 
 if (isset($CONFIG["addintional_loader_files_after"]["file"])) {
     foreach ($CONFIG["addintional_loader_files_after"]["file"] as $f) {

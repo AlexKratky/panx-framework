@@ -1,0 +1,14 @@
+<form method={$form->method}>
+    {csrf}
+    {input username}
+    {input password}
+    {input info}
+    <button {$form->submit->html|noescape} id="{$form->submit->id}" name="submit">
+        {$form->submit->text}
+    </button>
+    {*component button*}{*/component*}
+</form>
+{dump $_POST}
+{if $form->errorMsg}
+    {$form->errorMsg}
+{/if}

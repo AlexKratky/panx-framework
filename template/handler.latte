@@ -4,3 +4,16 @@
 {/foreach}
 </ul>
 {include 'onemore.latte'}
+{dump $APP_NAME}
+{dump $APP_URL}
+{dump $URL_STRING}
+
+{component button, class => 'class1, class2, classxd', id => test, names => 'name1, name2'}LEL{/component}
+
+{singleComponent image, class => 'class1, class2, classxd', id => test, src => https://picsum.photos/id/413/536/354}
+<br><br>
+
+{form LoginForm}
+{*component button, class => 'class1, class2', id => test, names => 'name1, name2' /*}
+
+{*singleComponent button, class => 'class1, class2', id => test, names => 'name1, name2'*}
