@@ -1,82 +1,190 @@
 <?php
+/**
+ * @name FormXElement.php
+ * @link https://alexkratky.cz                          Author website
+ * @link https://panx.eu/docs/                          Documentation
+ * @link https://github.com/AlexKratky/panx-framework/  Github Repository
+ * @author Alex Kratky <info@alexkratky.cz>
+ * @copyright Copyright (c) 2019 Alex Kratky
+ * @license http://opensource.org/licenses/mit-license.php MIT License
+ * @description The form element. Part of panx-framework.
+ */
+
+declare(strict_types=1);
+
 class FormXElement {
+    /**
+     * @var string|null The elements type, e.g. button, input ...
+     */
     public $elementType = null;
+    /**
+     * @var string|null The component name of element. Used in form rendering.
+     */
     public $componentName = null;
+    /**
+     * @var string|null The elements name, used in name="" atrribute.
+     */
     public $name = null;
+    /**
+     * @var string|null The input type, e.g. 'text', 'password', ...
+     */
     public $type = null;
+    /**
+     * @var string|null The elements ID, used in id="" atrribute.
+     */
     public $id = null;
+    /**
+     * @var string|null The elements default value.
+     */
     public $default = null;
+    /**
+     * @var string|null The elements placeholder, used in placeholder="" atrribute.
+     */
     public $placeholder = null;
+    /**
+     * @var bool Determines if the element is required to fill or not, used in required atrribute.
+     */
     public $required = false;
+    /**
+     * @var array The elements validator. [0] => Class name, [1] => Function name
+     */
     public $validator = null;
+    /**
+     * @var string|null The elements additional html code.
+     */
     public $html = null;
+    /**
+     * @var string|null The elements text.
+     */
     public $text = null;
+    /**
+     * @var string|null The elements value, used in value="" atrribute.
+     */
     public $value = null;
+    /**
+     * @var string|null The elements error message when the input is empty.
+     */
     public $errorMsgEmpty = null;
+    /**
+     * @var string|null The elements error message when the input is not valid.
+     */
     public $errorMsgNotValid = null;
 
-    public function __construct($t, $n) {
+    /**
+     * @param string $t The element type, e.g. button, input, ...
+     * @param string $n The element name.
+     */
+    public function __construct(string $t, string $n) {
         $this->elementType = $t;
         $this->componentName = $t;
         $this->name = $n;
     }
 
-    public function required($r) {
+    /**
+     * @param bool $r If sets to true, then the element is required to fill, otherwise it can be empty.
+     * @return FormXElement
+     */
+    public function required(bool $r): FormXElement {
         $this->required = $r;
         return $this;
     }
 
-    public function id($id) {
+    /**
+     * @param string $id The element's ID.
+     * @return FormXElement
+     */
+    public function id(string $id): FormXElement {
         $this->id = $id;
         return $this;
     }
 
-    public function type($t) {
+    /**
+     * @param string $t The element's type, e.g. 'text', 'password', ... 
+     * @return FormXElement
+     */
+    public function type(string $t): FormXElement {
         $this->type = $t;
         return $this;
     }
 
-    public function default($d) {
+    /**
+     * @param string $d The element's default value.
+     * @return FormXElement
+     */
+    public function default(string $d): FormXElement {
         $this->default = $d;
         return $this;
     }
 
-    public function placeholder($ph) {
+    /**
+     * @param string $ph The element's placeholder.
+     * @return FormXElement
+     */
+    public function placeholder(string $ph): FormXElement {
         $this->placeholder = $ph;
         return $this;
     }
 
-    public function validator($class, $fn_name) {
+    /**
+     * @param string $class The validator class name, e.g. 'Validator'.
+     * @param string $class The validator function name, e.g. 'validateUsername'.
+     * @return FormXElement
+     */
+    public function validator(string $class, string $fn_name): FormXElement {
         $this->validator = [$class, $fn_name];
         return $this;
     }
 
-    public function html($h) {
+    /**
+     * @param string $h The element's additional HTML code.
+     * @return FormXElement
+     */
+    public function html(string $h): FormXElement {
         $this->html = $h;
         return $this;
     }
 
-    public function text($t) {
+    /**
+     * @param string $t The element's text.
+     * @return FormXElement
+     */
+    public function text(string $t): FormXElement {
         $this->text = $t;
         return $this;
     }
 
-    public function value($v) {
+    /**
+     * @param string $v The element's value.
+     * @return FormXElement
+     */
+    public function value(string $v): FormXElement {
         $this->value = $v;
         return $this;
     }
 
-    public function errorMsgEmpty($m) {
+    /**
+     * @param string $m The element's error message, when the required element is empty.
+     * @return FormXElement
+     */
+    public function errorMsgEmpty(string $m): FormXElement {
         $this->errorMsgEmpty = $m;
         return $this;
     }
 
-    public function errorMsgNotValid($m) {
+    /**
+     * @param string $m The element's error message, when the element is not valid (If the element have Validator).
+     * @return FormXElement
+     */
+    public function errorMsgNotValid(string $m): FormXElement {
         $this->errorMsgNotValid = $m;
         return $this;
     }
 
-    public function component($n) {
+    /**
+     * @param string $n The component name, e.g. 'button', 'input', ...
+     * @return FormXElement
+     */
+    public function component(string $n): FormXElement {
         $this->componentName = $n;
         return $this;
     }
