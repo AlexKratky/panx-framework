@@ -104,7 +104,7 @@ class Route extends RouteAction implements RouteErrors {
      * Creates a new instance of Route object containing the route.
      * @param string $ROUTE
      */
-    public function __construct($ROUTE) {
+    public function __construct(string $ROUTE) {
         $this->ROUTE = $ROUTE;
     }
 
@@ -115,7 +115,7 @@ class Route extends RouteAction implements RouteErrors {
      * @param array|null $LOCK The array of supported methods for this route. If is set to null, the route will not be locked, so it can be accessed from any http method.
      * @return Route The object representing the route.
      */
-    public static function set($ROUTE, $TEMPLATE_FILE, $LOCK = null) {
+    public static function set(string $ROUTE, $TEMPLATE_FILE, ?array $LOCK = null): Route {
         /**
          * $matches[0][0] : {id}
          * $matches[1][0] : id
@@ -134,7 +134,7 @@ class Route extends RouteAction implements RouteErrors {
      * @param string $VERSION The version of API, e.g. 'v1' (/api/v1/).
      * @param array $ROUTES The multi dimensional array of routes.
      */
-    public static function apiGroup($VERSION, $ROUTES) {
+    public static function apiGroup(string $VERSION, array $ROUTES) {
         self::$API_ROUTES[$VERSION] = $ROUTES;
     }
 
@@ -143,7 +143,7 @@ class Route extends RouteAction implements RouteErrors {
      * @param string $controller The controller name.
      * @return Route Reference to this object.
      */
-    public function setController($controller) {
+    public function setController(string $controller): Route {
         self::$CONTROLLERS[$this->ROUTE] = $controller;
         return $this;
     }
@@ -153,7 +153,7 @@ class Route extends RouteAction implements RouteErrors {
      * @param string|null $ROUTE
      * @return string|null Returns the controller. If there is no controller sets, try to lookup for default, e.g. requesting /action/edit will include ActionController. If no default controller found, returns null.
      */
-    public static function getController($ROUTE = null) {
+    public static function getController(?string $ROUTE = null): ?string {
         if($ROUTE === null) {
             $ROUTE = $GLOBALS["request"]->getUrl()->getString();
             $ROUTE = self::convertRoute($ROUTE);
@@ -180,7 +180,7 @@ class Route extends RouteAction implements RouteErrors {
      * @param array $ROUTES For each route it will sets controllers.
      * @param string $controller The controller name.
      */
-    public static function setControllers($ROUTES, $controller) {
+    public static function setControllers(array $ROUTES, string $controller) {
         foreach ($ROUTES as $ROUTE) {
             self::$CONTROLLERS[$ROUTE->ROUTE] = $controller;
         }
@@ -190,7 +190,7 @@ class Route extends RouteAction implements RouteErrors {
      * Sets the alias for Route.
      * @param string $alias
      */
-    public function setAlias($alias) {
+    public function setAlias(string $alias) {
         self::$ALIASES[$alias] = $this->ROUTE;
         return $this;
     }
@@ -199,7 +199,7 @@ class Route extends RouteAction implements RouteErrors {
      * Gets the name of alias for current route.
      * @return string Alias name.
      */
-    public static function getAlias() {
+    public static function getAlias(): string {
         foreach (self::$ALIASES as $alias => $route) {
             if($route == self::$CURRENT_ROUTE_INFO["route"]) {
                 return $alias;
@@ -213,7 +213,7 @@ class Route extends RouteAction implements RouteErrors {
      * @param string $ROUTE The route.
      * @param string $alias
      */
-    public static function setRouteAlias($ROUTE, $alias) {
+    public static function setRouteAlias(string $ROUTE, string $alias) {
         self::$ALIASES[$alias] = $ROUTE;
     }
 
@@ -224,7 +224,7 @@ class Route extends RouteAction implements RouteErrors {
      * @param int|string $error The error code when the route does not contain all parameters. By default: 400.
      * @return Route Reference to this object.
      */
-    public function setRequiredParameters($get = array(), $post = array(), $error = 400) {
+    public function setRequiredParameters(array $get = array(), array $post = array(), $error = 400): Route {
         self::$REQUIRED_PARAMETERS[$this->ROUTE] = array($get, $post, $error);
         return $this;
     }    
@@ -252,7 +252,7 @@ class Route extends RouteAction implements RouteErrors {
      * @param array $MIDDLEWARES The array of middlewares.
      * @return Route Reference to this object.
      */
-    public function setMiddleware($MIDDLEWARES) {
+    public function setMiddleware(array $MIDDLEWARES): Route {
         self::$MIDDLEWARES[$this->ROUTE] = $MIDDLEWARES;
         return $this;
     }
@@ -262,7 +262,7 @@ class Route extends RouteAction implements RouteErrors {
      * @param array $ROUTES For each route it will sets middlewares.
      * @param array $MIDDLEWARES The array of middlewares.
      */
-    public static function setMiddlewares($ROUTES, $MIDDLEWARES) {
+    public static function setMiddlewares(array $ROUTES, array $MIDDLEWARES) {
         foreach ($ROUTES as $ROUTE) {
             self::$MIDDLEWARES[$ROUTE->ROUTE] = $MIDDLEWARES;
         }
@@ -273,7 +273,7 @@ class Route extends RouteAction implements RouteErrors {
      * @param string $API_GROUP The name of API group.
      * @param array $MIDDLEWARES The array containing all middlewares for API group.
      */
-    public static function setApiMiddleware($API_GROUP, $MIDDLEWARES) {
+    public static function setApiMiddleware(string $API_GROUP, array $MIDDLEWARES) {
         self::$API_MIDDLEWARES[$API_GROUP] = $MIDDLEWARES;
     }
 
@@ -282,7 +282,7 @@ class Route extends RouteAction implements RouteErrors {
      * @param string $endpoint The API endpoint, e.g. 'v1' or 'v2'.
      * @param object $handler The API handler, new API("v3")
      */
-    public static function setApiEndpoint($endpoint, $handler) {
+    public static function setApiEndpoint(string $endpoint, $handler) {
         self::$API_ENDPOINTS[$endpoint] = $handler;
     }
 
@@ -291,7 +291,7 @@ class Route extends RouteAction implements RouteErrors {
      * @param string $VALUE_NAME The parameter's name used in routes.
      * @return string|false The parameter's value or false if the key doesnt exist.
      */
-    public static function getValue($VALUE_NAME) {
+    public static function getValue(string $VALUE_NAME) {
         return isset(self::$VALUES[$VALUE_NAME]) ? self::$VALUES[$VALUE_NAME] : false;
 
     }
@@ -300,7 +300,7 @@ class Route extends RouteAction implements RouteErrors {
      * Obtain controller from route (Using <controller>).
      * @return string|null The controller or null if the the Route does not contain one.
      */
-    public static function getRouteController() {
+    public static function getRouteController(): ?string {
         return self::$ROUTE_CONTROLLER;
     }
 
@@ -308,7 +308,7 @@ class Route extends RouteAction implements RouteErrors {
      * Obtain action from route (Using <action>).
      * @return string|null The action or null if the the Route does not contain one.
      */
-    public static function getRouteAction() {
+    public static function getRouteAction(): ?string {
         return self::$ROUTE_ACTION;
     }
 
@@ -316,7 +316,7 @@ class Route extends RouteAction implements RouteErrors {
      * Returns array containing all routes (TYPE, URI/CODE, ACTION, LOCK, MIDDLEWARES).
      * @return array The array of all loaded routes.
      */
-    public static function getDataTable() {
+    public static function getDataTable(): array {
         $data = array();
         foreach (self::$ROUTES as $ROUTE => $FILE) {
             array_push($data, array('TYPE' => 'ROUTE', 'URI/CODE' => $ROUTE, 'ACTION' => (is_object($FILE) && ($FILE instanceof Closure) ? "function" : (is_array($FILE) ? "[".implode(", ", $FILE) . "]" :  $FILE)), 'LOCK' => (isset(self::$LOCK[$ROUTE]) ? "[".implode(", ", self::$LOCK[$ROUTE])."]" : "[]"), 'MIDDLEWARES' => (isset(self::$MIDDLEWARES[$ROUTE]) ? "[".implode(", ", self::$MIDDLEWARES[$ROUTE])."]" : "[]"), 'CONTROLLERS' => (isset(self::$CONTROLLERS[$ROUTE]) ? (is_array(self::$CONTROLLERS[$ROUTE]) ? "[".implode(", ", self::$CONTROLLERS[$ROUTE])."]" : self::$CONTROLLERS[$ROUTE]) : '[]')));
