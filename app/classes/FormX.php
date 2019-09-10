@@ -1,11 +1,42 @@
 <?php
+/**
+ * @name FormX.php
+ * @link https://alexkratky.cz                          Author website
+ * @link https://panx.eu/docs/                          Documentation
+ * @link https://github.com/AlexKratky/panx-framework/  Github Repository
+ * @author Alex Kratky <info@alexkratky.cz>
+ * @copyright Copyright (c) 2019 Alex Kratky
+ * @license http://opensource.org/licenses/mit-license.php MIT License
+ * @description Class to creates and validates forms. Part of panx-framework.
+ */
+
+declare(strict_types=1);
+
 class FormX {
+    /**
+     * @var string The form method: GET / POST. 
+     */
     public $method;
+    /**
+     * @var string The form action. 
+     */
     public $action;
+    /**
+     * @var string The form CSRF token.
+     */
     public $csrf;
     // array [0] err_type (0 -empty, 1 -validator), [1] element, [2] msg
+    /**
+     * @var array If the form is not valid, then the invalid input will appear here.
+     */
     public $error;
+    /**
+     * @var string|bool If the form is not valid, then the message will appear here.
+     */
     public $errorMsg = false;
+    /**
+     * @var array The array of all elements (inputs) in form.
+     */
     private $el = array();
 
     public const ELEMENT_EMPTY = 1;
@@ -14,7 +45,11 @@ class FormX {
     public const ERROR_REQUIRED = "Please, fill the %s.";
     public const ERROR_NOT_VALID = "Please, enter a valid value to the %s.";
 
-    public function __construct($method, $action) {
+    /**
+     * @param string $method The form method: GET / POST.
+     * @param string $action The form action.
+     */
+    public function __construct(string $method, string $action) {
         $this->method = $method;
         $this->action = $action;
 
@@ -31,13 +66,22 @@ class FormX {
         array_push($this->el, $e);
     }
 
-    public function add($type, $name) {
+    /**
+     * Add element to the form.
+     * @param string $type The element type, e.g. button, input...
+     * @param string $name The name of the element. Used in name="" atrribute.
+     * @return FormXElement The form element.
+     */
+    public function add(string $type, string $name): FormXElement {
         $e = new FormXElement($type, $name);
         array_push($this->el, $e);
         $this->$name = $e;
         return $e;
     }
 
+    /**
+     * This method will check for errors, if the form was submitted.
+     */
     public function checkForErrors() {
         if($this->method == "GET")
             if(count($_GET) === 0)
@@ -48,7 +92,11 @@ class FormX {
         $this->validate();
     }
 
-    public function validate() {
+    /**
+     * Validates the form. All required elements must be filled, and if the element have Validator, then the element's value must be valid.
+     * @return bool Returns true if the form is valid, false otherwise.
+     */
+    public function validate(): bool {
         foreach ($this->el as $el) {
             if($el->required) {
                 if($this->method == "POST") {
@@ -95,7 +143,12 @@ class FormX {
         return true;
     }
 
-    public function setError($el, $type) {
+    /**
+     * Sets the $errorMsg and $error.
+     * @param FormXElement $el The element that is not valid.
+     * @param string $type The Error type, e.g. FormX::ELEMENT_EMPTY or FormX::ELEMENT_NOT_VALID.
+     */
+    public function setError(FormXElement $el, string $type) {
         if($type === self::ELEMENT_EMPTY) {
             $this->error = array(self::ELEMENT_EMPTY, $el->name);
             $m = $el->errorMsgEmpty ?? (__("form_error_empty", true, array($el->name), false) === false ? self::ERROR_REQUIRED : __("form_error_empty", true, array($el->name)));
@@ -109,7 +162,11 @@ class FormX {
         }
     }
 
-    public function getValues() {
+    /**
+     * Obtains the values from form.
+     * @return array Returns the array containing all filled data from form.
+     */
+    public function getValues(): array {
         $arr = [];
         foreach ($this->el as $el) {
             if($el->name === "csrf_token") continue;
@@ -126,7 +183,10 @@ class FormX {
         return $arr;
     }
 
-    public function getElementsNames() {
+    /**
+     * @return array Returns the array containing all elements names.
+     */
+    public function getElementsNames(): array {
         $arr = array();
         foreach ($this->el as $el) {
             array_push($arr, $el->name);
