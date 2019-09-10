@@ -10,6 +10,8 @@
  * @description Class to send mails. Part of panx-framework.
  */
 
+declare(strict_types=1);
+ 
 class Mail {
     /**
      * @var string The subject of mail.
@@ -40,21 +42,21 @@ class Mail {
     /**
      * Sets the subject of mail.
      */
-    public function subject($s) {
+    public function subject(string $s) {
         $this->subject = $s;
     }
 
     /**
      * Sets the message of mail.
      */
-    public function message($m) {
+    public function message(string $m) {
         $this->message = $m;
     }
 
     /**
      * Sets the headers of mail.
      */
-    public function headers($h) {
+    public function headers(string $h) {
         $this->headers = $h;
     }
 
