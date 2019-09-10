@@ -52,7 +52,7 @@ if(!empty($CONFIG["database"]["DB_HOST"])) {
     }
 }
 if($CONFIG["basic"]["APP_LOG_ACCESS"] == "1") {
-    Logger::log("[{$_SERVER['REMOTE_ADDR']}][".(isset($_SESSION["username"]) ? $_SESSION["username"] : "")."] - http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}", "access.log");
+    Logger::log("[{$_SERVER['REMOTE_ADDR']}][".(isset($_SESSION["username"]) ? $_SESSION["username"] : "")."] - http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}". (isset($_SESSION["PREVIOUS_URL"]) ? " from http://{$_SERVER['HTTP_HOST']}{$_SESSION['PREVIOUS_URL']}" : ""), "access.log");
 }
 load('panx'); //not class
 
@@ -76,6 +76,21 @@ $auth = new Auth();
 
 $auth->loginFromCookies();
 $UC = $request->getUrl();
+
+//obtain previous url
+$x = $UC->getString();
+if (strpos("favicon.ico", $x) === false) {
+    //prevent replacing previous url with the same url
+    if (!isset($_SESSION["PREVIOUS_URL"])) {
+        $_SESSION["PREVIOUS_URL"] = $x;
+    } else {
+        if ($_SESSION["PREVIOUS_URL_QUEUE"] != $x) {
+            $_SESSION["PREVIOUS_URL"] = $_SESSION["PREVIOUS_URL_QUEUE"];
+            $_SESSION["PREVIOUS_URL_QUEUE"] = $x;
+        }
+    }
+}
+
 //echo $UC->getString();
 $template_files = Route::search($UC->getString());
 // code that requires all template files
@@ -145,9 +160,3 @@ function getArrayOfParameters($r) {
     }
     return $a;
 }
-//after all files and scripts are executed, save current url to session, so on new request it can be used as previoused url. Prevent logging favicon.ico (Chrome tries to implement the favicon without any html tag)
-$x = $request->getUrl()->getString();
-if(strpos("favicon.ico", $x) === false)
-    //prevent replacing previous url with the same url
-    if(!isset($_SESSION["PREVIOUS_URL"]) || $_SESSION["PREVIOUS_URL"] != $x)
-        $_SESSION["PREVIOUS_URL"] = $x;

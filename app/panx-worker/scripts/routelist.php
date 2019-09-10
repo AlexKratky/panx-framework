@@ -1,4 +1,13 @@
 <?php
+function isAssoc(array $arr): bool
+{
+    if (array() === $arr) {
+        return false;
+    }
+
+    return array_keys($arr) !== range(0, count($arr) - 1);
+}
+
 require $PATH . "/app/classes/RouteErrors.php";
 require $PATH . "/app/classes/RouteAction.php";
 require $PATH . "/app/classes/Route.php";

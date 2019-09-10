@@ -26,11 +26,23 @@ class Route extends RouteAction implements RouteErrors {
      */
     protected static $CONTROLLERS = array();
     /**
+     * @var array The array of API controllers. [0] => api group, e.g. v1; [1] => Contoller name
+     */
+    protected static $API_CONTROLLERS = array();
+    /**
      * @var array The array of locks (which will limit routes to certain methods).
      */
     protected static $LOCK = array();
     /**
-     * @var array The array of API routes.
+     * @var array The array of API routes. [GROUP] => [
+     *  [ 
+     *      [0] => ROUTE
+     *      [1] => VALUE
+     *      [2] => LOCK
+     *      [3] => REQUIRED_PARAMETERS
+     *      [4] => ACTION
+     *  ]
+     * ]
      */
     protected static $API_ROUTES = array();
     /**
@@ -137,7 +149,26 @@ class Route extends RouteAction implements RouteErrors {
      * @param array $ROUTES The multi dimensional array of routes.
      */
     public static function apiGroup(string $VERSION, array $ROUTES) {
-        self::$API_ROUTES[$VERSION] = $ROUTES;
+        if(!isset(self::$API_ROUTES[$VERSION])) {
+            self::$API_ROUTES[$VERSION] = [];
+        }
+        foreach ($ROUTES as $ROUTE) {
+            if(!isAssoc($ROUTE)) {
+                array_push(self::$API_ROUTES[$VERSION], $ROUTE);
+            } else {
+                $r = array(
+                    $ROUTE["route"],
+                    $ROUTE["files"] ?? null,
+                    $ROUTE["lock"] ?? null,
+                    $ROUTE["required_params"] ?? null,
+                    $ROUTE["action"] ?? null
+                );
+                array_push(self::$API_ROUTES[$VERSION], $r);
+            }
+            $alias = $ROUTE[5] ?? ($ROUTE["alias"] ?? null);
+            if($alias)
+                self::setRouteAlias("/api/$VERSION/" . ($ROUTE[0] ?? $ROUTE["route"]), $alias);
+        }
     }
 
     /**
@@ -148,6 +179,15 @@ class Route extends RouteAction implements RouteErrors {
     public function setController(string $controller): Route {
         self::$CONTROLLERS[$this->ROUTE] = $controller;
         return $this;
+    }
+
+    /**
+     * Sets controller for API group.
+     * @param string $apiGroup The name of API group, e.g. v1
+     * @param string $controller The controller name.
+     */
+    public static function setApiController(string $apiGroup, string $controller) {
+        self::$API_CONTROLLERS[$apiGroup] = $controller;
     }
 
     /**
@@ -169,11 +209,20 @@ class Route extends RouteAction implements RouteErrors {
             if(!isset($url->getLink()[1])) {
                 return null;
             }
-            $default = ucfirst(strtolower($url->getLink()[1])) . "Controller";
-            if(file_exists($_SERVER['DOCUMENT_ROOT']."/../app/controllers/$default.php")) {
-                return $default;
+            if($url->getLink()[1] != "api") {
+                $default = ucfirst(strtolower($url->getLink()[1])) . "Controller";
+                if(file_exists($_SERVER['DOCUMENT_ROOT']."/../app/controllers/$default.php")) {
+                    return $default;
+                }
+                return null;
+            } else {
+                if(isset($url->getLink()[2])) {
+                    if(isset(self::$API_CONTROLLERS[$url->getLink()[2]])) {
+                        return self::$API_CONTROLLERS[$url->getLink()[2]]; 
+                    }
+                }
+                return null;
             }
-            return null;
         }
     }
 
@@ -311,7 +360,28 @@ class Route extends RouteAction implements RouteErrors {
      * @return string|null The action or null if the the Route does not contain one.
      */
     public static function getRouteAction(): ?string {
-        return self::$ROUTE_ACTION;
+        $url = new URL();
+        if(isset(self::$ROUTE_ACTION)) {
+            return self::$ROUTE_ACTION;
+        }
+        if(isset($url->getLink()[1]) && isset($url->getLink()[2]) && $url->getLink()[1] == "api") {
+            $g = $url->getLink()[2];
+            foreach (self::$API_ROUTES[$g] as $API_ROUTE) {
+                $x = new URL("/api/".$g."/".trim($API_ROUTE[0], "/"), false);
+                if(count($x->getLink()) > count($url->getLink())) {
+                    continue;
+                }
+                $t = RouteAction::test(array("/api/".$g."/".trim($API_ROUTE[0], "/"), $API_ROUTE[1] ?? null), RouteAction::TYPE_API_ROUTE);
+                if($t !== false) {
+                    if (!empty($API_ROUTE[4])) {
+                        return $API_ROUTE[4];
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -321,14 +391,49 @@ class Route extends RouteAction implements RouteErrors {
     public static function getDataTable(): array {
         $data = array();
         foreach (self::$ROUTES as $ROUTE => $FILE) {
-            array_push($data, array('TYPE' => 'ROUTE', 'URI/CODE' => $ROUTE, 'ACTION' => (is_object($FILE) && ($FILE instanceof Closure) ? "function" : (is_array($FILE) ? "[".implode(", ", $FILE) . "]" :  $FILE)), 'LOCK' => (isset(self::$LOCK[$ROUTE]) ? "[".implode(", ", self::$LOCK[$ROUTE])."]" : "[]"), 'MIDDLEWARES' => (isset(self::$MIDDLEWARES[$ROUTE]) ? "[".implode(", ", self::$MIDDLEWARES[$ROUTE])."]" : "[]"), 'CONTROLLERS' => (isset(self::$CONTROLLERS[$ROUTE]) ? (is_array(self::$CONTROLLERS[$ROUTE]) ? "[".implode(", ", self::$CONTROLLERS[$ROUTE])."]" : self::$CONTROLLERS[$ROUTE]) : '[]')));
+            $alias = "";
+            foreach(self::$ALIASES as $ALIAS => $R) {
+                if($ROUTE == $R) {
+                    $alias = $ALIAS;
+                    break;
+                }
+            }
+            array_push($data, 
+                array(
+                    'TYPE' => 'ROUTE', 
+                    'URI/CODE' => $ROUTE, 
+                    'ACTION' => !isset($FILE) ? "/" : (is_object($FILE) && ($FILE instanceof Closure) ? "function" : (is_array($FILE) ? "[".implode(", ", $FILE) . "]" :  $FILE)), 
+                    'LOCK' => (isset(self::$LOCK[$ROUTE]) ? "[".implode(", ", self::$LOCK[$ROUTE])."]" : "[]"), 
+                    'MIDDLEWARES' => (isset(self::$MIDDLEWARES[$ROUTE]) ? "[".implode(", ", self::$MIDDLEWARES[$ROUTE])."]" : "[]"), 
+                    'CONTROLLER' => (isset(self::$CONTROLLERS[$ROUTE]) ? self::$CONTROLLERS[$ROUTE] : ''),
+                    'API_EP' => "",
+                    'R_P_G' => (isset(self::$REQUIRED_PARAMETERS[$ROUTE][0]) ? "[".implode(", ", self::$REQUIRED_PARAMETERS[$ROUTE][0])."]" : "[]"),
+                    'R_P_P' => (isset(self::$REQUIRED_PARAMETERS[$ROUTE][1]) ? "[".implode(", ", self::$REQUIRED_PARAMETERS[$ROUTE][1])."]" : "[]"),
+                    'R_P_E' => (isset(self::$REQUIRED_PARAMETERS[$ROUTE][2]) ? self::$REQUIRED_PARAMETERS[$ROUTE][2] : ""),
+                    'ALIAS' => $alias
+                )
+            );
         }
 
         //var_dump(self::$API_ROUTES);
         foreach (self::$API_ROUTES as $API_ROUTE => $API) {
    
             foreach ($API as $route => $value) {
-                array_push($data, array('TYPE' => 'API', 'URI/CODE' => "/api/" . $API_ROUTE . "/" . $value[0], 'ACTION' => (is_object($value[1]) && ($value[1] instanceof Closure) ? "function" : (is_array($value[1]) ? "[" . implode(", ", $value[1]) . "]" : $value[1])), 'LOCK' => (isset($value[2]) ? "[" . implode(", ", $value[2]) . "]" : "[]"), 'MIDDLEWARES' => (isset(self::$API_MIDDLEWARES[$API_ROUTE]) ? "[" . implode(", ", self::$API_MIDDLEWARES[$API_ROUTE]) . "]" : "[]"), 'CONTROLLERS' => "[]"));
+                array_push($data, 
+                    array(
+                        'TYPE' => 'API', 
+                        'URI/CODE' => "/api/" . $API_ROUTE . "/" . $value[0], 
+                        'ACTION' => !isset($value[1]) ? "/" : (is_object($value[1]) && ($value[1] instanceof Closure) ? "function" : (is_array($value[1]) ? "[" . implode(", ", $value[1]) . "]" : $value[1])), 
+                        'LOCK' => (isset($value[2]) ? "[" . implode(", ", $value[2]) . "]" : "[]"), 
+                        'MIDDLEWARES' => (isset(self::$API_MIDDLEWARES[$API_ROUTE]) ? "[" . implode(", ", self::$API_MIDDLEWARES[$API_ROUTE]) . "]" : "[]"), 
+                        'CONTROLLER' => (isset(self::$API_CONTROLLERS[$API_ROUTE]) ? self::$API_CONTROLLERS[$API_ROUTE] : ''),
+                        'API_EP' => (isset(self::$API_ENDPOINTS[$API_ROUTE]) ? get_class(self::$API_ENDPOINTS[$API_ROUTE]) : ""),
+                        'R_P_G' => (isset($value[3][0]) ? "[" . implode(", ", $value[3][0]) . "]" : "[]"),
+                        'R_P_P' => (isset($value[3][1]) ? "[" . implode(", ", $value[3][1]) . "]" : "[]"),
+                        'R_P_E' => (isset($value[3][2]) ? $value[3][2] : ""),
+                        'ALIAS' => ""
+                    )
+                );
 
             }
             
@@ -337,7 +442,27 @@ class Route extends RouteAction implements RouteErrors {
 
         foreach (self::$ERRORS as $ERROR => $ACTION) {
             //'LOCK' => (isset(self::$LOCK[$ROUTE]) ? "[" . implode(", ", self::$LOCK[$ROUTE]) . "]" : "[]"),
-            array_push($data, array('TYPE' => 'ERROR', 'URI/CODE' => $ERROR, 'ACTION' => (is_object($ACTION) && ($ACTION instanceof Closure) ? "function" : (is_array($ACTION) ? "[" . implode(", ", $ACTION) . "]" : $ACTION)), 'LOCK' => "[]", 'MIDDLEWARES' => "[]", 'CONTROLLERS' => "[]"));
+            $alias = "";
+            foreach(self::$ALIASES as $ALIAS => $R) {
+                if($ROUTE == $R) {
+                    $alias = $ALIAS;
+                    break;
+                }
+            }
+            array_push($data, 
+                array(
+                    'TYPE' => 'ERROR', 
+                    'URI/CODE' => $ERROR, 
+                    'ACTION' => (is_object($ACTION) && ($ACTION instanceof Closure) ? "function" : (is_array($ACTION) ? "[" . implode(", ", $ACTION) . "]" : $ACTION)), 
+                    'LOCK' => "[]", 
+                    'MIDDLEWARES' => "[]", 
+                    'CONTROLLER' => "",
+                    'API_EP' => "",
+                    'R_P_G' => "[]",
+                    'R_P_P' => "[]",
+                    'R_P_E' => "",
+                    'ALIAS' => $alias
+                ));
         }
 
 

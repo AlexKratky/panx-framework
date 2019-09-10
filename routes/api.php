@@ -155,3 +155,20 @@ Route::apiGroup("v4", array(
         echo $x->getString();
     })
 ));
+
+Route::apiGroup("v5", array(
+    array('x/*'),
+    array('e/*', null, null, null, "login"),
+    array(
+        "route" => "alex/{name}/{action}",
+        "files" => null,
+        "lock" => null,
+        "required_params" => null,
+        "action" => "login",
+        "alias" => "alex"
+    ),
+    array('<action>/{ID}/{NAME}'),
+    array('<action>/*', null, [], [["id", "name"], [], 400], "test"),
+));
+
+Route::setApiController("v5", "V5Contoller");
