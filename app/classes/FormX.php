@@ -126,12 +126,20 @@ class FormX {
 
             if($el->validator !== null) {
                 if($this->method == "POST") {
+                    //The element is not required, so if it is empty, then just continue.
+                    if(empty($_POST[$el->name])) {
+                        continue;
+                    }
                     $x = forward_static_call_array(array($el->validator[0], $el->validator[1]), array($_POST[$el->name]));
                     if(!$x) {
                         $this->setError($el, self::ELEMENT_NOT_VALID);
                         return false;
                     }
                 } else {
+                    //The element is not required, so if it is empty, then just continue.
+                    if(empty($_GET[$el->name])) {
+                        continue;
+                    }
                     $x = forward_static_call_array(array($el->validator[0], $el->validator[1]), array($_GET[$el->name]));
                     if(!$x) {
                         $this->setError($el, self::ELEMENT_NOT_VALID);
