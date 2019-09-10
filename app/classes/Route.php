@@ -10,6 +10,8 @@
  * @description Router engine. Part of panx-framework.
  */
 
+declare(strict_types = 1);
+
 class Route extends RouteAction implements RouteErrors {
     /**
      * @var array The array of routes.
