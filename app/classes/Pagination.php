@@ -10,6 +10,8 @@
  * @description Class to split data into several pages. Part of panx-framework.
  */
 
+declare(strict_types=1);
+
 class Pagination {
     /**
      * @var mixed $data The data that will be splitted to pages. It can be SQL query, array or file path.
@@ -45,7 +47,7 @@ class Pagination {
      * @param int $perPage Entries per page. If the source is array, then it will use elements. If the souce is SQL query, then it will use LIMIT. If the source is file, then it will use file lines. The SQL query is just 'FROM x (WHERE)'.
      * @param string $DATA_TYPE Determine the source type.
      */
-    public function __construct($data, $perPage = 10, $DATA_TYPE = "DATA_ARRAY") {
+    public function __construct(mixed $data, int $perPage = 10, string $DATA_TYPE = "DATA_ARRAY") {
         $this->data = $data;
         switch ($DATA_TYPE) {
             case self::DATA_ARRAY:
@@ -85,7 +87,7 @@ class Pagination {
      * Returns the part of data for current page.
      * @return array
      */
-    public function getData() {
+    public function getData(): array {
         $start = (($this->currentPage-1) * $this->perPage);
         $max = $this->perPage + (($this->currentPage-1) * $this->perPage);
         $res = array();
@@ -118,14 +120,14 @@ class Pagination {
     /**
      * Returns total pages count.
      */
-    public function totalPages() {
+    public function totalPages(): int {
         return $this->totalPages;
     }
 
     /**
      * Returns current page.
      */
-    public function currentPage() {
+    public function currentPage(): int {
         return $this->currentPage;
     }
 
@@ -153,7 +155,7 @@ class Pagination {
      * @param string|null $callback The JS callback that will be called on new page load. If sets to null, it will just append the data inside the container.
      * @param int $PAGE The pre-set page. By default 1.
      */
-    public static function infinityScroll($URI = null, $callback = null, $PAGE = 1) {
+    public static function infinityScroll(?string $URI = null, ?string $callback = null, int $PAGE = 1) {
         if($URI === null) {
             $URI = $GLOBALS["request"]->getUrl()->getString() . "/load/";
         }
