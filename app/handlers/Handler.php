@@ -39,4 +39,12 @@ class Handler {
     public static function addParameters($parameters) {
         array_push(self::$parameters, $parameters);
     }
+
+    /**
+     * Add the value to the self::$parameters attribute.
+     * @param mixed $parameters
+     */
+    public static function addParameter($parameter_name, $parameter_value) {
+        self::$parameters[$parameter_name] = $parameter_value;
+    }
 }

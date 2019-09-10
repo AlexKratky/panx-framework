@@ -10,7 +10,7 @@
  * @description Class to validate the user inputs. Part of panx-framework.
  */
 
-class Validator {
+class Validator extends ValidatorFunctions {
     public const RULE_CUSTOM = 0;
     public const RULE_MAIL = 1;
     public const RULE_USERNAME = 2;
@@ -18,38 +18,54 @@ class Validator {
     public const RULE_CHECKBOX = 4;
 
     /**
+     * Validates multiple inputs. The hierachy is:
      * $inputs = [
      *      [
-     *          "example@example.com",
-     *          1
+     *          "example@example.com", // value
+     *          1 // rule (1 = RULE_MAIL)
+     *              // min length 
+     *              // max length
+     *              // chars
      *      ]
      * ]
+     * 
+     * @param array $inputs
+     * @return bool Returns true if all inputs are valid, otherwise return the first $input array, that is not valid. 
      */
-    public function multipleValidate($inputs) {
+    public static function multipleValidate($inputs) {
         foreach ($inputs as $input) {
-            if(!validate($input[0], $input[1])) {
+            if(!validate($input[0], $input[1], $input[2] ?? 0, $input[3] ?? 0, $input[4] ?? '/[^A-Za-z0-9]/')) {
                 return $input;
             }
         }
         return true;
     }
 
-    public function validate($input, $rule = 0, $min_length = 0, $max_length = 0, $chars = '/[^A-Za-z0-9]/') {
+    /**
+     * Validates input by rule.
+     * @param mixed $input The text(data) that will be validated.
+     * @param int $rule Sets the rule for validating. If the rule is not valid, then it will use following parameters:
+     * @param int $min_length The minimum length of $input.
+     * @param int $max_length The maximum length of $input.
+     * @param string The character mask of $input. Regex.
+     * @return bool Returns true if the input is valid, otherwise false.
+     */
+    public static function validate($input, $rule = 0, $min_length = 0, $max_length = 0, $chars = '/[^A-Za-z0-9]/') {
         if(empty($input)) {
             return false;
         }
         switch($rule) {
             case self::RULE_MAIL:
-                return $this->validateMail($input);
+                return self::validateMail($input);
                 break;
             case self::RULE_USERNAME:
-                return $this->validateUsername($input);
+                return self::validateUsername($input);
                 break;
             case self::RULE_PASSWORD:
-                return $this->validatePassword($input);
+                return self::validatePassword($input);
                 break;
             case self::RULE_CHECKBOX:
-                return $this->validateCheckBox($input);
+                return self::validateCheckBox($input);
                 break;
             default:
                 if(strlen($input) >= $min_length && strlen($input) <= $max_length && !preg_match($chars, $input)) {
@@ -62,28 +78,44 @@ class Validator {
         }
     }
 
-    public function validateMail($input) {
+    /**
+     * Validates $input as email.
+     * @return bool Returns true if the $input is valid, false otherwise.
+     */
+    public static function validateMail($input) {
         if (!filter_var($input, FILTER_VALIDATE_EMAIL)) {
             return false;
         }
         return true;
     }
 
-    public function validateUsername($input) {
+    /**
+     * Validates $input as username (only alphanumeric chars and minimum 4 chars length).
+     * @return bool Returns true if the $input is valid, false otherwise.
+     */
+    public static function validateUsername($input) {
         if(!ctype_alnum($input) || strlen($input) < 4) {
             return false;
         }
         return true;
     }
 
-    public function validatePassword($input) {
+    /**
+     * Validates $input as password (minimum 6 chars length).
+     * @return bool Returns true if the $input is valid, false otherwise.
+     */
+    public static function validatePassword($input) {
         if(strlen($input) < 6) {
             return false;
         }
         return true;
     }
 
-    public function validateCheckBox($input) {
+    /**
+     * Validates $input as checkbox (If equals to "on", returns true).
+     * @return bool Returns true if the $input is valid, false otherwise.
+     */
+    public static function validateCheckBox($input) {
         if(strtolower($input) != "on") {
             return false;
         }

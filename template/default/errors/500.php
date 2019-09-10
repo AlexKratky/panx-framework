@@ -5,7 +5,7 @@ if(!isset($CONFIG)) {
 ?>
 <!DOCTYPE html>
 	<head>
-		<title><?=$CONFIG["basic"]["APP_NAME"]?> | Error 404</title>
+		<title><?=$CONFIG["basic"]["APP_NAME"]?> | Error 500</title>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 		<link rel="shortcut icon" href="<?=$CONFIG["basic"]["APP_URL"]?>favicon.ico" type="image/x-icon">
@@ -14,9 +14,9 @@ if(!isset($CONFIG)) {
 	</head>
 	<body>
 <?php
-http_response_code(404);
+http_response_code(500);
 if(!isset($UC)) {
 	$UC = new URL();
 }
-echo("<div class='error'><div class='error-title'>Error <span class='error-code'>404</span></div><div class='error-msg'>".__('e404', true, array("\"".($UC->getLink()[count($UC->getLink())-1] == "" ? "/" : $UC->getLink()[count($UC->getLink())-1]) . "\""))."</div></div></body></html>");
+echo("<div class='error'><div class='error-title'>Error <span class='error-code'>500</span></div><div class='error-msg'>Internal server error</div></div></body></html>");
 ?>

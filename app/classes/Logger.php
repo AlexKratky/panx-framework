@@ -9,15 +9,19 @@
  * @license http://opensource.org/licenses/mit-license.php MIT License
  * @description Class to work with logs. Part of panx-framework.
  */
+
+declare(strict_types=1);
+
 class Logger {
 
     /**
      * Writes data to log file.
      * @param string $text The text to be written.
      * @param string $file The name of log file, default is main.log.
+     * @param string|null $dir The base path, if sets to null: $_SERVER['DOCUMENT_ROOT'] . "/..".
      * @return false|int This function returns the number of bytes that were written to the log file, or FALSE on failure.
      */
-    public static function log($text, $file = "main.log", $dir = null) {
+    public static function log(string $text, string $file = "main.log", ?string $dir = null) {
         if($dir === null) {
             $dir = $_SERVER['DOCUMENT_ROOT'] . "/..";
         }

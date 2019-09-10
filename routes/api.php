@@ -103,7 +103,11 @@ Route::apiGroup("v1", array(
 
     array('dump', function() {
         $random = "X";
-        dump(get_defined_vars());
+        dump(get_defined_vars(), false);
+        dump($random, false);
+        dump(null, false);
+        dump(false, false);
+
     }),
 
 ));
@@ -142,6 +146,8 @@ Route::setApiEndpoint("v3", new API("v3"));
 Route::apiGroup("v4", array(
     array('<action>/*', function () {
         echo Route::getRouteAction();
+    }),
+    array('convert-route', function() {
+        echo Route::convertRoute("/route-test/parameter/ALEDX/10/XD");
     })
-
 ));

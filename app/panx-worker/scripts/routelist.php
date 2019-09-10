@@ -1,4 +1,6 @@
 <?php
+require $PATH . "/app/classes/RouteErrors.php";
+require $PATH . "/app/classes/RouteAction.php";
 require $PATH . "/app/classes/Route.php";
 require $PATH . "/app/classes/API.php";
 

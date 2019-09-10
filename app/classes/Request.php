@@ -197,7 +197,15 @@ class Request {
 		$lang = strtolower($lang);
 		$lang = explode('-', $lang)[0];
         return $lang == "cs" ? "cz" : $lang;
-    }
+	}
+	
+	/**
+	 * returns unique client id.
+	 * @return string Unique client ID.
+	 */
+	public function getClientID() {
+		return md5($_SERVER['HTTP_USER_AGENT'] .  $_SERVER['REMOTE_ADDR'] . $_SERVER["HTTP_ACCEPT"] . $_SERVER["HTTP_ACCEPT_LANGUAGE"] . $_SERVER["HTTP_ACCEPT_ENCODING"] . $_SERVER["HTTP_ACCEPT_CHARSET"]);
+	}
     
     /**
      * Checks if are all of $vars isset()

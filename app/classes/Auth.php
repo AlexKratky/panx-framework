@@ -10,24 +10,66 @@
  * @description Class to authentification. Part of panx-framework.
  */
 
+declare(strict_types=1);
+
 class Auth {
+    /**
+     * @var Request
+     */
     private $request;
+    /**
+     * @var AuthModel
+     */
     private $authModel;
+    /**
+     * @var int The user's ID.
+     */
     private $id;
+    /**
+     * @var string The user's username.
+     */
     private $username;
+    /**
+     * @var string The user's email.
+     */
     private $email;
+    /**
+     * @var string The user's password as hash.
+     */
     private $password;
+    /**
+     * @var bool Determines if the user has verified email or not.
+     */
     private $verified;
+    /**
+     * @var string The user's verify key.
+     */
     private $verify_key;
+    /**
+     * @var int The user's creation timestamp.
+     */
     private $created_at;
+    /**
+     * @var int The user's editiation timestamp.
+     */
     private $edited_at;
+    /**
+     * @var int Determines if the user has 2FA or not.
+     */
     private $two_auth_enabled;
+    /**
+     * @var PragmaRX\Google2FAQRCode\Google2FA
+     */
     private $twoFA;
 
-    public function __construct($logout = false) {
+
+    /**
+     * Create a instance of Auth.
+     * @param bool $logout If sets to false, it will try to login the user.
+     */
+    public function __construct(bool $logout = false) {
         $this->request = $GLOBALS["request"];
         $this->authModel = new AuthModel();
-        require $_SERVER['DOCUMENT_ROOT'] . "/../vendor/autoload.php";
         $this->twoFA = new PragmaRX\Google2FAQRCode\Google2FA();
         if(!$logout) {
             if(!empty($_SESSION["username"]) && !empty($_SESSION["password"])) {
@@ -36,14 +78,24 @@ class Auth {
         }
     }
 
-    public function isLogined() {
+    /**
+     * @return bool Returns true if the user is logined (and if he has 2FA enabled, then he will need to enter the 2FA code to be 'logined'), false otherwose.
+     */
+    public function isLogined(): bool {
         if(!empty($this->id)) {
             return true;
         }
         return false;
     }
 
-    public function login($username = null, $password = null, $r = false) {
+    /**
+     * Tries to login user, if the user have 2fa enabled, redirects to alias 'login-2fa'.
+     * @param string|null $username The username from session or null,
+     * @param string|null $password The password from session or null,
+     * @param bool $r Determines if the user want to remember login.
+     * @return bool Returns true if the user was logined, false otherise.
+     */
+    public function login(?string $username = null, ?string $password = null, bool $r = false): bool {
         if($this->loginFromCookies()) {
             return true;
         }
@@ -114,7 +166,7 @@ class Auth {
                 $_SESSION["password"] = $data["PASSWORD"];
                 $_SESSION["2fa_passed"] = false;
                 if($GLOBALS["request"]->getUrl()->getLink()[1] != "login-2fa" && $GLOBALS["request"]->getUrl()->getLink()[1] != "logout") {
-                    redirect('/login-2fa');
+                    aliasredirect("login-2fa");
                 }
             }
         } else {
@@ -127,7 +179,11 @@ class Auth {
         }
     }
 
-    public function loginFromCookies() {
+    /**
+     * Tries to login user from cookies.
+     * @return bool Returns true if the user was successfully logined from cookies, false otherwise.
+     */
+    public function loginFromCookies(): bool {
         //dump($this->authModel->loginFromCookies());
         //return false;
         if($this->authModel->loginFromCookies()) {
@@ -148,7 +204,10 @@ class Auth {
         }
     }
 
-    public function twoFactorAuthData() {
+    /**
+     * @return array Returns the array containing the data about 2FA. [0] => SECRET; [1] => URL of QR code.
+     */
+    public function twoFactorAuthData(): array {
         if(empty($_SESSION["2fa_secret"])) {
             $secret = $this->twoFA->generateSecretKey();
             $_SESSION["2fa_secret"] = $secret;
@@ -166,7 +225,11 @@ class Auth {
         return [$secret, $url];
     }
 
-    public function save2FA() {
+    /**
+     * Setup the 2FA for user, if he entered a valid code.
+     * @return bool Returns false if the 2FA wasnt set up, true otherwise.
+     */
+    public function save2FA(): bool {
         if(!$this->validRecaptcha($this->request->getPost('g-recaptcha-response'))) {
             $_SESSION["AUTH_ERROR"] = "Invalid recaptcha";
             //$this->captchaFailed();
@@ -185,11 +248,18 @@ class Auth {
         }
     }
 
+    /**
+     * Disable the 2FA for user.
+     */
     public function disable2FA() {
         $this->authModel->disable2FA($this->id);
     }
 
-    public function register() {
+    /**
+     * Tries to register the user. Work with POST - email; username; password; accept
+     * @return bool Returns true, if the user is registered, false otherwise.
+     */
+    public function register(): bool {
         if(!$this->request->workWith("POST", array("email", "username", "password", "accept"))) {
             //$this->captchaFailed();
             $_SESSION["AUTH_ERROR"] = "Please enter all data.";
@@ -237,7 +307,11 @@ class Auth {
         return true;
     }
 
-    public function edit() {
+    /**
+     * Tries to saves the new data of user.
+     * @return bool Returns true if the data was saved, false otherwise (e.g. wrong password, email is already taken etc.)
+     */
+    public function edit(): bool {
         $mail = strtolower($this->request->getPost('email'));
         $user = strtolower($this->request->getPost('username'));
         if(!$this->validRecaptcha($this->request->getPost('g-recaptcha-response'))) {
@@ -296,7 +370,10 @@ class Auth {
         //$this->captchaPassed();
     }
 
-    public static function displayError() {
+    /**
+     * @return string Returns error string or empty string.
+     */
+    public static function displayError(): string {
         if(!empty($_SESSION["AUTH_ERROR"])) {
             $e = $_SESSION["AUTH_ERROR"];
             $_SESSION["AUTH_ERROR"] = null;
@@ -305,6 +382,9 @@ class Auth {
         return "";
     }
 
+    /**
+     * Logout user and redirect to $GLOBALS["CONFIG"]["auth"]["LOGOUT_PAGE"] and exit() executing.
+     */
     public function logout() {
         $_SESSION["username"] = null;
         $_SESSION["password"] = null;
@@ -320,11 +400,20 @@ class Auth {
         exit();
     }
 
-    public function verify($token) {
+    /**
+     * Verify the user email by token.
+     * @param string $token.
+     * @return bool Returns true if the mail was verified, false otherwise.
+     */
+    public function verify(string $token): bool {
         return $this->authModel->verify($this->id, $token);
     }
 
-    public function forgot() {
+    /**
+     * Sends the email with reset link.
+     * @return bool Returns true if the mail was sent, false otherwise.
+     */
+    public function forgot(): bool {
         if(!$this->validRecaptcha($this->request->getPost('g-recaptcha-response'))) {
             $_SESSION["AUTH_ERROR"] = "Invalid recaptcha";
             //$this->captchaFailed();
@@ -342,7 +431,11 @@ class Auth {
         return true;
     }
 
-    public function forgotSave() {
+    /**
+     * Saves the new password.
+     * @return bool Returns true if the password was reset, false otherwise.
+     */
+    public function forgotSave(): bool {
         if(!$this->validRecaptcha($this->request->getPost('g-recaptcha-response'))) {
             $_SESSION["AUTH_ERROR"] = "Invalid recaptcha";
             //$this->captchaFailed();
@@ -367,7 +460,11 @@ class Auth {
         }
     }
 
-    public function user($data) {
+    /**
+     * Returns the user specified data.
+     * @param string $data The data column name, e.g. 'name', 'id', 'email', ...
+     */
+    public function user(string $data) {
         $data = strtolower($data);
         switch ($data) {
             case 'name':
@@ -399,11 +496,15 @@ class Auth {
         }
     }
 
-    public function validRecaptcha($token) {
+    /**
+     * Validates recaptcha.
+     * @param string $token The recaptcha code.
+     * @return bool Returns true if the recaptcha is valid, false otherwise.
+     */
+    public function validRecaptcha(string $token): bool {
         if($this->isCaptchaNeeded() === false) {
             return true;
         }
-        require $_SERVER['DOCUMENT_ROOT']."/../vendor/autoload.php";
         $client = new GuzzleHttp\Client();
 
         $response = $client->post(
@@ -420,14 +521,23 @@ class Auth {
         return $body->success;
     }
 
+    /**
+     * The captcha failed, inserts the row into `recaptcha_fails`, so the user needs to fill the recaptcha.
+     */
     public function captchaFailed() {
         $this->authModel->captchaFailed($_SERVER['REMOTE_ADDR']);
     }
 
-    public function isCaptchaNeeded() {
+    /**
+     * @return bool Returns true if recaptcha is needed (is collumn in `recaptcha_fails`), false otherwise.
+     */
+    public function isCaptchaNeeded(): bool {
         return $this->authModel->isCaptchaNeeded($_SERVER['REMOTE_ADDR']);
     }
 
+    /**
+     * The captcha passed, deletes the row from `recaptcha_fails`.
+     */
     public function captchaPassed() {
         $this->authModel->captchaPassed($_SERVER['REMOTE_ADDR']);
     }

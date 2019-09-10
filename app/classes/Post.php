@@ -10,6 +10,8 @@
  * @description Class to work with post. Part of panx-framework.
  */
 
+declare(strict_types=1);
+
 class Post {
     /**
      * @var array The array of all headers files.
@@ -28,7 +30,7 @@ class Post {
      * Sets the headers files.
      * @param array $headers Headers.
      */
-    public static function setHeaders($headers) {
+    public static function setHeaders(array $headers) {
         self::$HEADERS = $headers;
     }
 
@@ -36,7 +38,7 @@ class Post {
      * Sets the footers files.
      * @param array $footers Footers.
      */
-    public static function setFooters($footers) {
+    public static function setFooters(array $footers) {
         self::$FOOTERS = $footers;
     }
 
@@ -44,7 +46,7 @@ class Post {
      * Sets the sorting of posts.
      * @param array $sorting The sorting of posts. Use SORT_DESC or SORT_ASC constants.
      */
-    public static function setSorting($sorting) {
+    public static function setSorting(array $sorting) {
         self::$SORTING = $sorting;
     }
 
@@ -84,9 +86,9 @@ class Post {
      * Returns the title of post (From .info file or from first headline).
      * @param string $post The post file name without extension.
      * @param string|null $language The used language of post, can be null, then the language will be passed from URL, if URL do not contains {LANGUAGE}, then it will use the most preferred language or no language.
-     * @return string The title of post.
+     * @return string The title of post or the error code.
      */
-    public static function getTitle($post, $language = null) {
+    public static function getTitle(string $post, ?string $language = null) {
         if($language === null) {
             if(Route::getValue('LANGUAGE') !== false) {
                 $language = Route::getValue('LANGUAGE');
@@ -118,7 +120,7 @@ class Post {
      * @param string|null $language The used language of post, can be null, then the language will be passed from URL, if URL do not contains {LANGUAGE}, then it will use the most preferred language or no language.     * 
      * @return array Array of all posts. All posts are sorted using your choosen sorting method. Each element have attribute 'name' and 'created_at'
      */
-    public static function listPosts($topic = null, $language = null) {
+    public static function listPosts(?string $topic = null, ?string $language = null): array {
         if($language === null) {
             if(Route::getValue('LANGUAGE') !== false) {
                 $language = Route::getValue('LANGUAGE');
@@ -210,7 +212,7 @@ class Post {
      * Deletes the post specified by URL (Route::getValue("ID")).
      * @param string|null $language The used language of post, can be null, then the language will be passed from URL, if URL do not contains {LANGUAGE}, then it will use the most preferred language or no language.     * 
      */
-    public static function deletePost($language = null) {
+    public static function deletePost(string $language = null) {
         if($language === null) {
             if(Route::getValue('LANGUAGE') !== false) {
                 $language = Route::getValue('LANGUAGE');
@@ -263,7 +265,7 @@ class Post {
      * @param string|null $language The used language of post, can be null, then the language will be passed from URL, if URL do not contains {LANGUAGE}, then it will use the most preferred language or no language.
      * @return false|array Returns FALSE if the post does not have .info file, otherwise returns the array containing the post's info (element => key).
      */
-    public static function loadInfo($post, $language = null) {
+    public static function loadInfo(string $post, ?string $language = null) {
         if($language === null) {
             if(Route::getValue('LANGUAGE') !== false) {
                 $language = Route::getValue('LANGUAGE');

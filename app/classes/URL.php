@@ -10,7 +10,7 @@
  * @description Class to work with URLs. Part of panx-framework.
  */
 
-class URL {
+class URL implements Iterator {
     /**
      * @var string The string representing URL.
      */
@@ -84,4 +84,33 @@ class URL {
     public function getCount() {
         return $this->ELEMENTS;
     }
+
+    //ITERATION
+    public function rewind()
+    {
+        reset($this->URL_LINK);
+    }
+  
+    public function current()
+    {
+        return current($this->URL_LINK);
+    }
+  
+    public function key() 
+    {
+        return key($this->URL_LINK);
+    }
+  
+    public function next() 
+    {
+        return next($this->URL_LINK);
+    }
+  
+    public function valid()
+    {
+        $key = key($this->URL_LINK);
+        $var = ($key !== NULL && $key !== FALSE);
+        return $var;
+    }
+
 }

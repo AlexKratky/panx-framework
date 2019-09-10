@@ -18,6 +18,7 @@ logs/
 docs/
 cache/
 tests/
+!tests/Test.php
 app/controllers/
 !app/controllers/AuthController.php
 !app/middlewares/AuthMiddleware.php
@@ -29,3 +30,5 @@ app/handlers/
 app/middlewares/
 app/migrations/
 app/models/
+app/classes/R.php
+tracy.php

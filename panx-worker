@@ -419,6 +419,21 @@ function version() {
     info_msg("Current version: $PANX_VERSION (".hash_file('md5', 'panx-worker').")");
 }
 
+function test() {
+    global $ARGS_COUNT;
+    global $ARGS;
+    global $PATH;
+    if(isset($ARGS[1])) {
+        $c = $ARGS[1];
+        require $PATH."/tests/Test.php";
+        require $PATH."/tests/". $c.".php";
+        $x = new $c();
+        $x->run();
+    } else {
+        error("You need to specify the test name");
+    }
+}
+
 
 
 function displayChangelog($path) {

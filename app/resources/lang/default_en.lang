@@ -4,3 +4,6 @@ forbidden1: Unfortunately, you do not have access to view
 forbidden2: 
 notfound1: The
 notfound2: can not be find. Either it does not exist or has existed in the past, but it has been deleted or moved.
+e404: The %s can not be find. Either it does not exist or has existed in the past, but it has been deleted or moved.
+form_error_empty: Please, fille the %s.
+form_not_valid: Please, enter a valid value to the %s.
