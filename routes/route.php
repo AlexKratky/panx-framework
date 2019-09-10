@@ -3,7 +3,7 @@ Route::set("/", "home.php", ["POST", "GET"])->setAlias("home");
 
 Route::set("/logined", function () {
     echo "Yep!";
-})->setMiddleware(["AuthMiddleware"])->setController(["xd", "xd2"]);
+})->setMiddleware(["AuthMiddleware"])->setController("xd");
 
 Route::set("/post/", ["post-list.php"]);
 Route::set("/test/*", "test.php");
@@ -56,7 +56,7 @@ Route::set("/sql/visits/{PAGE}", function () {
     $p = new Pagination("FROM `debug_visits`", 25, Pagination::DATA_SQL);
     $x = $p->getData();
     for ($i = 0; $i < count($x); $i++) {
-        dump($x[$i], false, "visit: " . $x[$i]["ID"]);
+        d($x[$i], false, "visit: " . $x[$i]["ID"]);
     }
 });
 
@@ -64,13 +64,13 @@ Route::set("/log/access/{PAGE}", function () {
     $p = new Pagination($_SERVER["DOCUMENT_ROOT"] . "/../logs/access.log", 100, Pagination::DATA_FILE);
     $x = $p->getData();
     for ($i = 0; $i < count($x); $i++) {
-        dump($x[$i], false, "access: " . ($i + ($p->currentPage()-1) * $p->perPage + 1));
+        d($x[$i], false, "access: " . ($i + ($p->currentPage()-1) * $p->perPage + 1));
     }
 });
 
 
 Route::set("/redbean", function() {
-    dump(R::getAll('SELECT * FROM `debug_visits` LIMIT 100'));
+    d(R::getAll('SELECT * FROM `debug_visits` LIMIT 100'));
 
 });
 

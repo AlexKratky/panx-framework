@@ -56,7 +56,7 @@ class FormX {
         $e = new FormXElement('input', 'csrf_token');
         $this->csrf_token = $e;
         if(empty($_SESSION['csrf_token'])) {
-            $_SESSION['csrf_token'] = substr(base_convert(sha1(uniqid(mt_rand())), 16, 36), 0, 32);
+            $_SESSION['csrf_token'] = substr(base_convert(sha1(uniqid((string)mt_rand())), 16, 36), 0, 32);
         }
         $this->csrf = $_SESSION["csrf_token"];
         $e->type("hidden")
@@ -105,7 +105,7 @@ class FormX {
                         return false;
                     }
                     if($el->name === "csrf_token") {
-                        if($_POST[$el->name] !== $_SESSION['csrf_token']) {
+                        if($_POST[$el->name] != $_SESSION['csrf_token']) {
                             $this->setError($el, self::ELEMENT_NOT_VALID);
                             return false;
                         }
@@ -116,7 +116,7 @@ class FormX {
                         return false;
                     }
                     if($el->name === "csrf_token") {
-                        if($_GET[$el->name] !== $_SESSION['csrf_token']) {
+                        if($_GET[$el->name] != $_SESSION['csrf_token']) {
                             $this->setError($el, self::ELEMENT_NOT_VALID);
                             return false;
                         }
@@ -154,9 +154,9 @@ class FormX {
     /**
      * Sets the $errorMsg and $error.
      * @param FormXElement $el The element that is not valid.
-     * @param string $type The Error type, e.g. FormX::ELEMENT_EMPTY or FormX::ELEMENT_NOT_VALID.
+     * @param int $type The Error type, e.g. FormX::ELEMENT_EMPTY or FormX::ELEMENT_NOT_VALID.
      */
-    public function setError(FormXElement $el, string $type) {
+    public function setError(FormXElement $el, int $type) {
         if($type === self::ELEMENT_EMPTY) {
             $this->error = array(self::ELEMENT_EMPTY, $el->name);
             $m = $el->errorMsgEmpty ?? (__("form_error_empty", true, array($el->name), false) === false ? self::ERROR_REQUIRED : __("form_error_empty", true, array($el->name)));

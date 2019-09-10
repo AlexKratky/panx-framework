@@ -47,20 +47,14 @@ class Pagination {
      * @param int $perPage Entries per page. If the source is array, then it will use elements. If the souce is SQL query, then it will use LIMIT. If the source is file, then it will use file lines. The SQL query is just 'FROM x (WHERE)'.
      * @param string $DATA_TYPE Determine the source type.
      */
-    public function __construct(mixed $data, int $perPage = 10, string $DATA_TYPE = "DATA_ARRAY") {
+    public function __construct($data, int $perPage = 10, string $DATA_TYPE = "DATA_ARRAY") {
         $this->data = $data;
         switch ($DATA_TYPE) {
             case self::DATA_ARRAY:
                 $this->totalPages  = count($data)/$perPage;
-                if(is_float($this->totalPages)) {
-                    $this->totalPages = (floor($this->totalPages)+1);
-                }
                 break;
             case self::DATA_SQL:
                 $this->totalPages  = db::count("SELECT COUNT(*) ".$this->data, array())/$perPage;
-                if(is_float($this->totalPages)) {
-                    $this->totalPages = (floor($this->totalPages)+1);
-                }
                 break;
             case self::DATA_FILE:
                 $this->totalPages = 0;
@@ -72,12 +66,12 @@ class Pagination {
 
                 fclose($handle);
                 $this->totalPages = $this->totalPages / $perPage;
-
-                if (is_float($this->totalPages)) {
-                    $this->totalPages = (floor($this->totalPages) + 1);
-                }
                 break;
         }
+        if (is_float($this->totalPages)) {
+            $this->totalPages = (floor($this->totalPages) + 1);
+        }
+
         $this->type = $DATA_TYPE;
         $this->perPage = $perPage;
         $this->currentPage = (Route::getValue("PAGE") !== false ? (int)Route::getValue("PAGE") : ($GLOBALS["request"]->getQuery("page") ?? 1));    
@@ -121,14 +115,14 @@ class Pagination {
      * Returns total pages count.
      */
     public function totalPages(): int {
-        return $this->totalPages;
+        return (int) $this->totalPages;
     }
 
     /**
      * Returns current page.
      */
     public function currentPage(): int {
-        return $this->currentPage;
+        return (int) $this->currentPage;
     }
 
     /**
@@ -160,6 +154,6 @@ class Pagination {
             $URI = $GLOBALS["request"]->getUrl()->getString() . "/load/";
         }
         echo '<script src="/res/js/InfinityScroll.js"></script>';
-        echo '<script>initInfinityScroll("'.$URI.'", '.$callback.', null, '.$PAGE.');</script>';
+        echo '<script>initInfinityScroll("'.$URI.'", '.($callback ?? "null").', null, '.$PAGE.');</script>';
     }
 }

@@ -36,6 +36,9 @@ abstract class Form {
      */
     abstract public function __construct(string $formName, ?string $dir = null);
 
+    /**
+     * Renders the form.
+     */
     public function render() {
         $latte = new Latte\Engine;
         $set = new Latte\Macros\MacroSet($latte->getCompiler());
@@ -68,9 +71,8 @@ abstract class Form {
         $set->addMacro(
             "csrf",
             function($node, $writer) {
-                $i = "<input name=".$this->form->csrf_token->name." type=".$this->form->csrf_token->type." required value=".$this->form->csrf_token->value.">";
                 $param = $node->args;
-                return $writer->write('echo \''.$i.'\''); 
+                return $writer->write('echo Form::getCsrf("'.$param.'")'); 
             },
             null, 
             null
@@ -139,8 +141,12 @@ abstract class Form {
      * Obtain the form's error.
      * @return array [0] err_type (1 -empty, 2 -validator), [1] element, [2] msg
      */
-    public function error(): array {
+    public function error(): ?array {
         return $this->form->error;
+    }
+
+    public static function getCsrf() {
+        return '<input name="csrf_token" type="hidden" required value="'.$_SESSION["csrf_token"].'">';
     }
 
     /**
@@ -160,7 +166,7 @@ abstract class Form {
      * @param string|null $node Node from latte.
      * @return string Returns the first part of component.
      */
-    public static function component(?string $node = null) {
+    public static function component(?string $node = null): string {
         $component = explode(",", $node, 2)[0];
         $args = self::convertNodeToArray($node);
         self::$themeX = new ThemeX($component, $args);
@@ -168,26 +174,34 @@ abstract class Form {
     }
 
     /**
-     * Obtain the second part of component. Must be called 
+     * Obtain the second part of component. Must be called after component(), because it works with instance of ThemeX created in component.
      * @param string|null $node Node from latte.
      * @return string Returns the first part of component.
      */
-    public static function componentEnd($node = null) {
+    public static function componentEnd(?string $node = null): string {
         $component = explode(",", $node, 2)[0];
         $args = self::convertNodeToArray($node);
         return self::$themeX->componentEnd();
     }
 
-    public static function singleComponent($node = null) {
-
+    /**
+     * Obtain the html of component. Creates new ThemeX instance with $args parsed from $node.
+     * @param string|null $node Node from latte.
+     * @return string Returns the first part of component.
+     */
+    public static function singleComponent(?string $node = null): string {
         $component = explode(",", $node, 2)[0];
         $args = self::convertNodeToArray($node);
         self::$themeX = new ThemeX($component, $args);
         return self::$themeX->component();
     }
 
-
-    private static function convertNodeToArray($node) {
+    /**
+     * Converts $node to array.
+     * @param string $node The node string from Latte.
+     * @return array The newly created array from $node.
+     */
+    private static function convertNodeToArray(string $node): array {
         $m = preg_split("/'[^']*'(*SKIP)(*F)|(,\s)+/", $node);
         $args = array();
         foreach ($m as $v) {

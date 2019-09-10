@@ -1,12 +1,39 @@
 <?php
+/**
+ * @name Component.php
+ * @link https://alexkratky.cz                          Author website
+ * @link https://panx.eu/docs/                          Documentation
+ * @link https://github.com/AlexKratky/panx-framework/  Github Repository
+ * @author Alex Kratky <info@alexkratky.cz>
+ * @copyright Copyright (c) 2019 Alex Kratky
+ * @license http://opensource.org/licenses/mit-license.php MIT License
+ * @description The abstact class of Component.
+ */
+
 abstract class Component {
+    /**
+     * @var array
+     */
     private $args;
 
-    abstract public function componentStart();
+    /**
+     * The first part of component.
+     * @return string The HTML code containing the first part of component.
+     */
+    abstract public function componentStart(): string;
 
-    abstract public function componentEnd();
+    /**
+     * The second part of component.
+     * @return string The HTML code containing the second part of component.
+     */
+    abstract public function componentEnd(): string;
 
-    public function createStringFromArgs($args) {
+    /**
+     * Create HTML string with values from array.
+     * @param array $args The array of argument.
+     * @return string Returns html string with attributes, e.g. 'name="x" value="y" placeholder="z"' ...
+     */
+    public function createStringFromArgs(array $args) {
         $s = "name=\"".$args["name"]."\"";
         $s .= (!isset($args["type"])) ? "" : (empty($args["type"]) ? "" : " type=\"" . $args["type"] . "\"");
         $s .= (!isset($args["id"])) ? "" : (empty($args["id"]) ? "" : " id=\"" . $args["id"] . "\"");
@@ -16,7 +43,5 @@ abstract class Component {
         $s .= (!isset($args["required"])) ? "" : (($args["required"] == "1") ? " required" : "");
 
         return $s;
-
-
     }
 }

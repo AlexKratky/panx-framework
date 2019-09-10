@@ -10,10 +10,11 @@
  * @description Class contains custom validator functions. Part of panx-framework.
  */
 
+declare (strict_types = 1);
+
 class ValidatorFunctions {
 
-    public static function isEqualToAlex($input)
-    {
+    public static function isEqualToAlex(string $input): bool {
         if (strtolower($input) != "alex") {
             return false;
         }

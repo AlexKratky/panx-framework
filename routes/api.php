@@ -149,5 +149,9 @@ Route::apiGroup("v4", array(
     }),
     array('convert-route', function() {
         echo Route::convertRoute("/route-test/parameter/ALEDX/10/XD");
+    }),
+    array('strict-types', function() {
+        $x = new URL(array(),"xd");
+        echo $x->getString();
     })
 ));

@@ -204,7 +204,7 @@ class Request {
 	 * @return string Unique client ID.
 	 */
 	public function getClientID() {
-		return md5($_SERVER['HTTP_USER_AGENT'] .  $_SERVER['REMOTE_ADDR'] . $_SERVER["HTTP_ACCEPT"] . $_SERVER["HTTP_ACCEPT_LANGUAGE"] . $_SERVER["HTTP_ACCEPT_ENCODING"] . $_SERVER["HTTP_ACCEPT_CHARSET"]);
+		return md5($_SERVER['HTTP_USER_AGENT'] ?? null .  $_SERVER['REMOTE_ADDR'] ?? null . $_SERVER["HTTP_ACCEPT"] ?? null . $_SERVER["HTTP_ACCEPT_LANGUAGE"] ?? null. $_SERVER["HTTP_ACCEPT_ENCODING"] ?? null. $_SERVER["HTTP_ACCEPT_CHARSET"] ?? null);
 	}
     
     /**

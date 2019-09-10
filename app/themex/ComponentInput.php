@@ -6,7 +6,7 @@ class ComponentInput extends SingleComponent {
         $this->args = $args;
     }
 
-    public function component() {
+    public function component(): string {
         return "<input ".$this->createStringFromArgs($this->args).">";
     }
 }

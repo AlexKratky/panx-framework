@@ -1,6 +1,6 @@
 <?php
 /**
- * @name AuthMiddleware.php
+ * @name Handler.php
  * @link https://alexkratky.cz                          Author website
  * @link https://panx.eu/docs/                          Documentation
  * @link https://github.com/AlexKratky/panx-framework/  Github Repository
@@ -10,7 +10,9 @@
  * @description The base handler, from which should every handler inherit.
  */
 
-class Handler {
+declare (strict_types = 1);
+
+abstract class Handler {
     /**
      * @var array The array of parameters, usefull for passing them into template files.
      */
@@ -20,15 +22,13 @@ class Handler {
      * This function will be called when the file ends with the extension which coresponding to this controller.
      * @param string $file The file path to template file. This is not full path, (for example, only 'home.latte' or 'default/exaple.latte').
      */
-    public static function handle($file) {
-        
-    }
+    public abstract static function handle(string $file);
 
     /**
      * Sets the self::$parameters value to the value passed with function.
      * @param array $parameters
      */
-    public static function setParameters($parameters) {
+    public static function setParameters(array $parameters) {
         self::$parameters = $parameters;
     }
 
@@ -36,15 +36,16 @@ class Handler {
      * Push the value to the self::$parameters attribute.
      * @param mixed $parameters
      */
-    public static function addParameters($parameters) {
+    public static function addParameters(mixed $parameters) {
         array_push(self::$parameters, $parameters);
     }
 
     /**
      * Add the value to the self::$parameters attribute.
-     * @param mixed $parameters
+     * @param string $parameter_name The name of parameter.
+     * @param string $parameter_value The value of parameter.
      */
-    public static function addParameter($parameter_name, $parameter_value) {
+    public static function addParameter(string $parameter_name, string $parameter_value) {
         self::$parameters[$parameter_name] = $parameter_value;
     }
 }

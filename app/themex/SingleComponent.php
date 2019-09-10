@@ -1,9 +1,31 @@
 <?php
+/**
+ * @name SingleComponent.php
+ * @link https://alexkratky.cz                          Author website
+ * @link https://panx.eu/docs/                          Documentation
+ * @link https://github.com/AlexKratky/panx-framework/  Github Repository
+ * @author Alex Kratky <info@alexkratky.cz>
+ * @copyright Copyright (c) 2019 Alex Kratky
+ * @license http://opensource.org/licenses/mit-license.php MIT License
+ * @description The abstact class of Component.
+ */
+
 abstract class SingleComponent {
+    /**
+     * @var array
+     */
     private $args;
 
-    abstract public function component();
+    /**
+     * @return string The HTML code of component.
+     */
+    abstract public function component(): string;
 
+    /**
+     * Create HTML string with values from array.
+     * @param array $args The array of argument.
+     * @return string Returns html string with attributes, e.g. 'name="x" value="y" placeholder="z"' ...
+     */
     public function createStringFromArgs($args) {
         $s = "name=\"".$args["name"]."\"";
         $s .= (!isset($args["type"])) ? "" : (empty($args["type"]) ? "" : " type=\"".$args["type"]."\"");

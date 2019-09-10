@@ -18,7 +18,10 @@ class LoginForm extends Form {
             ->placeholder("Type your password")
             ->type("password")
             ->html("class='input'")
-            ->required(true);
+            ->required(true)
+            ->errorMsgEmpty("Prosím, zadejte heslo")
+            ->errorMsgNotValid("Zadané heslo je neplatné - %s musí obsahovat minimálně 6 znaků.")
+            ->validator("Validator", "validatePassword");
         $this->form->add('input', 'info')
             ->placeholder("Type info bout you")
             ->type("text")
