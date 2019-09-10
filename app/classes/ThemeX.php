@@ -10,6 +10,8 @@
  * @description Components and themes. Part of panx-framework.
  */
 
+declare(strict_types=1);
+
 class ThemeX {
     /**
      * @var string The name of the component. 
