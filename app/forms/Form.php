@@ -88,12 +88,12 @@ abstract class Form {
                 if($p === false)
                     return $writer->write('echo "not"');
                 $args = $el->componentName;
-                $attr = array("name", "type", "id", "default", "placeholder", "required", "html", "text", "value", "errorMsgEmpty", "errorMsgNotValid", "validator");
+                $attr = array("name", "type", "id", "default", "placeholder", "required", "html", "text", "value", "errorMsgEmpty", "errorMsgNotValid", "validator", "validatorRegex", "fileSize", "fileExtensions", "fileCount");
                 foreach($attr as $a) {
                     if(empty($el->$a))  continue;
                     $x = $el->$a;
                     if($a !== "validator" || $x === null) {
-                        if($a == "errorMsgEmpty" || $a == "errorMsgNotValid" || $a == "html") {
+                        if($a == "errorMsgEmpty" || $a == "errorMsgNotValid" || $a == "html" || $a == "fileExtensions") {
                             $args .= ", $a => '".str_replace("'", '\\"', $x)."'";   
                         } else {
                             $args .= ", $a => $x";
@@ -119,6 +119,18 @@ abstract class Form {
         
         $latte->setTempDirectory($_SERVER['DOCUMENT_ROOT']."/../temp/");
         $latte->render("{$dir}$this->formName.latte", array("form" => $this->form));
+       $t = '
+var formx_translations = {
+    __invalid_password: "'.((__("form_error_password", true, array(), false) !== false) ? trim(__("form_error_password", true, array())) : "Password must be atleast 6 characters long.") .'",
+    __invalid_email: "'.((__("form_error_email", true, array(), false) !== false) ? trim(__("form_error_email", true, array())) : "Please enter valid email address.").'",
+    __invalid_telephone: "'.((__("form_error_tel", true, array(), false) !== false) ? trim(__("form_error_tel", true, array())) : "Please enter valid telephone number.").'",
+    __invalid_url: "'.((__("form_error_url", true, array(), false) !== false) ? trim(__("form_error_url", true, array())) : "Please enter valid URL address.").'",
+    __invalid_data: "'.((__("form_error_data", true, array(), false) !== false) ? trim(__("form_error_data", true, array())) : "Please, enter valid data.").'"
+}        
+        ';
+        echo '<link rel="stylesheet" href="/res/css/FormX.css">';
+        echo "<script>$t</script>";
+        echo "<script src='/res/js/FormX.js'></script>";
     }
 
     /**
@@ -215,6 +227,11 @@ abstract class Form {
                     $t = $t[0];
                 }
                 //dump($t);
+                if($v[0] !== "validator") {
+                    if(is_array($t)) {
+                        $t = implode(", ", $t);
+                    }
+                }
                 $args[$v[0]] = $t;
 
             }

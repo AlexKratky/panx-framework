@@ -12,6 +12,7 @@
 
 declare(strict_types=1);
 
+
 class Request {
     /** 
      * @var string The current method.
@@ -84,24 +85,6 @@ class Request {
 			return $_POST;
 		}
 		return isset($_POST[$key]) ? ($this->htmlEscape ? htmlspecialchars($_POST[$key]) : $_POST[$key]) : null;
-    }
-    
-
-    /**
-	 * Returns HTTP request method (GET, POST, HEAD, PUT, ...).
-     * @return string The HTTP request metod.
-	 */
-	public function getMethod(): string {
-		return $this->method;
-    }
-    
-    /**
-	 * Checks if the request method is the given one.
-     * @param string $method The HTTP method (case insensitive).
-     * @return boolean Returns true, if $method is equaled to current method, false otherwise.
-	 */
-	public function isMethod(string $method): bool {
-		return strcasecmp($this->method, $method) === 0;
     }
     
     /**

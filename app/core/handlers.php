@@ -1,6 +1,6 @@
 <?php
 /**
- * @name AuthMiddleware.php
+ * @name handlers.php
  * @link https://alexkratky.cz                          Author website
  * @link https://panx.eu/docs/                          Documentation
  * @link https://github.com/AlexKratky/panx-framework/  Github Repository

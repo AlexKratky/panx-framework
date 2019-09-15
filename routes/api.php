@@ -1,5 +1,6 @@
 <?php
 // apiGroup create route /api/version/route
+
 Route::apiGroup("v1", array(
     // /api/v1/list
     array("list", function(){

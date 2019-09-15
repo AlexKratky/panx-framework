@@ -6,6 +6,7 @@ Route::set("/logined", function () {
 })->setMiddleware(["AuthMiddleware"])->setController("xd");
 
 Route::set("/post/", ["post-list.php"]);
+Route::set("/post-php/", ["post.php"]);
 Route::set("/test/*", "test.php");
 Route::set("/macro/*", "test.latte");
 
@@ -82,4 +83,11 @@ Route::set("/url/*", function() {
     }
     dump(Route::ERROR_NOT_LOGGED_IN);
     d($GLOBALS["request"]->getClientID(), false);
+});
+
+Route::set("/Logger", function() {
+    for($i = 0; $i < 124; $i++) {
+        echo $i . "<br>";
+        Logger::write(generateRandomString(64), "access.log");
+    }
 });

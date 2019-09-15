@@ -10,6 +10,7 @@
  * @description File containing useful functions. Part of panx-framework.
  */
 
+
 /**
  * Search for error's template files, include it and stop executing.
  * @param mixed $code The error code.

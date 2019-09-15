@@ -1,0 +1,7 @@
+.formx-invalid-input {
+    border: 1px solid red;
+}
+
+.formx-valid-input {
+    border: 1px solid greenyellow;
+}

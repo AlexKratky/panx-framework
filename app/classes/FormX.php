@@ -72,8 +72,8 @@ class FormX {
      * @param string $name The name of the element. Used in name="" atrribute.
      * @return FormXElement The form element.
      */
-    public function add(string $type, string $name): FormXElement {
-        $e = new FormXElement($type, $name);
+    public function add(string $type, string $name, string $files=null): FormXElement {
+        $e = new FormXElement($type, $name, $files);
         array_push($this->el, $e);
         $this->$name = $e;
         return $e;
@@ -98,28 +98,38 @@ class FormX {
      */
     public function validate(): bool {
         foreach ($this->el as $el) {
+            $n = $el->nameFiles ?? $el->name;
             if($el->required) {
                 if($this->method == "POST") {
-                    if(empty($_POST[$el->name])) {
+                    if(empty($_POST[$n])) {
                         $this->setError($el, self::ELEMENT_EMPTY);
                         return false;
                     }
-                    if($el->name === "csrf_token") {
-                        if($_POST[$el->name] != $_SESSION['csrf_token']) {
+                    if($n === "csrf_token") {
+                        if($_POST[$n] != $_SESSION['csrf_token']) {
                             $this->setError($el, self::ELEMENT_NOT_VALID);
                             return false;
                         }
                     }
                 } else {
-                    if(empty($_GET[$el->name])) {
+                    if(empty($_GET[$n])) {
                         $this->setError($el, self::ELEMENT_EMPTY);
                         return false;
                     }
-                    if($el->name === "csrf_token") {
-                        if($_GET[$el->name] != $_SESSION['csrf_token']) {
+                    if($n === "csrf_token") {
+                        if($_GET[$n] != $_SESSION['csrf_token']) {
                             $this->setError($el, self::ELEMENT_NOT_VALID);
                             return false;
                         }
+                    }
+                }
+                if(isset($el->nameFiles)) {
+                    //file arr
+                    $v = $_POST[$n] ?? $_GET[$n];
+                    if(count($v) == 1 && $v[0] == "") {
+                        $this->setError($el, self::ELEMENT_EMPTY);
+                        return false;
+
                     }
                 }
             }
@@ -127,20 +137,20 @@ class FormX {
             if($el->validator !== null) {
                 if($this->method == "POST") {
                     //The element is not required, so if it is empty, then just continue.
-                    if(empty($_POST[$el->name])) {
+                    if(empty($_POST[$n])) {
                         continue;
                     }
-                    $x = forward_static_call_array(array($el->validator[0], $el->validator[1]), array($_POST[$el->name]));
+                    $x = forward_static_call_array(array($el->validator[0], $el->validator[1]), array($_POST[$n]));
                     if(!$x) {
                         $this->setError($el, self::ELEMENT_NOT_VALID);
                         return false;
                     }
                 } else {
                     //The element is not required, so if it is empty, then just continue.
-                    if(empty($_GET[$el->name])) {
+                    if(empty($_GET[$n])) {
                         continue;
                     }
-                    $x = forward_static_call_array(array($el->validator[0], $el->validator[1]), array($_GET[$el->name]));
+                    $x = forward_static_call_array(array($el->validator[0], $el->validator[1]), array($_GET[$n]));
                     if(!$x) {
                         $this->setError($el, self::ELEMENT_NOT_VALID);
                         return false;
@@ -177,14 +187,19 @@ class FormX {
     public function getValues(): array {
         $arr = [];
         foreach ($this->el as $el) {
-            if($el->name === "csrf_token") continue;
+            $n = $el->nameFiles ?? $el->name;
+            if($n === "csrf_token") continue;
+            //if isset default, then sets the value to the default and if the value was filled in form, then overwrite with it.
+            if(!empty($el->default)) {
+                $arr[$n] = $el->default;
+            }
             if($this->method == "POST") {
-                if(!empty($_POST[$el->name])) {
-                    $arr[$el->name] = $_POST[$el->name];
+                if(!empty($_POST[$n])) {
+                    $arr[$n] = $_POST[$n];
                 }
             } else {
-                if(!empty($_GET[$el->name])) {
-                    $arr[$el->name] = $_GET[$el->name];
+                if(!empty($_GET[$n])) {
+                    $arr[$n] = $_GET[$n];
                 }
             }
         }

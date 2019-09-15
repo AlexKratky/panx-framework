@@ -10,6 +10,8 @@
  * @description Example middleware.
  */
 
+use AlexKratky\Auth;
+
 class AuthMiddleware {
     /**
      * This function is called everytime (If the requested URI uses this middleware) and decides if the request is valid or not.

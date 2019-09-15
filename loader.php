@@ -1,6 +1,7 @@
 <?php
 $rustart = getrusage();
 $time_start = microtime(true);
+
 session_start();
 ob_start();
 if(!file_exists($_SERVER['DOCUMENT_ROOT']."/../.config"))
@@ -33,9 +34,12 @@ function load($class)
         require_once $_SERVER["DOCUMENT_ROOT"] . "/../app/themex/$class.php";
     }
 }
+
 if(file_exists($_SERVER["DOCUMENT_ROOT"] . '/../vendor/autoload.php'))
     require_once $_SERVER["DOCUMENT_ROOT"] . '/../vendor/autoload.php';
 spl_autoload_register("load", true, true);
+
+
 if(file_exists($_SERVER["DOCUMENT_ROOT"] . "/../app/classes/R.php")) {
     if(!empty($CONFIG["database"]["DB_HOST"])) {
         load("R.php");
@@ -78,13 +82,13 @@ $auth->loginFromCookies();
 $UC = $request->getUrl();
 
 //obtain previous url
-$x = $UC->getString();
+$x = $_SERVER["REQUEST_URI"];
 if (strpos("favicon.ico", $x) === false) {
     //prevent replacing previous url with the same url
     if (!isset($_SESSION["PREVIOUS_URL"])) {
         $_SESSION["PREVIOUS_URL"] = $x;
     } else {
-        if ($_SESSION["PREVIOUS_URL_QUEUE"] != $x) {
+        if (!isset($_SESSION["PREVIOUS_URL_QUEUE"]) || $_SESSION["PREVIOUS_URL_QUEUE"] != $x) {
             $_SESSION["PREVIOUS_URL"] = $_SESSION["PREVIOUS_URL_QUEUE"];
             $_SESSION["PREVIOUS_URL_QUEUE"] = $x;
         }

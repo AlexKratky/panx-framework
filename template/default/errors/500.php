@@ -17,6 +17,7 @@ if(!isset($CONFIG)) {
 http_response_code(500);
 if(!isset($UC)) {
 	$UC = new URL();
+
 }
 echo("<div class='error'><div class='error-title'>Error <span class='error-code'>500</span></div><div class='error-msg'>Internal server error</div></div></body></html>");
 ?>
