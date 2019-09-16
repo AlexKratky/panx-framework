@@ -27,7 +27,11 @@ APP_CACHE_API_RESULTS = true
 APP_MULTI_LANGUAGE_POSTS = true
 APP_PRIMARY_POST_LANGUAGE = en
 ; If you use <controller> or <action> in routes and that controller or action does not exists, display this error code
-APP_ERROR_CODE_OF_MISSING_CONTROLLER_OR_ACTION = 404
+APP_ERROR_CODE_OF_MISSING_CONTROLLER_OR_ACTION = 400
+; Saves access to access.log
+APP_LOG_ACCESS = true
+APP_CORS = true
+APP_CORS_ONLY_API = true
 
 [database]
 ; If DB_HOST is empty, no connection will be created
@@ -47,12 +51,25 @@ DEBUG_SAVE = true
 DEBUG_LOG_ERR = true
 DEBUG_PRINT_ERR = true
 
+
 [auth]
 LANDING_PAGE = /
 LOGOUT_PAGE = /login
 GOOGLE_RECAPTCHA = 
 GOOGLE_RECAPTCHA_SECRET = 
-TWO_FACTOR_ATUH = true
+; currently not supported
+; TWO_FACTOR_ATUH = true
+
+[cron]
+SECRET = 
+
+[google-analytics]
+UA_CODE = 
+
+[addintional_loader_files_before]
+file[] = tracy.php
+
+[addintional_loader_files_after]
 
 [custom]
 CUSTOM_VALUE = xxx";

@@ -149,7 +149,7 @@ class FormXElement {
 
     /**
      * @param string $class The validator class name, e.g. 'Validator'.
-     * @param string $class The validator function name, e.g. 'validateUsername'.
+     * @param string $fn_name The validator function name, e.g. 'validateUsername'.
      * @return FormXElement
      */
     public function validator(string $class, string $fn_name): FormXElement {

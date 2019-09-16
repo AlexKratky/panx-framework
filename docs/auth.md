@@ -27,3 +27,9 @@ GOOGLE_RECAPTCHA =
 GOOGLE_RECAPTCHA_SECRET = 
 ```
 
+
+
+To install routes, css & templates, you need to install Auth extension
+
+`php panx-worker extension install https://panx.eu/download/extensions/Auth.zip`
+
