@@ -14,6 +14,7 @@ $pagination->nextPage(); // 2
 ```
 The current page is set by Route::getValue("{PAGE}"); so just use in your routes {PAGE} parameter. Or it could be done by get parameter ?page= ($_GET["page"]).
 
+
 ### Supported types
 
 The pagination support for array, file or SQL data type. All you need to change is in the construct the data type (3rd parameter) to Pagination::DATA_ARRAY, Pagination::DATA_SQL or Pagination::DATA_FILE. Then, in $data (1st parameter) you enter the array, sub query (e.g. `FROM table WHERE x=10` - You do not write SELECT, LIMIT etc. because that is the work of Pagination class) or the file path, everything else is the same.
