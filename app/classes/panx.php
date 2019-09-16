@@ -10,6 +10,7 @@
  * @description File containing useful functions. Part of panx-framework.
  */
 
+
 /**
  * Search for error's template files, include it and stop executing.
  * @param mixed $code The error code.
@@ -398,4 +399,13 @@ function cors()
 
         exit(0);
     }
+}
+
+/**
+ * Determine if the array associative.
+ */
+function isAssoc(array $arr): bool
+{
+    if (array() === $arr) return false;
+    return array_keys($arr) !== range(0, count($arr) - 1);
 }

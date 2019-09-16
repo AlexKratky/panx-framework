@@ -7,3 +7,8 @@ notfound2: can not be find. Either it does not exist or has existed in the past,
 e404: The %s can not be find. Either it does not exist or has existed in the past, but it has been deleted or moved.
 form_error_empty: Please, fille the %s.
 form_not_valid: Please, enter a valid value to the %s.
+form_error_password: Password must be atleast 6 characters long.
+form_error_email: Please, enter valid email address.
+form_error_tel: Please, enter valid telephone number.
+form_error_url: Please, enter valid URL address.
+form_error_data: Please, enter valid data.

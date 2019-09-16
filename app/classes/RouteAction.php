@@ -12,6 +12,7 @@
 
 declare(strict_types = 1);
 
+
 abstract class RouteAction {
     /**
      * @var string
@@ -65,14 +66,27 @@ abstract class RouteAction {
                     if(count($x->getLink()) > count($GLOBALS["request"]->getUrl()->getLink())) {
                         continue;
                     }
-                    $t = self::test(array("/api/".$L[2]."/".trim($API_ROUTE[0], "/"), $API_ROUTE[1]), self::TYPE_API_ROUTE);
+                    $t = self::test(array("/api/".$L[2]."/".trim($API_ROUTE[0], "/"), $API_ROUTE[1] ?? null), self::TYPE_API_ROUTE);
                     if($t !== false) {
                         if (!empty($API_ROUTE[2])) {
                             if (!in_array($_SERVER["REQUEST_METHOD"], $API_ROUTE[2])) {
                                 return Route::ERROR_BAD_REQUEST;
                             }
                         }
-                        return $API_ROUTE[1];
+                        if (!empty($API_ROUTE[3])) {
+                            foreach ($API_ROUTE[3][0] as $get) {
+                                if (empty($_GET[$get])) {
+                                    return $API_ROUTE[3][2];
+                                }
+                            }
+                            foreach ($API_ROUTE[3][1] as $post) {
+                                if (empty($_POST[$post])) {
+                                    return $API_ROUTE[3][2];
+                                }
+                            }
+                        }
+
+                        return $API_ROUTE[1] ?? null;
                     }
                 }
             }
@@ -86,7 +100,7 @@ abstract class RouteAction {
             if(count($x->getLink()) > count($GLOBALS["request"]->getUrl()->getLink())) {
                 continue;
             }
-            $t = self::test(array($ROUTE."", $VALUE), self::TYPE_STANDARD_ROUTE, $CURRENT);
+            $t = self::test(array($ROUTE."", $VALUE ?? null), self::TYPE_STANDARD_ROUTE, $CURRENT);
             if($t !== false) {
                 if (!empty(Route::$LOCK[$ROUTE])) {
                     if (!in_array($_SERVER["REQUEST_METHOD"], Route::$LOCK[$ROUTE])) {
@@ -116,7 +130,7 @@ abstract class RouteAction {
                         }
                     }
                 }
-                return $VALUE;
+                return $VALUE ?? null;
             }
             
         }
@@ -136,7 +150,7 @@ abstract class RouteAction {
                     if(count($x->getLink()) > count($C->getLink())) {
                         continue;
                     }
-                    $t = self::test(array("/api/".$L[2]."/".trim($API_ROUTE[0], "/"), $API_ROUTE[1]), self::TYPE_NO_LIMIT);
+                    $t = self::test(array("/api/".$L[2]."/".trim($API_ROUTE[0], "/"), $API_ROUTE[1]), self::TYPE_API_ROUTE);
                     if($t !== false) {
                         /*if (!empty($API_ROUTE[2])) {
                             if (!in_array($_SERVER["REQUEST_METHOD"], $API_ROUTE[2])) {
@@ -182,11 +196,15 @@ abstract class RouteAction {
      * @param string $get The GET parameters (eg. ?x=x). Write like this x=true:y=false:debug => ?x=true&y=false&debug
      * @return string url.
      */
-    public static function alias(string $alias, string $params = null, string $get = null): string {
+    public static function alias(string $alias, ?string $params = null, ?string $get = null): string {
         if(!isset(Route::$ALIASES[$alias])) return null;
         $r = new URL(Route::$ALIASES[$alias], false);
         $l = $r->getLink();
-        $params = explode(":", $params);
+        if($params === null) {
+            $params = array();
+        } else {
+            $params = explode(":", $params);
+        }
         $params_index = 0;
         $link = "/";
         //params
@@ -236,12 +254,12 @@ abstract class RouteAction {
     }
     /**
      * Check if Route matches current URI (or specified URI).
-     * @param string $ROUTE The tested Route, e.g. '/edit/{ID}'.
+     * @param array $ROUTE [0] => The tested Route, e.g. '/edit/{ID}'; [1] => The route value
      * @param string $TYPE The type of Route - use RouteAction::TYPE_API_ROUTE, RouteAction::TYPE_STANDARD_ROUTE or RouteAction::TYPE_NO_LIMIT.
      * @param string $CURRENT The URI, if sets to null, then it will use current URI.
      * @return array|false Returns false if the Route do not match or array with route info: (bool) 'api'; (string) 'route'; (string|array|function) 'action'; 
      */
-    private static function test(string $ROUTE, string $TYPE, $CURRENT = null) {
+    protected static function test(array $ROUTE, string $TYPE, $CURRENT = null) {
         $CURRENT = ($CURRENT === null ? new URL() : new URL($CURRENT, false));
         $CURRENT = $CURRENT->getLink();
         $x = new URL($ROUTE[0], false);

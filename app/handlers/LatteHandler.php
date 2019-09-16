@@ -1,4 +1,5 @@
 <?php
+
 class LatteHandler extends Handler {
     public static $themeX;
 

@@ -7,3 +7,8 @@ notfound2: nemohu najít. Buď neexistuje, a nebo v minulosti existoval, ale byl
 e404: Ať hledám, jak hledám tak %s nemohu najít. Buď neexistuje, a nebo v minulosti existoval, ale byl smazán nebo přesunut.
 form_error_empty: Prosím, vyplňte pole %s.
 form_not_valid: Prosím, zadejte platnou hodnotu do pole %s.
+form_error_password: Heslo musí být dlouhé minimálně 6 znaků.
+form_error_email: Prosím, zadejte platnou emailovou adresu.
+form_error_tel: Prosím, zadejte platné telefoní číslo.
+form_error_url: Prosím, zadejte platnou URL.
+form_error_data: Prosím, vyplňte do formuláře platná data.

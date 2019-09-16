@@ -10,7 +10,7 @@
  * @description Class to work with API rate limits. Part of panx-framework.
  */
 
-declare(strict_types=1)
+declare(strict_types=1);
 
 class API {
     /**
@@ -45,10 +45,10 @@ class API {
 
     /**
      * Determine if the request is valid and the data can be outputted or not.
-     * @param string $URL The requested URL (Used in cache).
+     * @param URL $URL The requested URL (Used in cache).
      * @return bool Returns true if the request is valid, false otherwise.
      */
-    public function request(string $URL): bool {
+    public function request(URL $URL): bool {
         if($this->validate()) {
             $this->updateRate();
             $x = Route::searchWithNoLimits();
@@ -103,7 +103,7 @@ class API {
      * @param mixed $result The data to be saved.
      * @param string $URL_STRING The URL string.
      */
-    public function cacheResult(mixed $result, string $URL_STRING) {
+    public function cacheResult($result, string $URL_STRING) {
         Cache::save($this->request->getPost('API_KEY') . str_replace('/', '_', $URL_STRING), $result);
     }
 
@@ -112,7 +112,7 @@ class API {
      * @param string $URL_STRING The URL String of cached result.
      * @return mixed Returns false if no cache false, otherwise returns the result.
      */
-    public function getFromCache(string $URL_STRING): mixed {
+    public function getFromCache(string $URL_STRING) {
         return Cache::get($this->request->getPost('API_KEY') . str_replace('/', '_', $URL_STRING), self::CACHE_TIME);
     }
 

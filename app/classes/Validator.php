@@ -10,6 +10,8 @@
  * @description Class to validate the user inputs. Part of panx-framework.
  */
 
+declare(strict_types=1);
+
 class Validator extends ValidatorFunctions {
     public const RULE_CUSTOM = 0;
     public const RULE_MAIL = 1;
@@ -32,7 +34,7 @@ class Validator extends ValidatorFunctions {
      * @param array $inputs
      * @return bool Returns true if all inputs are valid, otherwise return the first $input array, that is not valid. 
      */
-    public static function multipleValidate($inputs) {
+    public static function multipleValidate(array $inputs) {
         foreach ($inputs as $input) {
             if(!validate($input[0], $input[1], $input[2] ?? 0, $input[3] ?? 0, $input[4] ?? '/[^A-Za-z0-9]/')) {
                 return $input;
@@ -50,7 +52,7 @@ class Validator extends ValidatorFunctions {
      * @param string The character mask of $input. Regex.
      * @return bool Returns true if the input is valid, otherwise false.
      */
-    public static function validate($input, $rule = 0, $min_length = 0, $max_length = 0, $chars = '/[^A-Za-z0-9]/') {
+    public static function validate($input, int $rule = 0, int $min_length = 0, int $max_length = 0, string $chars = '/[^A-Za-z0-9]/'): bool {
         if(empty($input)) {
             return false;
         }
@@ -82,7 +84,7 @@ class Validator extends ValidatorFunctions {
      * Validates $input as email.
      * @return bool Returns true if the $input is valid, false otherwise.
      */
-    public static function validateMail($input) {
+    public static function validateMail(string $input): bool {
         if (!filter_var($input, FILTER_VALIDATE_EMAIL)) {
             return false;
         }
@@ -93,7 +95,7 @@ class Validator extends ValidatorFunctions {
      * Validates $input as username (only alphanumeric chars and minimum 4 chars length).
      * @return bool Returns true if the $input is valid, false otherwise.
      */
-    public static function validateUsername($input) {
+    public static function validateUsername(string $input): bool {
         if(!ctype_alnum($input) || strlen($input) < 4) {
             return false;
         }
@@ -104,7 +106,7 @@ class Validator extends ValidatorFunctions {
      * Validates $input as password (minimum 6 chars length).
      * @return bool Returns true if the $input is valid, false otherwise.
      */
-    public static function validatePassword($input) {
+    public static function validatePassword(string $input): bool {
         if(strlen($input) < 6) {
             return false;
         }
@@ -115,7 +117,7 @@ class Validator extends ValidatorFunctions {
      * Validates $input as checkbox (If equals to "on", returns true).
      * @return bool Returns true if the $input is valid, false otherwise.
      */
-    public static function validateCheckBox($input) {
+    public static function validateCheckBox(string $input): bool {
         if(strtolower($input) != "on") {
             return false;
         }

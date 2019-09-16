@@ -1,5 +1,6 @@
 <?php
 // apiGroup create route /api/version/route
+
 Route::apiGroup("v1", array(
     // /api/v1/list
     array("list", function(){
@@ -149,5 +150,26 @@ Route::apiGroup("v4", array(
     }),
     array('convert-route', function() {
         echo Route::convertRoute("/route-test/parameter/ALEDX/10/XD");
+    }),
+    array('strict-types', function() {
+        $x = new URL(array(),"xd");
+        echo $x->getString();
     })
 ));
+
+Route::apiGroup("v5", array(
+    array('x/*'),
+    array('e/*', null, null, null, "login"),
+    array(
+        "route" => "alex/{name}/{action}",
+        "files" => null,
+        "lock" => null,
+        "required_params" => null,
+        "action" => "login",
+        "alias" => "alex"
+    ),
+    array('<action>/{ID}/{NAME}'),
+    array('<action>/*', null, [], [["id", "name"], [], 400], "test"),
+));
+
+Route::setApiController("v5", "V5Contoller");

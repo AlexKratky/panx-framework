@@ -22,9 +22,29 @@ class Logger {
      * @return false|int This function returns the number of bytes that were written to the log file, or FALSE on failure.
      */
     public static function log(string $text, string $file = "main.log", ?string $dir = null) {
+        $sizeCheck = Cache::get("__Logger__sizeChecked__$file.info", 60);
         if($dir === null) {
             $dir = $_SERVER['DOCUMENT_ROOT'] . "/..";
         }
+
+        if($sizeCheck === false) {
+            //Check if the log size if more then 100 MB, if yes, tar.gz it. 102400000
+            if(filesize( $dir . "/logs/" . $file) > 102400000) {
+                $t = time();
+                $a = new PharData(realpath("$dir/logs/") . "/$file.$t.tar");
+
+
+                $a->addFile(realpath("$dir/logs/$file"));
+
+                $a->compress(Phar::GZ);
+
+                unlink("$dir/logs/$file.$t.tar");
+                unlink("$dir/logs/$file");
+            }
+            Cache::save("__Logger__sizeChecked__$file.info", "t");
+        }
         return file_put_contents ( $dir . "/logs/" . $file , "[".date("d/m/Y H:i:s")."] ".$text . " -  ".debug_backtrace()[0]['file']."@" . debug_backtrace()[1]['function'] ."() \r\n", FILE_APPEND | LOCK_EX);
     }
+
+    public static function write(string $text, string $file = "main.log", ?string $dir = null) {self::log($text, $file, $dir);}
 }

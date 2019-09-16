@@ -389,12 +389,12 @@ class Auth {
         $_SESSION["username"] = null;
         $_SESSION["password"] = null;
         session_destroy();
-        setcookie("PHPSESSID", null, -1, "/");
-        setcookie("USERNAME", null, -1, "/");
+        setcookie("PHPSESSID", "", -1, "/");
+        setcookie("USERNAME", "", -1, "/");
         $t = null;
         if($GLOBALS["request"]->getQuery("soft") == "true")
             $t = $_COOKIE["REMEMBER_TOKEN"] ?? null;
-        setcookie("REMEMBER_TOKEN", null, -1, "/");
+        setcookie("REMEMBER_TOKEN", "", -1, "/");
         $this->authModel->clearTokens($this->id, $t);
         redirect($GLOBALS["CONFIG"]["auth"]["LOGOUT_PAGE"]);
         exit();
@@ -501,7 +501,7 @@ class Auth {
      * @param string $token The recaptcha code.
      * @return bool Returns true if the recaptcha is valid, false otherwise.
      */
-    public function validRecaptcha(string $token): bool {
+    public function validRecaptcha(?string $token): bool {
         if($this->isCaptchaNeeded() === false) {
             return true;
         }

@@ -23,54 +23,79 @@ if (is_callable($template_files)) {
     if (file_exists($_SERVER['DOCUMENT_ROOT'] . "/../app/core/handlers.php")) {
         require $_SERVER['DOCUMENT_ROOT'] . "/../app/core/handlers.php";
     }
-    if (!is_array($template_files)) {
-        $template_files = array($template_files);
-    }
-    if ($include) {
-        if ($template_files !== null) {
-            for ($i = 0; $i < count($template_files); $i++) {
-                $ext = pathinfo($_SERVER['DOCUMENT_ROOT'] . "/../template/" . $template_files[$i])["extension"];
-                if ($ext == "php") {
-                    require $_SERVER['DOCUMENT_ROOT'] . "/../template/" . $template_files[$i];
-                } else {
-                    //Need to custom handler
-                    $h;
-                    if (!empty($handlers[$ext])) {
-                        $h = $handlers[$ext];
-                    } else {
-                        $ext = ucfirst(strtolower($ext));
-                        $h = $ext . "Handler";
-                    }
+    if ($include && $template_files !== null) {
+        if (!is_array($template_files)) {
+            $template_files = array($template_files);
+        }
 
-                    if (file_exists($_SERVER['DOCUMENT_ROOT'] . "/../app/handlers/" . $h . ".php")) {
-                        require_once $_SERVER['DOCUMENT_ROOT'] . "/../app/handlers/" . $h . ".php";
-                        $controller = Route::getController();
-                        if ($controller === null) {
-                            $controller = Route::getRouteController();
-                        }
-                        if ($controller !== null) {
+        for ($i = 0; $i < count($template_files); $i++) {
+            $ext = pathinfo($_SERVER['DOCUMENT_ROOT'] . "/../template/" . $template_files[$i])["extension"];
+            if ($ext == "php") {
+                require $_SERVER['DOCUMENT_ROOT'] . "/../template/" . $template_files[$i];
+            } else {
+                //Need to custom handler
+                $h;
+                if (!empty($handlers[$ext])) {
+                    $h = $handlers[$ext];
+                } else {
+                    $ext = ucfirst(strtolower($ext));
+                    $h = $ext . "Handler";
+                }
+
+                if (file_exists($_SERVER['DOCUMENT_ROOT'] . "/../app/handlers/" . $h . ".php")) {
+                    require_once $_SERVER['DOCUMENT_ROOT'] . "/../app/handlers/" . $h . ".php";
+                    $controller = Route::getController();
+                    if ($controller === null) {
+                        $controller = Route::getRouteController();
+                    }
+                    if ($controller !== null) {
+                        if (file_exists($_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php")) {
+                            require_once $_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php";
+                        } else {
+                            $controller = ucfirst(strtolower($controller)) . "Controller";
                             if (file_exists($_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php")) {
                                 require_once $_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php";
                             } else {
-                                $controller = ucfirst(strtolower($controller)) . "Controller";
-                                if (file_exists($_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php")) {
-                                    require_once $_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php";
-                                } else {
-                                    error($CONFIG["basic"]["APP_ERROR_CODE_OF_MISSING_CONTROLLER_OR_ACTION"]);
-                                }
-                            }
-                            $controller::main($h);
-                            $action = Route::getRouteAction();
-                            if ($action !== null) {
-                                if (method_exists($controller, $action)) {
-                                    call_user_func_array(array($controller, $action), getArrayOfParameters(new ReflectionMethod($controller, $action)));
-                                } else {
-                                    error($CONFIG["basic"]["APP_ERROR_CODE_OF_MISSING_CONTROLLER_OR_ACTION"]);
-                                }
+                                error($CONFIG["basic"]["APP_ERROR_CODE_OF_MISSING_CONTROLLER_OR_ACTION"]);
                             }
                         }
-                        $h::handle($template_files[$i]);
+                        $controller::main($h);
+                        $action = Route::getRouteAction();
+                        if ($action !== null) {
+                            if (method_exists($controller, $action)) {
+                                call_user_func_array(array($controller, $action), getArrayOfParameters(new ReflectionMethod($controller, $action)));
+                            } else {
+                                error($CONFIG["basic"]["APP_ERROR_CODE_OF_MISSING_CONTROLLER_OR_ACTION"]);
+                            }
+                        }
                     }
+                    $h::handle($template_files[$i]);
+                }
+            }
+        }
+    } else {
+        $controller = Route::getController();
+        if ($controller === null) {
+            $controller = Route::getRouteController();
+        }
+        if ($controller !== null) {
+            if (file_exists($_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php")) {
+                require_once $_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php";
+            } else {
+                $controller = ucfirst(strtolower($controller)) . "Controller";
+                if (file_exists($_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php")) {
+                    require_once $_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php";
+                } else {
+                    error($CONFIG["basic"]["APP_ERROR_CODE_OF_MISSING_CONTROLLER_OR_ACTION"]);
+                }
+            }
+            $controller::main(null);
+            $action = Route::getRouteAction();
+            if ($action !== null) {
+                if (method_exists($controller, $action)) {
+                    call_user_func_array(array($controller, $action), getArrayOfParameters(new ReflectionMethod($controller, $action)));
+                } else {
+                    error($CONFIG["basic"]["APP_ERROR_CODE_OF_MISSING_CONTROLLER_OR_ACTION"]);
                 }
             }
         }
