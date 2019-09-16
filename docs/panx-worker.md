@@ -28,6 +28,12 @@ php panx-worker create controller [NAME] # Creates controller with specified nam
 php panx-worker version # Output the current version of panx-worker and version hash
 php panx-worker clear [cache/old] # cache - Delete all cache files; old - Delete just unused cache files
 php panx-worker setup # Creates necessary folders and change chmod to 0777
+php panx-worker test {TEST} # run a test
+php panx-worker migrate # Migrates a db
+php panx-worker version # Prints the current version of panx-worker
+php panx-worker create debug # Setup DB to debug (tables)
+php panx-worker create middleware {NAME} # creates middleware
+php panx-worker create migration {NAME} # create migration
 ```
 
 

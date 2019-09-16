@@ -1,4 +1,5 @@
 <?php
+//TODO delte insecure routes
 Route::set("/", "home.php", ["POST", "GET"])->setAlias("home");
 
 Route::set("/logined", function () {

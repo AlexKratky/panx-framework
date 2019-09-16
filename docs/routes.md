@@ -44,7 +44,8 @@ Route::set("/", "home.php");
 
 The result will be different. It will display `test.php` to all users, whatever user request. So if user tries to request `/`, framework will display `test.php` instead of `home.php`. So in this case, the second route is useless, and should be deleted to keep route file clear.
 
-### <action> and <controller> wildcards
+
+### < action > and < controller > wildcards
 These wildcards will automatically include controller and call the contoller method specified by action. For example, you will have following route
 ```php
  Route::set("/admin/<controller>/<action>", "form.php");
@@ -60,6 +61,14 @@ Route::set("example/{ID[^[0-9]*$]}", "id.php");
 
 If you enter something different then just ID, it will try to find other route, otherwise display 404.
 
+
+### Parameters with Validator rule
+
+You can limit the route parameter by Validator rule. For example, you want to use parameter {NAME}, which should be valid name, so you can do it by this:
+
+```php
+Route::set("/{NAME#Validator::validateUsername}");
+```
 ### Including multiple files
 
 If you want to include more template files, then you need to pass array, for example:
@@ -67,6 +76,10 @@ If you want to include more template files, then you need to pass array, for exa
 ```php
 Route::set("/docs/intro", ["header.php", "intro.php", "footer.php"]);
 ```
+
+### No files
+
+You can leave second parameter (files or function) empty, so no files will be required, only if you set up the Controller, then will be called.
 
 ### Routes with redirect
 
@@ -166,6 +179,48 @@ Route::setApiEndpoint("v3", new API("v3"));
 ```
 
 To get more info about API endpoints, see [API Endpoints](https://panx.eu/docs/api-endpoints)
+
+### API Extended syntax
+
+Because API route have many parameters, it is recommended to use following syntax:
+
+```php
+Route::apiGroup("v5", array(
+    array(
+        "route" => "test/{name}/{action}",
+        "files" => null,
+        "lock" => null,
+        "required_params" => null,
+        "action" => "login",
+        "alias" => "test"
+    ),
+));
+```
+
+
+
+### Aliases
+
+You can set up alias to each route. This is useful for your template files, because you will not write the absolute routes, e.g. '/login', but you will use the alias. If you using Latte, then you can do it by n:link, e.g. n:link="login" and when you change the route in route file, you do not need to edit the template file. In n:link, you can also include parameters for route and GET method. So if your route have wildcard, you can do it like this:
+
+```php+HTML
+<?php
+Route::set("/test/of/route/<action>/{NAME}/{ID}/*", function() {echo "Hello";});
+?>
+
+<a n:link="test, 'action=akce:jmeno:identifikator:hvezdicka=[1,10,20,30]', 'id=10:remember=true:test'">macro test</a>
+
+<!-- which will create -->
+<a href="/test/of/route/akce/jmeno/identifikator/1/10/20/30/?id=10&remember=true&test">macro test</a>
+```
+
+To set alias for API route, you need as 6th parameter ([5]) or by extended syntax.
+
+### Required parameters
+
+You can set required parameters using ->setRequiredParameters(array $get, array $post);
+
+Where the $get and $post  are arrays containing the names of the inputs.
 
 
 

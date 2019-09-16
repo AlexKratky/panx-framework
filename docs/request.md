@@ -17,4 +17,5 @@ The class have following functions:
 * `getRemoteAddress(): ?string` - Returns the IP address of the remote client.
 * `detectLanguage(array $langs): ?string` - Parse Accept-Language header and returns preferred language.
 * `getMostPreferredLanguage(): ?string` - Return most preferred language.
+* `getClientID()` - Returns string representaining the client unique ID.
 * `workWith(string $method, array $vars): bool` -  Checks if are all of $vars isset(). The $method is GET ($_GET) or POST ($_POST)

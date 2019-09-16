@@ -5,7 +5,7 @@
  * @link https://github.com/AlexKratky/panx-framework/  Github Repository
  * @description Thread safe file write & read.
  * @see https://github.com/nette/safe-stream
- * @license https: //raw.githubusercontent.com/nette/safe-stream/master/license.md
+ * @license https://raw.githubusercontent.com/nette/safe-stream/master/license.md
 
  	New BSD License
 	---------------
