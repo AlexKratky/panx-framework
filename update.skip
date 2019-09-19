@@ -13,6 +13,9 @@ public/
 !public/index.php
 !public/.htaccess
 !public/res/css/error.css
+!public/res/css/FormX.css
+!public/res/js/FormX.js
+!public/res/js/InfinityScrol.js
 posts/
 logs/
 docs/
@@ -21,14 +24,13 @@ tests/
 !tests/Test.php
 app/controllers/
 !app/controllers/AuthController.php
-!app/middlewares/AuthMiddleware.php
 !app/models/AuthModel.php
 !app/models/APIModel.php
 app/handlers/
 !app/handlers/Handler.php
 !app/handlers/LatteHandler.php
 app/middlewares/
+!app/middlewares/AuthMiddleware.php
 app/migrations/
 app/models/
 app/classes/R.php
-tracy.php

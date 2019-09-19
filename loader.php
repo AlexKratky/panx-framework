@@ -88,7 +88,7 @@ if (strpos("favicon.ico", $x) === false) {
     if (!isset($_SESSION["PREVIOUS_URL"])) {
         $_SESSION["PREVIOUS_URL"] = $x;
     } else {
-        if (!isset($_SESSION["PREVIOUS_URL_QUEUE"]) || $_SESSION["PREVIOUS_URL_QUEUE"] != $x) {
+        if (isset($_SESSION["PREVIOUS_URL_QUEUE"]) && $_SESSION["PREVIOUS_URL_QUEUE"] != $x) {
             $_SESSION["PREVIOUS_URL"] = $_SESSION["PREVIOUS_URL_QUEUE"];
             $_SESSION["PREVIOUS_URL_QUEUE"] = $x;
         }
