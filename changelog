@@ -1,23 +1,28 @@
 
 
-?panx-framework v0.2.4
+?panx-framework v0.3
 ---------------------
 
-?This is next release of panx-framework (v0.2.4). This is major version release.
+?This is next release of panx-framework (v0.3). This is major version release.
 
 ?The documentation is available on https://panx.eu/docs/.
-!(In future, it will available only using https://panx.eu/docs/v0.2.4/)
+!(In future, it will available only using https://panx.eu/docs/v0.3/)
 
 ?New features
-- Fixed bugs.
-- Readbean support
-- CORS
-- LANG %s
+- FormX
+- ThemeX & Components
+- Added Strict Types
+- Fixed route-list
+- Previous URL
+- Edited Logger
+- Fixed many bugs
+- And more!
 
 ?After installation
 After installation, you need to run following commands:
 ?composer install
 ?php panx-worker config
+?php panx-worker setup
 
 ?If you want to use Authentification, you should download Auth extension with template files, routes, css, imgs, fonts by running following command:
 ?php panx-worker extension install https://panx.eu/download/extensions/Auth.zip

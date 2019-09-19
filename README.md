@@ -1,8 +1,8 @@
 # panx-framework
 
-> microframework for small websites
+> modern microframework for small websites
 
-* panx-framework is primary for small websites, whole framework have size around ~100kb
+* panx-framework is primary for small websites, whole framework have size around ~800kb
 
 * panx-framework have tool to create a documentation website from markdown files
 
@@ -19,6 +19,9 @@
   * Extension support
   * Template systems support (By default supports Latte)
   * Controllers and Model support (MVC)
+  * FormX
+  * ThemeX
+  * Uses functions of PHP7
   * And more useful functions
   
   
@@ -28,6 +31,17 @@
 To get started using panx framework, see [Creating first project using panx framework](https://panx.eu/docs/getting-started)
 
 * See full [documentation](https://panx.eu/docs/).
+
+
+
+## Installation via Composer
+
+```
+composer create-project alexkratky/panx
+php panx-worker config
+php panx-worker setup
+php panx-worker extension install https://panx.eu/download/extensions/Auth.php # If you want to use panx's Authentification system 
+```
 
 
 
