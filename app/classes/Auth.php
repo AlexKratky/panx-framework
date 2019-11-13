@@ -95,7 +95,7 @@ class Auth {
      * @param bool $r Determines if the user want to remember login.
      * @return bool Returns true if the user was logined, false otherise.
      */
-    public function login(?string $username = null, ?string $password = null, bool $r = false): bool {
+    public function login(?string $username = null, ?string $password = null, bool $r = false) {
         if($this->loginFromCookies()) {
             return true;
         }
@@ -105,7 +105,7 @@ class Auth {
                 $username = $this->request->getPost('username');
                 $password = $this->request->getPost('password');
                 if(!$this->validRecaptcha($this->request->getPost('g-recaptcha-response'))) {
-                    $_SESSION["AUTH_ERROR"] = "Invalid recaptcha";
+                    $_SESSION["AUTH_ERROR"] = __("auth.invalidRecaptcha", true);
                     //$this->captchaFailed();
                     return false;
                 }
@@ -121,16 +121,16 @@ class Auth {
             if(!$this->authModel->isEnabled2FA($data["ID"]) || $this->request->getPost('2fa_code') !== null || (isset($_SESSION["2fa_passed"]) && $_SESSION["2fa_passed"] == true)) {
                 $twofacheck = false;
                 if($this->request->getPost('2fa_code') !== null) {
-                    //validate code
-                    if (!$this->validRecaptcha($this->request->getPost('g-recaptcha-response'))) {
-                        $_SESSION["AUTH_ERROR"] = "Invalid recaptcha";
+                    // TODO on invalid code, the error is invalid recaptcha, so its disabled until fix
+                    /*if (!$this->validRecaptcha($this->request->getPost('g-recaptcha-response'))) {
+                        $_SESSION["AUTH_ERROR"] = __("auth.invalidRecaptcha", true);
                         //$this->captchaFailed();
                         return false;
-                    }
+                    }*/
 
                     $secret = $this->authModel->get2FASecret($data["ID"]);
                     if (!$this->twoFA->verifyKey($secret, $this->request->getPost('2fa_code'))) {
-                        $_SESSION["AUTH_ERROR"] = "Invalid 2FA code.";
+                        $_SESSION["AUTH_ERROR"] = __("auth.invalid2FA", true);
                         //$this->captchaFailed();
                         return false;
                     } else {
@@ -173,7 +173,7 @@ class Auth {
             $_SESSION["remember_login"] = null;
             $_SESSION["username"] = null;
             $_SESSION["password"] = null;
-            $_SESSION["AUTH_ERROR"] = "Username or password is invalid";
+            $_SESSION["AUTH_ERROR"] = __("auth.invalidUsernameOrPass", true);
             //$this->captchaFailed();
             return false;
         }
@@ -231,13 +231,13 @@ class Auth {
      */
     public function save2FA(): bool {
         if(!$this->validRecaptcha($this->request->getPost('g-recaptcha-response'))) {
-            $_SESSION["AUTH_ERROR"] = "Invalid recaptcha";
+            $_SESSION["AUTH_ERROR"] = __("auth.invalidRecaptcha", true);
             //$this->captchaFailed();
             return false;
         }
         $secret = $_SESSION["2fa_secret"];
         if (!$this->twoFA->verifyKey($secret, $this->request->getPost('code'))) {
-            $_SESSION["AUTH_ERROR"] = "Invalid 2FA code.";
+            $_SESSION["AUTH_ERROR"] = __("auth.invalid2FA", true);
             //$this->captchaFailed();
             return false;
         } else {
@@ -262,41 +262,41 @@ class Auth {
     public function register(): bool {
         if(!$this->request->workWith("POST", array("email", "username", "password", "accept"))) {
             //$this->captchaFailed();
-            $_SESSION["AUTH_ERROR"] = "Please enter all data.";
+            $_SESSION["AUTH_ERROR"] = __("auth.fillAllData", true);
             return false;
         }
         if (!filter_var($this->request->getPost('email'), FILTER_VALIDATE_EMAIL)) {
-            $_SESSION["AUTH_ERROR"] = "Invalid email";
+            $_SESSION["AUTH_ERROR"] = __("auth.invalidMail", true);
             //$this->captchaFailed();
             return false;
         }
         if(!ctype_alnum($this->request->getPost('username')) || strlen($this->request->getPost('username')) < 4) {
-            $_SESSION["AUTH_ERROR"] = "The username can be only alphanumeric and must be atleast 4 characters long";
+            $_SESSION["AUTH_ERROR"] = __("auth.usernameError", true);
             //$this->captchaFailed();
             return false;
         }
         if(strlen($this->request->getPost('password')) < 6) {
-            $_SESSION["AUTH_ERROR"] = "Password must be atleast 6 characters long";
+            $_SESSION["AUTH_ERROR"] = __("auth.passwordError", true);
             //$this->captchaFailed();
             return false;
         }
         if($this->request->getPost('accept') != "on") {
-            $_SESSION["AUTH_ERROR"] = "You must check the agreement";
+            $_SESSION["AUTH_ERROR"] = __("auth.invalidRecaptcha", true);
             //$this->captchaFailed();
             return false;
         }
         if(!$this->validRecaptcha($this->request->getPost('g-recaptcha-response'))) {
-            $_SESSION["AUTH_ERROR"] = "Invalid recaptcha";
+            $_SESSION["AUTH_ERROR"] = __("auth.invalidRecaptcha", true);
             //$this->captchaFailed();            
             return false;
         }
         if(!$this->authModel->checkName($this->request->getPost('username'))) {
-            $_SESSION["AUTH_ERROR"] = "The username is already taken";
+            $_SESSION["AUTH_ERROR"] = __("auth.usernameTaken", true);
             //$this->captchaFailed();
             return false;
         }
         if(!$this->authModel->checkMail($this->request->getPost('email'))) {
-            $_SESSION["AUTH_ERROR"] = "The email is already taken";
+            $_SESSION["AUTH_ERROR"] = __("auth.mailTaken", true);
             //$this->captchaFailed();
             return false;
         }
@@ -315,37 +315,37 @@ class Auth {
         $mail = strtolower($this->request->getPost('email'));
         $user = strtolower($this->request->getPost('username'));
         if(!$this->validRecaptcha($this->request->getPost('g-recaptcha-response'))) {
-            $_SESSION["AUTH_ERROR"] = "Invalid recaptcha";
+            $_SESSION["AUTH_ERROR"] = __("auth.invalidRecaptcha", true);
             //$this->captchaFailed();
             return false;
         }
         if($mail !== $this->email) {
             if (!filter_var($mail, FILTER_VALIDATE_EMAIL)) {
-                $_SESSION["AUTH_ERROR"] = "Invalid email";
+                $_SESSION["AUTH_ERROR"] = __("auth.invalidMail", true);
                 //$this->captchaFailed();
                 return false;
             }
             if(!$this->authModel->checkMail($mail)) {
-                $_SESSION["AUTH_ERROR"] = "The email is already taken";
+                $_SESSION["AUTH_ERROR"] = __("auth.mailTaken", true);
                 //$this->captchaFailed();
                 return false;
             }
         }
         if($user !== $this->username) {
             if(!ctype_alnum($user) || strlen($user) < 4) {
-                $_SESSION["AUTH_ERROR"] = "The username can be only alphanumeric and must be atleast 4 characters long";
+                $_SESSION["AUTH_ERROR"] = __("auth.usernameError", true);
                 //$this->captchaFailed();
                 return false;
             }
             if(!$this->authModel->checkName($user)) {
-                $_SESSION["AUTH_ERROR"] = "The username is already taken";
+                $_SESSION["AUTH_ERROR"] = __("auth.usernameTaken", true);
                 //$this->captchaFailed();
                 return false;
             }
         }
         $password = $this->request->getPost('newpassword');
         if(($password !== null && $password != "") && strlen($password) < 6) {
-            $_SESSION["AUTH_ERROR"] = "The password must be atleast 6 characters long";
+            $_SESSION["AUTH_ERROR"] = __("auth.passwordError", true);
             //$this->captchaFailed();
             return false;
         }
@@ -353,7 +353,7 @@ class Auth {
             $password = null;
         }
         if(!password_verify($this->request->getPost('password'), $_SESSION["password"])) {
-            $_SESSION["AUTH_ERROR"] = "The entered current password is incorrect";
+            $_SESSION["AUTH_ERROR"] = __("auth.currentPasswordError", true);
             //$this->captchaFailed();
             return false;
         }
@@ -365,7 +365,7 @@ class Auth {
             $_SESSION["password"] = $p;
         }
         $_SESSION["username"] = $user;
-        $_SESSION["AUTH_ERROR"] = "Profile has been updated";
+        $_SESSION["AUTH_ERROR"] = __("auth.profileUpdated", true);
         return true;
         //$this->captchaPassed();
     }
@@ -415,18 +415,18 @@ class Auth {
      */
     public function forgot(): bool {
         if(!$this->validRecaptcha($this->request->getPost('g-recaptcha-response'))) {
-            $_SESSION["AUTH_ERROR"] = "Invalid recaptcha";
+            $_SESSION["AUTH_ERROR"] = __("auth.invalidRecaptcha", true);
             //$this->captchaFailed();
             return false;
         }
         $mail = strtolower($this->request->getPost('email'));
         if (!filter_var($mail, FILTER_VALIDATE_EMAIL)) {
-            $_SESSION["AUTH_ERROR"] = "Invalid email";
+            $_SESSION["AUTH_ERROR"] = __("auth.invalidMail", true);
             //$this->captchaFailed();
             return false;
         }
         $this->authModel->forgot($mail);
-        $_SESSION["AUTH_ERROR"] = "The email with reset link was send, please check your email in few moments. Also check spam folder.";
+        $_SESSION["AUTH_ERROR"] = __("auth.resetPassword", true);
         //$this->captchaPassed();
         return true;
     }
@@ -437,24 +437,24 @@ class Auth {
      */
     public function forgotSave(): bool {
         if(!$this->validRecaptcha($this->request->getPost('g-recaptcha-response'))) {
-            $_SESSION["AUTH_ERROR"] = "Invalid recaptcha";
+            $_SESSION["AUTH_ERROR"] = __("auth.invalidRecaptcha", true);
             //$this->captchaFailed();
             return false;
         }
         $password = $this->request->getPost('password');
         if(($password !== null && $password != "") && strlen($password) < 6) {
-            $_SESSION["AUTH_ERROR"] = "The password must be atleast 6 characters long";
+            $_SESSION["AUTH_ERROR"] = __("auth.passwordError", true);
             //$this->captchaFailed();
             return false;
         }
         $mail = strtolower($this->request->getPost('email'));
         $x = $this->authModel->forgotSave($mail, $password, Route::getValue('TOKEN'));
         if($x) {
-            $_SESSION["AUTH_ERROR"] = "The password was reset. You can now login.";
+            $_SESSION["AUTH_ERROR"] = __("auth.passwordWasReseted", true);
             //$this->captchaPassed();
             return true;
         } else {
-            $_SESSION["AUTH_ERROR"] = "The combination of token and email is invalid.";
+            $_SESSION["AUTH_ERROR"] = __("auth.invalidCombination", true);
             //$this->captchaFailed();
             return false;
         }

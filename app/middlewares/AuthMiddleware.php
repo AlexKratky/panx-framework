@@ -10,7 +10,6 @@
  * @description Example middleware.
  */
 
-use AlexKratky\Auth;
 
 class AuthMiddleware {
     /**

@@ -12,3 +12,20 @@ form_error_email: Please, enter valid email address.
 form_error_tel: Please, enter valid telephone number.
 form_error_url: Please, enter valid URL address.
 form_error_data: Please, enter valid data.
+
+#auth
+auth.invalidRecaptcha: Invalid recaptcha.
+auth.invalid2FA: Invalid 2FA code.
+auth.invalidUsernameOrPass: Username or password is invalid.
+auth.fillAllData: Please enter all data.
+auth.invalidMail: Invalid email.
+auth.usernameError: The username can be only alphanumeric and must be atleast 4 characters long.
+auth.passwordError: Password must be atleast 6 characters long.
+auth.agreementError: You must check the agreement.
+auth.usernameTaken: The username is already taken.
+auth.emailTaken: The email is already taken.
+auth.currentPasswordError: The entered current password is incorrect.
+auth.profileUpdated: Profile has been updated.
+auth.resetPassword: The email with reset link was send, please check your email in few moments. Also check spam folder.
+auth.passwordWasReseted: The password was reset. You can now login.
+auth.invalidCombination: The combination of token and email is invalid.

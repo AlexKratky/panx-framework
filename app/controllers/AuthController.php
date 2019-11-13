@@ -38,6 +38,9 @@ class AuthController
                 case 'login-2fa':
                     self::twoFAForm();
                     break;
+                default:
+                    self::def();
+
             }
         }
     }
@@ -100,5 +103,11 @@ class AuthController
         } else {
             aliasredirect('login');
         }
+    }
+
+    public static function def() {
+        self::$handler::setParameters([
+            'recaptcha_needed'=>self::$auth->isCaptchaNeeded(),
+        ]);
     }
 }

@@ -250,9 +250,7 @@ function html() {
 function __($key, $default = false, $replacement = array(), $returnKeyOnFailure = true, $keyFormat = "__%s") {
     if(!isset($CONFIG))
         $CONFIG = parse_ini_file($_SERVER['DOCUMENT_ROOT']."/../.config", true);
-
     $lang = strtolower($CONFIG["basic"]["APP_LANGUAGE"]);
-
     if($lang == "auto") {
         $lang = $GLOBALS["request"]->getMostPreferredLanguage();
         if($lang === null) {
@@ -269,13 +267,21 @@ function __($key, $default = false, $replacement = array(), $returnKeyOnFailure 
         $lang = "default_$lang";
     }
     $c = Cache::get("lang_$lang.json", ($default ? 86400 : $CONFIG["basic"]["APP_LANG_CACHE_TIME"]));
+        dump($c);
+    die($c);
     if($c !== false) {
-        if(empty($c[$key])) {
+        if(strpos($key, ".") !== false) {
+            $k = explode(".", $key, 2);
+            $t = $c[$k[0]][$k[1]] ?? null;
+        } else {
+            $t = $c[$k] ?? null;
+        }
+        if(empty($t)) {
             if(!$returnKeyOnFailure)
                 return false;
             return str_replace("%s", $key, $keyFormat);
         } else {
-            $x = $c[$key];
+            $x = $t;
             for ($i = 0; $i < count($replacement); $i++) {
                 $x = preg_replace("/%s/", $replacement[$i], $x, 1);
             }
@@ -296,16 +302,30 @@ function __($key, $default = false, $replacement = array(), $returnKeyOnFailure 
         $lang_f = file_get_contents($lang_f);
         $lang_f = explode(PHP_EOL, $lang_f);
         foreach ($lang_f as $line) {
-            $line = explode(": ", $line, 2);
-            $translation[$line[0]] = $line[1];
+            if(strpos($line, ":") !== false && strpos($line, "#") !== 0) {
+                $line = explode(": ", $line, 2);
+                if(strpos($line[0], ".") === false) {
+                    $translation[$line[0]] = $line[1];
+                } else {
+                    //need to use namespace
+                    $line[0] = explode(".", $line[0], 2);
+                    $translation[$line[0][0]][$line[0][1]] = $line[1];
+                }
+            }
         }
         Cache::save("lang_$lang.json", $translation);
-        if(empty($translation[$key])) {
+        if(strpos($key, ".") !== false) {
+            $k = explode(".", $key, 2);
+            $t = $translation[$k[0]][$k[1]] ?? null;
+        } else {
+            $t = $translation[$k] ?? null;
+        }
+        if(empty($t)) {
             if(!$returnKeyOnFailure)
                 return false;
             return str_replace("%s", $key, $keyFormat);
         } else {
-            $x = $translation[$key];
+            $x = $t;
             for ($i = 0; $i < count($replacement); $i++) {
                 $x = preg_replace("/%s/", $replacement[$i], $x, 1);
             }

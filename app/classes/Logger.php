@@ -27,7 +27,7 @@ class Logger {
             $dir = $_SERVER['DOCUMENT_ROOT'] . "/..";
         }
 
-        if($sizeCheck === false) {
+        if($sizeCheck === false && file_exists($dir . "/logs/" . $file)) {
             //Check if the log size if more then 100 MB, if yes, tar.gz it. 102400000
             if(filesize( $dir . "/logs/" . $file) > 102400000) {
                 $t = time();

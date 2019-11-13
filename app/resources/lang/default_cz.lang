@@ -12,3 +12,20 @@ form_error_email: Prosím, zadejte platnou emailovou adresu.
 form_error_tel: Prosím, zadejte platné telefoní číslo.
 form_error_url: Prosím, zadejte platnou URL.
 form_error_data: Prosím, vyplňte do formuláře platná data.
+
+#auth
+auth.invalidRecaptcha: Neplatná recaptcha.
+auth.invalid2FA: Neplatný kód pro dvoufázové ověření.
+auth.invalidUsernameOrPass: Zadali jste nesprávný název účtu nebo heslo.
+auth.fillAllData: Prosím vyplntě všechna pole.
+auth.invalidMail: Neplatný e-mail.
+auth.usernameError: Uživatelské jméno může obsahovat pouze alfanumerické znaky a musí obsahovat alespoň 4 znaky.
+auth.passwordError: Heslo musí obsahovat alespoň 6 znaků.
+auth.agreementError: Musíte potvrdit souhlas se zpracováním osobních dat.
+auth.usernameTaken: Uživatelské jméno je již obsazené.
+auth.mailTaken: Tento e-mail je již obsazený.
+auth.currentPasswordError: Zadané aktuální heslo je neplatné.
+auth.profileUpdated: Profil byl aktualizován.
+auth.resetPassword: E-mail s odkazem na obnovení hesla byl odeslán, zkontrolujte e-mailovou schránku včetně spamu.
+auth.passwordWasReseted: Heslo bylo resetováno, můžete se nyní přihlásit.
+auth.invalidCombination: Kombinace tokenu a e-mailu je neplatná.
