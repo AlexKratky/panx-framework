@@ -130,6 +130,21 @@ abstract class RouteAction {
                         }
                     }
                 }
+                if (in_array($ROUTE, Route::$ROUTES_LOCAL_ONLY)) {
+                    $local = array(
+                        '127.0.0.1',
+                        '::1'
+                    );
+                    if(!empty($GLOBALS["CONFIG"]["basic"]["APP_ACCESS_LOCALHOST_ROUTES_FROM_IP"])) {
+                        if(($GLOBALS["CONFIG"]["basic"]["APP_ACCESS_LOCALHOST_ROUTES_FROM_IP"]) == "disable") {
+                            return Route::ERROR_FORBIDDEN;
+                        }
+                        array_push($local, $GLOBALS["CONFIG"]["basic"]["APP_ACCESS_LOCALHOST_ROUTES_FROM_IP"]);
+                    }
+                    if(!in_array($_SERVER['REMOTE_ADDR'], $local)){
+                        return Route::ERROR_FORBIDDEN;
+                    }
+                }
                 return $VALUE ?? null;
             }
             

@@ -406,6 +406,16 @@ function migrate() {
     require $SCRIPT_PATH."migrate.php";
 }
 
+function lang() {
+    global $ARGS_COUNT;
+    global $ARGS;
+    global $PATH;
+    global $SCRIPT_PATH;
+    global $CONFIG;
+    
+    require $SCRIPT_PATH."lang.php";
+}
+
 /**
  * Creates empty dirs needed by panx framework with specified chmod (777).
  */

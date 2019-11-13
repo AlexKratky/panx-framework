@@ -18,5 +18,6 @@ http_response_code(404);
 if(!isset($UC)) {
 	$UC = new URL();
 }
+
 echo("<div class='error'><div class='error-title'>Error <span class='error-code'>404</span></div><div class='error-msg'>".__('e404', true, array("\"".($UC->getLink()[count($UC->getLink())-1] == "" ? "/" : $UC->getLink()[count($UC->getLink())-1]) . "\""))."</div></div></body></html>");
 ?>
