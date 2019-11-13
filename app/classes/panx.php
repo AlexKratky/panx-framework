@@ -267,14 +267,12 @@ function __($key, $default = false, $replacement = array(), $returnKeyOnFailure 
         $lang = "default_$lang";
     }
     $c = Cache::get("lang_$lang.json", ($default ? 86400 : $CONFIG["basic"]["APP_LANG_CACHE_TIME"]));
-        dump($c);
-    die($c);
     if($c !== false) {
         if(strpos($key, ".") !== false) {
             $k = explode(".", $key, 2);
             $t = $c[$k[0]][$k[1]] ?? null;
         } else {
-            $t = $c[$k] ?? null;
+            $t = $c[$key] ?? null;
         }
         if(empty($t)) {
             if(!$returnKeyOnFailure)
@@ -318,7 +316,7 @@ function __($key, $default = false, $replacement = array(), $returnKeyOnFailure 
             $k = explode(".", $key, 2);
             $t = $translation[$k[0]][$k[1]] ?? null;
         } else {
-            $t = $translation[$k] ?? null;
+            $t = $translation[$key] ?? null;
         }
         if(empty($t)) {
             if(!$returnKeyOnFailure)

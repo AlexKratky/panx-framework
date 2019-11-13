@@ -2,3 +2,7 @@ temp/
 logs/
 cache/
 tests/
+!tests/Test.php
+composer.lock
+.vscode/
+app/classes/R.php

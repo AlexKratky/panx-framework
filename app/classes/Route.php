@@ -18,6 +18,10 @@ class Route extends RouteAction implements RouteErrors {
      */
     protected static $ROUTES = array();
     /**
+     * @var array The array of localhost routes only.
+     */
+    protected static $ROUTES_LOCAL_ONLY = array();
+    /**
      * @var array The array of middlewares.
      */
     protected static $MIDDLEWARES = array();
@@ -141,6 +145,15 @@ class Route extends RouteAction implements RouteErrors {
         self::$ROUTES[$ROUTE] = $TEMPLATE_FILE;
         if($LOCK !== null) self::$LOCK[$ROUTE] = $LOCK;
         return new Route($ROUTE);
+    }
+
+    /**
+     * Sets the route to localhost only.
+     * @return Route The object representing the route.
+     */
+    public function setLocalOnly() {
+        array_push(self::$ROUTES_LOCAL_ONLY, $this->ROUTE);
+        return $this;
     }
 
     /**

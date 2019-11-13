@@ -32,6 +32,8 @@ APP_ERROR_CODE_OF_MISSING_CONTROLLER_OR_ACTION = 400
 APP_LOG_ACCESS = true
 APP_CORS = true
 APP_CORS_ONLY_API = true
+; Allows you to visit localhost routes (e.g. /_setup/) from this IP. If not IP set, then the routes will be accessible only from localhost.
+APP_ACCESS_LOCALHOST_ROUTES_FROM_IP = 
 
 [database]
 ; If DB_HOST is empty, no connection will be created
@@ -58,7 +60,7 @@ LOGOUT_PAGE = /login
 GOOGLE_RECAPTCHA = 
 GOOGLE_RECAPTCHA_SECRET = 
 ; currently not supported
-; TWO_FACTOR_ATUH = true
+; TWO_FACTOR_AUTH = true
 
 [cron]
 SECRET = 
