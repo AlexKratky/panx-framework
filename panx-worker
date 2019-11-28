@@ -3,7 +3,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-$PANX_VERSION = "0.2.2";
+$PANX_VERSION = "0.3.2";
 
 $PATH = __DIR__;
 $SCRIPT_PATH = __DIR__."/app/panx-worker/scripts/";

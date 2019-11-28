@@ -145,6 +145,9 @@ abstract class RouteAction {
                         return Route::ERROR_FORBIDDEN;
                     }
                 }
+                if (!empty(Route::$TITLES[$ROUTE])) {
+                    Route::$TITLE = Route::$TITLES[$ROUTE];
+                }
                 return $VALUE ?? null;
             }
             

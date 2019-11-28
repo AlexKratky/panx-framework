@@ -47,10 +47,16 @@ class AuthController
 
     public static function login() {
         if(self::$auth->isLogined()) {
-            redirect($GLOBALS["CONFIG"]["auth"]["LANDING_PAGE"]);
+            $am = new AuthModel();
+            $l = $am->getLandingPage(self::$auth->user("role"));
+            $l = ($l === null ? $GLOBALS["CONFIG"]["auth"]["LANDING_PAGE"] : $l);
+            redirect($l);
         }
         if(self::$auth->loginFromCookies()) {
-            redirect($GLOBALS["CONFIG"]["auth"]["LANDING_PAGE"]);
+            $am = new AuthModel();
+            $l = $am->getLandingPage(self::$auth->user("role"));
+            $l = ($l === null ? $GLOBALS["CONFIG"]["auth"]["LANDING_PAGE"] : $l);
+            redirect($l);
         }
         self::$handler::setParameters([
             'recaptcha_needed'=>self::$auth->isCaptchaNeeded(),
@@ -60,7 +66,10 @@ class AuthController
 
     public static function register() {
         if(self::$auth->isLogined()) {
-            redirect($GLOBALS["CONFIG"]["auth"]["LANDING_PAGE"]);
+            $am = new AuthModel();
+            $l = $am->getLandingPage(self::$auth->user("role"));
+            $l = ($l === null ? $GLOBALS["CONFIG"]["auth"]["LANDING_PAGE"] : $l);
+            redirect($l);
         }
         self::$handler::setParameters([
             'recaptcha_needed'=>self::$auth->isCaptchaNeeded(),
