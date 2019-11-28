@@ -1,16 +1,16 @@
 
 
-?panx-framework v0.3.1
+?panx-framework v0.3.2
 ---------------------
 
-?This is next release of panx-framework (v0.3.1).
+?This is next release of panx-framework (v0.3.2).
 
 ?The documentation is available on https://panx.eu/docs/.
 
 ?New features
-- Added setup (/_setup/) on localhost
-- Added routes that are accessible only from localhost
-- Fixed many bugs
+- APP_URL = auto
+- Route->setTitle()
+- Roles and permissions for user
 - And more!
 
 ?After installation

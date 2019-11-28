@@ -1,12 +1,14 @@
 <?php
 $APP_NAME = read("Name of project");
-$APP_URL = read("URL of project with http:// or https:// and ending with /");
+$APP_URL = read("URL of project with http:// or https:// and ending with / or enter auto");
 $APP_DEBUG = read("Debug mode [true/FALSE]");
 if ($APP_NAME == "") {
     $APP_NAME = "panx project";
 }
-if (!filter_var($APP_URL, FILTER_VALIDATE_URL)) {
-    error("You need to enter a valid URL");
+if ($APP_URL != "auto") {
+    if (!filter_var($APP_URL, FILTER_VALIDATE_URL)) {
+        error("You need to enter a valid URL");
+    }
 }
 if (strtolower($APP_DEBUG) != "true") {
     $APP_DEBUG = "false";

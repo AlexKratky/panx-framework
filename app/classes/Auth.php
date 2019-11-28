@@ -61,6 +61,18 @@ class Auth {
      * @var PragmaRX\Google2FAQRCode\Google2FA
      */
     private $twoFA;
+    /**
+     * @var int The user's role.
+     */
+    private $role;
+    /**
+     * @var string The user's role name.
+     */
+    private $role_name;
+    /**
+     * @var string The user's permissions.
+     */
+    private $permissions;
 
 
     /**
@@ -147,6 +159,9 @@ class Auth {
                 $this->verify_key = $data["VERIFY_KEY"];
                 $this->created_at = $data["CREATED_AT"];
                 $this->edited_at = $data["EDITED_AT"];
+                $this->role = $data["ROLE"];
+                $this->role_name = $this->authModel->getRoleName($data["ROLE"]);
+                $this->permissions = $data["PERMISSIONS"];
                 $this->two_auth_enabled = $this->authModel->isEnabled2FA($data["ID"]);
                 if((!$login_from_session && $this->request->getPost('remember') === "on") || ($twofacheck && $r && isset($_SESSION["remember_login"]) && $_SESSION["remember_login"] = true)) {
                     $token = $this->authModel->updateRememberToken($data["ID"]);
@@ -195,6 +210,9 @@ class Auth {
             $this->verify_key = $data["VERIFY_KEY"];
             $this->created_at = $data["CREATED_AT"];
             $this->edited_at = $data["EDITED_AT"];
+            $this->role = $data["ROLE"];
+            $this->role_name = $this->authModel->getRoleName($data["ROLE"]);
+            $this->permissions = $data["PERMISSIONS"];
             $this->two_auth_enabled = $this->authModel->isEnabled2FA($data["ID"]);
             $_SESSION["username"] = $data["USERNAME"];
             $_SESSION["password"] = $data["PASSWORD"];
@@ -493,7 +511,25 @@ class Auth {
             case '2fa':
                 return $this->two_auth_enabled;
                 break;
+            case 'role':
+                return $this->role;
+                break;
+            case 'role_name':
+                return $this->role_name;
+                break;
+            case 'permissions':
+                return $this->permissions;
+                break;
         }
+    }
+
+    /**
+     * Check if user have the passed permission.
+     * @param string $permission The permission name that will be checked.
+     * @return bool Returns true if the user is permitted, false otherwise.
+    */
+    public function isUserPermittedTo(string $permission): bool {
+        return (strpos($this->permissions, $permission) !== false);
     }
 
     /**

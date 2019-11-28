@@ -82,6 +82,14 @@ class Route extends RouteAction implements RouteErrors {
      */
     protected static $ALIASES = array();
     /**
+     * @var array The array of titles. TITLE => ROUTE.
+     */
+    protected static $TITLES = array();
+    /**
+     * @var string Current title for Route.
+     */
+    protected static $TITLE;
+    /**
      * @var array The info about current Route.
      */
     protected static $CURRENT_ROUTE_INFO;
@@ -154,6 +162,23 @@ class Route extends RouteAction implements RouteErrors {
     public function setLocalOnly() {
         array_push(self::$ROUTES_LOCAL_ONLY, $this->ROUTE);
         return $this;
+    }
+
+    /**
+     * Sets the title for route.
+     * @return Route The object representing the route.
+     */
+    public function setTitle($title) {
+        self::$TITLES[$this->ROUTE] = $title;
+        return $this;
+    }
+
+    /**
+     * Gets the title for route.
+     * @return string The current title.
+     */
+    public static function getTitle() {
+        return self::$TITLE;
     }
 
     /**

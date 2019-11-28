@@ -13,6 +13,9 @@ if($CONFIG["basic"]["APP_DEBUG"] == "1") {
     require $_SERVER['DOCUMENT_ROOT'] . "/../app/core/loader/error_handler.php";
     set_error_handler("errorHandler");
 }
+if($CONFIG["basic"]["APP_URL"] == "auto") {
+    $CONFIG["basic"]["APP_URL"] = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? "https" : "http") . "://{$_SERVER['HTTP_HOST']}/";
+}
 
 if (isset($CONFIG["addintional_loader_files_before"]["file"])) {
     foreach ($CONFIG["addintional_loader_files_before"]["file"] as $f) {

@@ -31,6 +31,10 @@ class AuthModel
         return db::select("SELECT * FROM users WHERE `USERNAME`=?", array($username));
     }
 
+    public function getRoleName($roleID) {
+        return db::select("SELECT NAME_OF_ROLE FROM roles WHERE `VALUE`=?", array($roleID))["NAME_OF_ROLE"];
+    }
+
     public function checkName($username) {
         $username = strtolower($username);
         return (db::count("SELECT COUNT(*) FROM `users` WHERE `USERNAME`=?", array($username)) == 0 ? true : false);
@@ -99,6 +103,69 @@ class AuthModel
             }
         }
         return $newpass;
+    }
+
+    public function addPermission($user_id, $permission) {
+        if(!$this->havePermission($user_id, $permission)) {
+            if(strlen(db::select("SELECT `PERMISSIONS` FROM `users` WHERE ID=?", array($user_id))["PERMISSIONS"]) < 1) {
+                db::query("UPDATE `users` SET `PERMISSIONS`=CONCAT(`PERMISSIONS`, ?) WHERE ID=?", array($permission, $user_id));
+            } else {
+                db::query("UPDATE `users` SET `PERMISSIONS`=CONCAT(`PERMISSIONS`, ?) WHERE ID=?", array("|".$permission, $user_id));
+            }
+            return true;
+        }
+        return false;
+    }
+
+    public function removePermission($user_id, $permission) {
+        db::query("UPDATE `users` SET `PERMISSIONS`=replace(replace(`PERMISSIONS`, ?, ''), ?, '')  WHERE ID=?", array($permission."|", "|".$permission, $user_id));
+    }
+
+    public function havePermission($user_id, $permission) {
+        return (strpos(db::select("SELECT `PERMISSIONS` FROM `users` WHERE ID=?", array($user_id))["PERMISSIONS"], $permission) !== false);
+    }
+
+    public function createPermission($permission) {
+        db::query("INSERT INTO `permissions` (`PERMISSION_NAME`) VALUES (?)", array($permission));
+    }
+
+    public function deletePermission($permission) {
+        db::query("DELETE FROM `permissions` WHERE ID=?", array($permission));
+    }
+
+    public function setPermissions($user_id, $permissions) {
+        db::query("UPDATE `users` SET `PERMISSIONS`=? WHERE ID=?", array($permissions, $user_id));
+    }
+
+    public function setRole($user_id, $role_name) {
+        db::query("UPDATE `users` SET `ROLE`=? WHERE ID=?", array($role_name, $user_id));
+    }
+
+    public function setRoleByName($user_name, $role_name) {
+        $user_name = strtolower($user_name);
+        if(!$this->checkName($user_name)) {
+            // username exists
+            db::query("UPDATE `users` SET `ROLE`=? WHERE USERNAME=?", array($role_name, $user_name));
+            return true;
+        }
+        return false;
+    }
+
+    public function createRole($role_name, $value, $landing) {
+        $landing = (strlen($landing) < 1 ? null : $landing);
+        db::query("INSERT INTO roles (`NAME_OF_ROLE`, `VALUE`, `LANDING_PAGE`) VALUES (?, ?, ?)", array($role_name, $value, $landing));
+    }
+
+    public function deleteRole($value) {
+        db::query("DELETE FROM `roles` WHERE `VALUE`=?", array($value));
+    }
+
+    public function isMainAdminSet() {
+        return (db::count("SELECT COUNT(*) FROM `users` WHERE `ROLE`=1") > 0);
+    }
+
+    public function getLandingPage($role) {
+        return (db::select("SELECT `LANDING_PAGE` FROM `roles` WHERE `VALUE`=?", array($role))["LANDING_PAGE"]);
     }
 
     public function verify($id, $token) {
