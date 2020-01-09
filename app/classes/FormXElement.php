@@ -89,17 +89,19 @@ class FormXElement {
      * @var string|null The elements error message when the input is not valid.
      */
     public $errorMsgNotValid = null;
+    private $formName;
 
     /**
      * @param string $t The element type, e.g. button, input, ...
      * @param string $n The element name.
      * @param string $files The name of file input without [] (files[] => files).
      */
-    public function __construct(string $t, string $n, string $files = null) {
+    public function __construct(string $t, string $n, string $files = null, ?string $formName = null) {
         $this->elementType = $t;
         $this->componentName = $t;
         $this->name = $n;
         $this->nameFiles = $files;
+        $this->formName = $formName;
     }
 
     /**
@@ -126,6 +128,7 @@ class FormXElement {
      */
     public function type(string $t): FormXElement {
         $this->type = $t;
+        //if($type == "password") {$this->value = null;}
         return $this;
     }
 

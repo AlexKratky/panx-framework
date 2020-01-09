@@ -26,7 +26,11 @@ abstract class SingleComponent {
      * @param array $args The array of argument.
      * @return string Returns html string with attributes, e.g. 'name="x" value="y" placeholder="z"' ...
      */
-    public function createStringFromArgs($args) {
+    public function createStringFromArgs($args, $fn) {
+        if(isset($_SESSION["__{$fn}_time"]) && ((int) $_SESSION["__{$fn}_time"] + 10 > time())) {
+            if(empty($args["value"]))
+                $args["value"] = $_SESSION["__{$fn}__".$args["name"]] ?? null;
+        }
         $s = "name=\"".$args["name"]."\"";
         $s .= (!isset($args["type"])) ? "" : (empty($args["type"]) ? "" : " type=\"".$args["type"]."\"");
         $s .= (!isset($args["id"])) ? "" : (empty($args["id"]) ? "" : " id=\"".$args["id"]."\"");

@@ -14,7 +14,8 @@ class db {
     /**
      * @var PDO $conn The connection to db.
      */
-	private static $conn;
+    private static $conn;
+    public static $id;
 
     /**
      * @var array $settings The connection's settings.
@@ -55,6 +56,7 @@ class db {
     {
         $query = self::$conn->prepare($sql);
         $query->execute($params);
+        self::$id = self::$conn->lastInsertId();
         return $query;
     }
 

@@ -299,7 +299,7 @@ class Auth {
             return false;
         }
         if($this->request->getPost('accept') != "on") {
-            $_SESSION["AUTH_ERROR"] = __("auth.invalidRecaptcha", true);
+            $_SESSION["AUTH_ERROR"] = __("auth.agreementError", true);
             //$this->captchaFailed();
             return false;
         }

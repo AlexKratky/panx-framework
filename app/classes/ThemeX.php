@@ -27,10 +27,10 @@ class ThemeX {
      * @param string $component The name of the component, e.g. Button, Input etc.
      * @param mixed $args The arguments for component.
      */
-    public function __construct(string $component, $args) {
+    public function __construct(string $component, $args, $fn = null) {
         $this->component_name = $component;
         $n = "Component".ucfirst($component);
-        $this->component = new $n($args);
+        $this->component = new $n($args, $fn);
     }
 
     /**

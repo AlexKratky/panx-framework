@@ -1,0 +1,34 @@
+<form method={$form->method}>
+    {csrf}
+    <!--<input type="radio" name="r" value="xd" data-formx-required="true" data-formx-empty-msg="Prosím zadejte %s"><br>
+    <input type="radio" name="r" value="xd2" data-formx-required="true" data-formx-empty-msg="Prosím zadejte %s"><br>
+-->
+    {input username}
+    {input password}
+    {input info}
+    {input files[]}
+<!--
+    <input type="checkbox" name="c" value="xd" data-formx-required="true" data-formx-empty-msg="Prosím zadejte %s"><br>
+    <input type="date" name="d" data-formx-required="true" data-formx-empty-msg="Prosím zadejte %s"><br>
+    <input type="datetime-local" name="dl" data-formx-required="true" data-formx-empty-msg="Prosím zadejte %s"><br>
+    <input type="email" name="e" data-formx-required="true" data-formx-empty-msg="Prosím zadejte %s"><br>
+    <input type="file" name="f" data-formx-required="true" data-formx-empty-msg="Prosím zadejte %s"><br>
+    <input type="month" name="m" data-formx-required="true" data-formx-empty-msg="Prosím zadejte %s"><br>
+    <input type="number" name="n" data-formx-required="true" data-formx-empty-msg="Prosím zadejte %s"><br>
+    <input type="password" name="p" data-formx-required="true" data-formx-empty-msg="Prosím zadejte %s"><br>
+   
+    <input type="search" name="s" data-formx-required="true" data-formx-empty-msg="Prosím zadejte %s"><br>
+    <input type="tel" name="t" data-formx-required="true" data-formx-empty-msg="Prosím zadejte %s"><br>
+    <input type="text" name="txt" data-formx-required="true" data-formx-empty-msg="Prosím zadejte %s"><br>
+    <input type="time" name="time" data-formx-required="true" data-formx-empty-msg="Prosím zadejte %s"><br>
+    <input type="url" name="u" data-formx-required="true" data-formx-empty-msg="Prosím zadejte %s"><br>
+    <input type="week" name="w" data-formx-required="true" data-formx-empty-msg="Prosím zadejte %s"><br>
+-->
+    <button {$form->submit->html|noescape} id="{$form->submit->id}" name="submit">
+        {$form->submit->text}
+    </button>
+    {*component button*}{*/component*}
+</form>
+{if $form->errorMsg}
+    {$form->errorMsg}
+{/if}

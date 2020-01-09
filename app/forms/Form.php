@@ -86,14 +86,14 @@ abstract class Form {
                 
                 $p = get_parent_class("Component".ucfirst($el->componentName));
                 if($p === false)
-                    return $writer->write('echo "not"');
+                    return $writer->write('echo "Component class not found"');
                 $args = $el->componentName;
                 $attr = array("name", "type", "id", "default", "placeholder", "required", "html", "text", "value", "errorMsgEmpty", "errorMsgNotValid", "validator", "validatorRegex", "fileSize", "fileExtensions", "fileCount");
                 foreach($attr as $a) {
                     if(empty($el->$a))  continue;
                     $x = $el->$a;
                     if($a !== "validator" || $x === null) {
-                        if($a == "errorMsgEmpty" || $a == "errorMsgNotValid" || $a == "html" || $a == "fileExtensions") {
+                        if($a == "errorMsgEmpty" || $a == "errorMsgNotValid" || $a == "html" || $a == "fileExtensions" || $a == "value") {
                             $args .= ", $a => '".str_replace("'", '\\"', $x)."'";   
                         } else {
                             $args .= ", $a => $x";
@@ -138,6 +138,7 @@ var formx_translations = {
      * @return bool Returns true if the form is valid, false otherwise.
      */
     public function validate(): bool {
+        $this->form->saveToSession();
         return $this->form->validate();
     }
 
