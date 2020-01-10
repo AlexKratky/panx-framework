@@ -27,14 +27,17 @@ abstract class SingleComponent {
      * @return string Returns html string with attributes, e.g. 'name="x" value="y" placeholder="z"' ...
      */
     public function createStringFromArgs($args, $fn) {
-        if(isset($_SESSION["__{$fn}_time"]) && ((int) $_SESSION["__{$fn}_time"] + 10 > time())) {
-            if(empty($args["value"]))
-                $args["value"] = $_SESSION["__{$fn}__".$args["name"]] ?? null;
-        }
+        if(!isset($args["type"]) || strtolower($args["type"]) != "password")
+            $x = FormX::getFromSession($fn, $args["name"]);
+        else
+            $x = null;
         $s = "name=\"".$args["name"]."\"";
         $s .= (!isset($args["type"])) ? "" : (empty($args["type"]) ? "" : " type=\"".$args["type"]."\"");
         $s .= (!isset($args["id"])) ? "" : (empty($args["id"]) ? "" : " id=\"".$args["id"]."\"");
-        $s .= (!isset($args["value"])) ? "" : (empty($args["value"]) ? "" : " value=\"".$args["value"]."\"");
+        if($x == null)
+            $s .= (!isset($args["value"])) ? "" : (empty($args["value"]) ? "" : " value=\"".$args["value"]."\"");
+        else
+            $s .= " value=\"".$x."\"";
         $s .= (!isset($args["placeholder"])) ? "" : (empty($args["placeholder"]) ? "" : " placeholder=\"".$args["placeholder"]."\"");
         $s .= (!isset($args["html"])) ? "" : (empty($args["html"]) ? "" : " ".$args["html"]);
         $s .= (!isset($args["required"])) ? "" : (($args["required"] == "1") ? " required data-formx-required=\"true\"" : "");

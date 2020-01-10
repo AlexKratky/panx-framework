@@ -10,3 +10,13 @@ Route::set('/test', function() {
     dump($f->getValues());
     dump($f->error());
 });
+
+
+Route::set('/test/submit', function() {
+    $f = new LoginForm();
+    if($f->validate()) {
+        dump($f->getValues());
+    } else {
+        redirect('/test');
+    }
+});

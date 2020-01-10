@@ -83,7 +83,7 @@ abstract class Form {
                 $param = $node->args;
                 $component = explode(",", $param, 2)[0];
                 $el = $this->form->$component;
-                
+                $fn = $this->formName;
                 $p = get_parent_class("Component".ucfirst($el->componentName));
                 if($p === false)
                     return $writer->write('echo "Component class not found"');
@@ -103,10 +103,10 @@ abstract class Form {
                     }
                 }
                 if($p === "Component") {
-                    return $writer->write('echo Form::component("'.$args.'") . Form::componentEnd("'.$args.'")'); 
+                    return $writer->write('echo Form::component("'.$args.'", "'.$fn.'") . Form::componentEnd("'.$args.'", "'.$fn.'")'); 
                 } else {
                     //SingleComponent
-                    return $writer->write('echo Form::singleComponent("'.$args.'")'); 
+                    return $writer->write('echo Form::singleComponent("'.$args.'", "'.$fn.'")'); 
                 }
             },
             null, 
@@ -179,10 +179,10 @@ var formx_translations = {
      * @param string|null $node Node from latte.
      * @return string Returns the first part of component.
      */
-    public static function component(?string $node = null): string {
+    public static function component(?string $node = null, $fn = null): string {
         $component = explode(",", $node, 2)[0];
         $args = self::convertNodeToArray($node);
-        self::$themeX = new ThemeX($component, $args);
+        self::$themeX = new ThemeX($component, $args, $fn);
         return self::$themeX->componentStart();
     }
 
@@ -191,7 +191,7 @@ var formx_translations = {
      * @param string|null $node Node from latte.
      * @return string Returns the first part of component.
      */
-    public static function componentEnd(?string $node = null): string {
+    public static function componentEnd(?string $node = null, $fn = null): string {
         $component = explode(",", $node, 2)[0];
         $args = self::convertNodeToArray($node);
         return self::$themeX->componentEnd();
@@ -202,10 +202,10 @@ var formx_translations = {
      * @param string|null $node Node from latte.
      * @return string Returns the first part of component.
      */
-    public static function singleComponent(?string $node = null): string {
+    public static function singleComponent(?string $node = null, $fn): string {
         $component = explode(",", $node, 2)[0];
         $args = self::convertNodeToArray($node);
-        self::$themeX = new ThemeX($component, $args);
+        self::$themeX = new ThemeX($component, $args, $fn);
         return self::$themeX->component();
     }
 

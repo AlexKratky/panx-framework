@@ -114,6 +114,19 @@ class FormX {
         $_SESSION["__".$this->formName."_time"] = time();
     }
 
+    public static function getFromSession($form, $name) {
+        // the $form was submitted 10 s before
+        if(isset($_SESSION["__".$form."_time"]) && ((int) $_SESSION["__{$form}_time"] + 10 > time())) {
+            if(isset($_SESSION["__{$form}__{$name}"])) {
+                $x = $_SESSION["__{$form}__{$name}"];
+                unset($_SESSION["__{$form}__{$name}"]);
+                return $x;
+            }
+        }
+        return null;
+    }
+
+
     /**
      * Validates the form. All required elements must be filled, and if the element have Validator, then the element's value must be valid.
      * @return bool Returns true if the form is valid, false otherwise.

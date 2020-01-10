@@ -20,6 +20,18 @@ class User {
     }
 
     public function save() {
-        
+        if(empty($this->uid)) return;
+        $newData = "";
+        $arr = array();
+        foreach ($this->columns as $column) {
+            $x = strtolower($column);
+            if($newData != "") $newData .= ", ";
+            $newData .= "`{$column}`" . '=?';
+            array_push($arr, $this->$x);
+        }
+        array_push($arr, $this->id);
+
+        db::query("UPDATE `users` SET {$newData} WHERE ID=?", $arr);
+    
     }
 }
