@@ -227,4 +227,24 @@ class AuthModel
     public function captchaPassed($ip) {
         db::query("DELETE FROM recaptcha_fails WHERE `IP`=?", array($ip));
     }
+
+    public function verifyLoginToken($token, $time = 300) {
+        if(db::count("SELECT COUNT(*) FROM `login_tokens` WHERE `TOKEN`=?", array($token)) > 0) {
+            $t = db::select("SELECT * FROM `login_tokens` WHERE `TOKEN`=?", array($token));
+            //check time
+            if(time() < (strtotime($t["CREATED_AT"]) + $time)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function loadDataFromLoginToken($token) {
+        if(db::count("SELECT COUNT(*) FROM `login_tokens` WHERE `TOKEN`=?", array($token)) > 0) {
+            $x = db::select("SELECT * FROM `login_tokens` WHERE `TOKEN`=?", array($token));
+            db::query("UPDATE `login_tokens` SET `CREATED_AT`=CURRENT_TIMESTAMP() WHERE `TOKEN`=?", array($token));
+            return db::select("SELECT * FROM `users` WHERE `ID`=?", array($x["USER_ID"]));
+        }
+        return false;
+    }
 }

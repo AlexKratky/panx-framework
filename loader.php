@@ -12,6 +12,9 @@ if($CONFIG["basic"]["APP_DEBUG"] == "1") {
     ini_set("display_errors", 1);
     require $_SERVER['DOCUMENT_ROOT'] . "/../app/core/loader/error_handler.php";
     set_error_handler("errorHandler");
+    $GLOBALS["missing_translations"] = [];
+    $GLOBALS["sent_mails"] = [];
+
 }
 if($CONFIG["basic"]["APP_URL"] == "auto") {
     $CONFIG["basic"]["APP_URL"] = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? "https" : "http") . "://{$_SERVER['HTTP_HOST']}/";
@@ -61,6 +64,8 @@ if(!empty($CONFIG["database"]["DB_HOST"])) {
 if($CONFIG["basic"]["APP_LOG_ACCESS"] == "1") {
     Logger::log("[{$_SERVER['REMOTE_ADDR']}][".(isset($_SESSION["username"]) ? $_SESSION["username"] : "")."] - http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}". (isset($_SESSION["PREVIOUS_URL"]) ? " from http://{$_SERVER['HTTP_HOST']}{$_SESSION['PREVIOUS_URL']}" : ""), "access.log");
 }
+
+
 load('panx'); //not class
 
 cors();

@@ -577,4 +577,21 @@ class Auth {
     public function captchaPassed() {
         $this->authModel->captchaPassed($_SERVER['REMOTE_ADDR']);
     }
+
+    public function loginUserFromToken($token) {
+        $data = $this->authModel->loadDataFromLoginToken($token);
+        if($data !== false) {
+            $this->id = $data["ID"];
+            $this->username = $data["USERNAME"];
+            $this->email = $data["EMAIL"];
+            $this->verified = $data["VERIFIED"];
+            $this->verify_key = $data["VERIFY_KEY"];
+            $this->created_at = $data["CREATED_AT"];
+            $this->edited_at = $data["EDITED_AT"];
+            $this->role = $data["ROLE"];
+            $this->role_name = $this->authModel->getRoleName($data["ROLE"]);
+            $this->permissions = $data["PERMISSIONS"];
+            $this->two_auth_enabled = $this->authModel->isEnabled2FA($data["ID"]);
+        }
+    }
 }

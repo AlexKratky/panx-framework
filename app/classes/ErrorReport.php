@@ -9,33 +9,45 @@ class ErrorReport {
         array_push(self::$errors[$topic], $error_msg);
     }
 
-    // return & delete
-    public static function get($topic) {
-
+    // saves errors to the session
+    public static function save($topic) {
+        if(isset(self::$errors[$topic])) {
+            $_SESSION["__error__$topic"] = json_encode(self::$errors[$topic]);
+        }
     }
 
-    // return & delete all
-    public static function getAll($topic) {
-
+    // return & delete
+    public static function get($topic) {
+        if(isset($_SESSION["__error__$topic"])) {
+            $e = json_decode($_SESSION["__error__$topic"], true);
+            self::delete($topic);
+            return $e;
+        } else {
+            return (self::$errors[$topic] ?? null);
+        }
     }
 
     // delete
     public static function delete($topic) {
-
-    }
-
-    // delete all
-    public static function deleteAll($topic) {
-
+        if(isset($_SESSION["__error__$topic"])) {
+            unset($_SESSION["__error__$topic"]);
+        }
     }
 
     // return
     public static function show($topic) {
-
+        if(isset($_SESSION["__error__$topic"])) {
+            return json_decode($_SESSION["__error__$topic"], true);
+        } else {
+            return (self::$errors[$topic] ?? null);
+        }
     }
 
-    // return all
-    public static function showAll($topic) {
-
+    // check if errors of topic exists
+    public static function hasErrorsExists($topic) {
+        if(isset($_SESSION["__error__$topic"]) || isset(self::$errors[$topic])) {
+            return true;
+        } 
+        return false;
     }
 }

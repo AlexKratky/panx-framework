@@ -23,24 +23,9 @@ class LoginForm extends Form {
             ->errorMsgNotValid("Zadané heslo je neplatné - %s musí obsahovat minimálně 6 znaků.")
             ->validator("Validator", "validatePassword")
             ->validatorRegex(".{6,}");
-        $this->form->add('input', 'info')
-            ->placeholder("Type info bout you")
-            ->type("text")
-            ->html("class='input'")
-            ->default("18 yo");
-        $this->form->add('input', 'files[]', 'files')
-            ->placeholder("Select files")
-            ->type("file")
-            ->html("class='input' multiple")
-            ->errorMsgEmpty("Prosím, zvolte soubor")
-            ->errorMsgNotValid("Zvolené soubory nejsou validní - %s.")
-            ->fileSize("100000000")
-            ->fileCount("5")
-            ->fileExtensions("png, jpg");
-        $this->form->add('submit', 'submit')
-            ->text('Login')
-            ->id('submit')
-            ->html('class="button"');
+        $this->form->add('input', 'remember')
+            ->type("checkbox")
+            ->id('remember');
     }
     
 }

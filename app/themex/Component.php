@@ -15,6 +15,10 @@ abstract class Component {
      * @var array
      */
     private $args;
+    private $fn;
+    private $formx;
+
+    abstract public function __construct($args, $fn, $formx);
 
     /**
      * The first part of component.
@@ -33,10 +37,16 @@ abstract class Component {
      * @param array $args The array of argument.
      * @return string Returns html string with attributes, e.g. 'name="x" value="y" placeholder="z"' ...
      */
-    public function createStringFromArgs(array $args, $fn) {
-        if(!isset($args["type"]) || strtolower($args["type"]) != "password")
-            $x = FormX::getFromSession($fn, $args["name"]);
-        else
+    public function createStringFromArgs(array $args, $fn, $formx) {
+        if(!isset($args["type"]) || strtolower($args["type"]) != "password") {
+            $c = $formx->getValues();
+            dump($c);
+            if(isset($c[$args["name"]])) {
+                dump($c[$args["name"]]);
+            } else {
+                $x = FormX::getFromSession($fn, $args["name"]);
+            }
+        } else 
             $x = null;
         $s = "name=\"".$args["name"]."\"";
         $s .= (!isset($args["type"])) ? "" : (empty($args["type"]) ? "" : " type=\"" . $args["type"] . "\"");

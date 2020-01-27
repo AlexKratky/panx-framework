@@ -275,23 +275,25 @@ function __($key, $default = false, $replacement = array(), $returnKeyOnFailure 
             $t = $c[$key] ?? null;
         }
         if(empty($t)) {
+            if($CONFIG["basic"]["APP_DEBUG"] == 1) array_push($GLOBALS["missing_translations"], array(trim(str_replace("%s", $key, $keyFormat)), debug_backtrace()[count(debug_backtrace())-4]["file"], debug_backtrace()[count(debug_backtrace())-4]["line"]));
             if(!$returnKeyOnFailure)
                 return false;
-            return str_replace("%s", $key, $keyFormat);
+            return trim(str_replace("%s", $key, $keyFormat));
         } else {
             $x = $t;
             for ($i = 0; $i < count($replacement); $i++) {
                 $x = preg_replace("/%s/", $replacement[$i], $x, 1);
             }
-            return $x;
+            return trim($x);
         }
     } else {
         $translation = array();
         if(!file_exists($_SERVER['DOCUMENT_ROOT']."/../app/resources/lang/$lang.lang")) {
             if(!file_exists($_SERVER['DOCUMENT_ROOT']."/../app/resources/lang/en.lang")) {
+                if($CONFIG["basic"]["APP_DEBUG"] == 1) array_push($GLOBALS["missing_translations"], array(trim(str_replace("%s", $key, $keyFormat)), debug_backtrace()[count(debug_backtrace())-4]["file"], debug_backtrace()[count(debug_backtrace())-4]["line"]));
                 if(!$returnKeyOnFailure)
                     return false;
-                return str_replace("%s", $key, $keyFormat);
+                return trim(str_replace("%s", $key, $keyFormat));
             } else {
                 $lang = "en";
             }
@@ -319,15 +321,16 @@ function __($key, $default = false, $replacement = array(), $returnKeyOnFailure 
             $t = $translation[$key] ?? null;
         }
         if(empty($t)) {
+            if($CONFIG["basic"]["APP_DEBUG"] == 1) array_push($GLOBALS["missing_translations"], array(trim(str_replace("%s", $key, $keyFormat)), debug_backtrace()[count(debug_backtrace())-4]["file"], debug_backtrace()[count(debug_backtrace())-4]["line"]));
             if(!$returnKeyOnFailure)
                 return false;
-            return str_replace("%s", $key, $keyFormat);
+            return trim(str_replace("%s", $key, $keyFormat));
         } else {
             $x = $t;
             for ($i = 0; $i < count($replacement); $i++) {
                 $x = preg_replace("/%s/", $replacement[$i], $x, 1);
             }
-            return $x;
+            return trim($x);
         }
     }
 }

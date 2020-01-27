@@ -12,7 +12,6 @@ form_error_email: Prosím, zadejte platnou emailovou adresu.
 form_error_tel: Prosím, zadejte platné telefoní číslo.
 form_error_url: Prosím, zadejte platnou URL.
 form_error_data: Prosím, vyplňte do formuláře platná data.
-
 #auth
 auth.invalidRecaptcha: Neplatná recaptcha.
 auth.invalid2FA: Neplatný kód pro dvoufázové ověření.

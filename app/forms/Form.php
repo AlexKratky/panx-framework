@@ -29,6 +29,7 @@ abstract class Form {
      * @var FormX The form reference
      */
     protected $form;
+    protected static $formx;
 
     /**
      * @param string $formName The form's name. Used to rendering Latte file (It will render the $formName.latte).
@@ -102,6 +103,8 @@ abstract class Form {
                         $args .= ", $a => '{$x[0]}, {$x[1]}'";
                     }
                 }
+                self::$formx = $this->form;
+
                 if($p === "Component") {
                     return $writer->write('echo Form::component("'.$args.'", "'.$fn.'") . Form::componentEnd("'.$args.'", "'.$fn.'")'); 
                 } else {
@@ -158,6 +161,10 @@ var formx_translations = {
         return $this->form->error;
     }
 
+    public function getForm() {
+        return $this->form;
+    }
+
     public static function getCsrf() {
         return '<input name="csrf_token" type="hidden" required value="'.$_SESSION["csrf_token"].'">';
     }
@@ -182,7 +189,7 @@ var formx_translations = {
     public static function component(?string $node = null, $fn = null): string {
         $component = explode(",", $node, 2)[0];
         $args = self::convertNodeToArray($node);
-        self::$themeX = new ThemeX($component, $args, $fn);
+        self::$themeX = new ThemeX($component, $args, $fn, self::$formx);
         return self::$themeX->componentStart();
     }
 
@@ -205,9 +212,10 @@ var formx_translations = {
     public static function singleComponent(?string $node = null, $fn): string {
         $component = explode(",", $node, 2)[0];
         $args = self::convertNodeToArray($node);
-        self::$themeX = new ThemeX($component, $args, $fn);
+        self::$themeX = new ThemeX($component, $args, $fn, self::$formx);
         return self::$themeX->component();
     }
+
 
     /**
      * Converts $node to array.

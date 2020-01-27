@@ -65,5 +65,13 @@ class Mail {
      */
     public function send($reciever) {
         mail($reciever, $this->subject, $this->message, $this->headers);
+        if($GLOBALS["CONFIG"]["basic"]["APP_DEBUG"] == "1") {
+            array_push($GLOBALS["sent_mails"], array(
+                $reciever, 
+                $this->subject, 
+                $this->message, 
+                $this->headers
+            ));
+        }
     }
 }
