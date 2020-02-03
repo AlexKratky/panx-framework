@@ -14,6 +14,9 @@ class PDB_Session implements Tracy\IBarPanel
         $c = "";
 		foreach ($_SESSION as $key => $value) {
             if($key == "_tracy") continue;
+            if($key == "__redirect__1") continue;
+            if($key == "__redirect__2") continue;
+            if($key == "__redirect__3") continue;
 			$c .= "<tr><td><b>{$key}:</b></td><td>". (is_array($value) ? implode(", ", $value) : $value) . "</td></tr>";
 		}
 		return '<h1>Session</h1>

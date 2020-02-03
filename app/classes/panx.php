@@ -42,6 +42,15 @@ function error($code) {
  * @param boolean|string $goto If is equal to TRUE, saves to session the current URL. If is equal to FALSE, it will not saves anything to session. Otherwise, it will save string passed to session.
  */
 function redirect($url, $goto = false) {
+    if($GLOBALS["CONFIG"]["basic"]["APP_DEBUG"] == "1") {
+        $_SESSION["__redirect__3"] = $_SESSION["__redirect__2"] ?? null; 
+        $_SESSION["__redirect__2"] = $_SESSION["__redirect__1"] ?? null;
+        $_SESSION["__redirect__1"] = array(
+            "current_url" => $_SERVER['REQUEST_URI'],
+            "redirect_to" => $url,
+            "post_params" => $_POST
+        );
+    }
     if($goto != false) {
         if($goto) {
             $_SESSION["REDIRECT_TO"] = $_SERVER['REQUEST_URI'];

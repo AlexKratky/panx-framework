@@ -54,6 +54,11 @@ class db {
      */
     public static function query($sql, $params = array())
     {
+        if($GLOBALS["CONFIG"]["basic"]["APP_DEBUG"])
+            array_push($GLOBALS["database_queries"], array(
+                $sql,
+                $params
+            ));
         $query = self::$conn->prepare($sql);
         $query->execute($params);
         self::$id = self::$conn->lastInsertId();
@@ -66,6 +71,11 @@ class db {
      * @param array $params The array of parameters.
      */
     public static function select($sql, $params = array()) {
+        if($GLOBALS["CONFIG"]["basic"]["APP_DEBUG"])
+            array_push($GLOBALS["database_queries"], array(
+                $sql,
+                $params
+            ));
         $q = self::$conn->prepare($sql);
         $q->execute($params);
         $data = $q->fetch();
@@ -78,9 +88,31 @@ class db {
      * @param array $params The array of parameters.
      */
     public static function multipleSelect($sql, $params = array()) {
+        if($GLOBALS["CONFIG"]["basic"]["APP_DEBUG"])
+            array_push($GLOBALS["database_queries"], array(
+                $sql,
+                $params
+            ));
         $q = self::$conn->prepare($sql);
         $q->execute($params);
         $data = $q->fetchAll();
+        return $data;
+    }
+
+    /**
+     * Execute query on DB and fetch all rows of result as assoc array.
+     * @param string $sql The query. Use ? for parameters.
+     * @param array $params The array of parameters.
+     */
+    public static function multipleSelectAssoc($sql, $params = array()) {
+        if($GLOBALS["CONFIG"]["basic"]["APP_DEBUG"])
+            array_push($GLOBALS["database_queries"], array(
+                $sql,
+                $params
+            ));
+        $q = self::$conn->prepare($sql);
+        $q->execute($params);
+        $data = $q->fetchAll(PDO::FETCH_ASSOC);
         return $data;
     }
 
@@ -90,6 +122,11 @@ class db {
      * @param array $params The array of parameters.
      */
     public static function count($sql, $params = array()) {
+        if($GLOBALS["CONFIG"]["basic"]["APP_DEBUG"])
+            array_push($GLOBALS["database_queries"], array(
+                $sql,
+                $params
+            ));
         $q = self::$conn->prepare($sql);
         $q->execute($params);
         $data = $q->fetch();
