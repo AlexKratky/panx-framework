@@ -14,6 +14,7 @@ if($CONFIG["basic"]["APP_DEBUG"] == "1") {
     set_error_handler("errorHandler");
     $GLOBALS["missing_translations"] = [];
     $GLOBALS["sent_mails"] = [];
+    $GLOBALS["database_queries"] = [];
 
 }
 if($CONFIG["basic"]["APP_URL"] == "auto") {

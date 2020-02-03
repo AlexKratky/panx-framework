@@ -389,6 +389,10 @@ class Route extends RouteAction implements RouteErrors {
 
     }
 
+    public static function getValues() {
+        return self::$VALUES;
+    }
+
     /**
      * Obtain controller from route (Using <controller>).
      * @return string|null The controller or null if the the Route does not contain one.

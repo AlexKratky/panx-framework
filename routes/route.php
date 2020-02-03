@@ -20,7 +20,13 @@ Route::set('/test', function() {
     $mailer->subject('Verify your email2');
     $mailer->send("ak@example.com");*/
 
+    echo "<form method='post' action='/test/submit/form'><input name='name'><input name='pass' type='password'><button>ok</button></form>";
+    Logger::log('testtt');
+});
 
+Route::set('/test/{ID}', function() {});
+Route::set('/test/{ID}/{ACTIP}', function() {
+    redirect("/test");
 });
 
 
