@@ -1,0 +1,8 @@
+{php $x = scandir($_SERVER["DOCUMENT_ROOT"] . "/../public/download/extensions")}
+Want to download panx-framework? You can find available version <a href="/panx/download/">here</a>
+{foreach $x as $file}
+    {continueIf $file == "." || $file == ".."}
+    <br>
+
+    <a href="/download/extensions/{$file}">{$file}</a>
+{/foreach}

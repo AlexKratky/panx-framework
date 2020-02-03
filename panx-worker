@@ -416,6 +416,19 @@ function lang() {
     require $SCRIPT_PATH."lang.php";
 }
 
+function factory() {
+    global $ARGS_COUNT;
+    global $ARGS;
+    global $PATH;
+    global $SCRIPT_PATH;
+    global $CONFIG;
+    
+    require $SCRIPT_PATH."factory.php";
+}
+
+function generate() {factory();}
+
+
 /**
  * Creates empty dirs needed by panx framework with specified chmod (777).
  */

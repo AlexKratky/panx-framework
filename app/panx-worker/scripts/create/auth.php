@@ -12,4 +12,8 @@ db::query(file_get_contents($PATH.'/app/panx-worker/auth-resource/table_tokens.s
 info_msg("The table `users_tokens` created");
 db::query(file_get_contents($PATH.'/app/panx-worker/auth-resource/recaptcha_fails.sql'), array());
 info_msg("The table `recaptcha_fails` created");
+db::query(file_get_contents($PATH.'/app/panx-worker/auth-resource/roles.sql'), array());
+info_msg("The table `roles` created");
+db::query(file_get_contents($PATH.'/app/panx-worker/auth-resource/permissions.sql'), array());
+info_msg("The table `permissions` created");
 

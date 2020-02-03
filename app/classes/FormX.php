@@ -39,6 +39,8 @@ class FormX {
      */
     private $el = array();
 
+    private $formName;
+
     public const ELEMENT_EMPTY = 1;
     public const ELEMENT_NOT_VALID = 2;
 
@@ -49,11 +51,11 @@ class FormX {
      * @param string $method The form method: GET / POST.
      * @param string $action The form action.
      */
-    public function __construct(string $method, string $action) {
+    public function __construct(string $method, string $action, ?string $formName = null) {
         $this->method = $method;
         $this->action = $action;
-
-        $e = new FormXElement('input', 'csrf_token');
+        $this->formName = $formName;
+        $e = new FormXElement('input', 'csrf_token', null, $this->formName);
         $this->csrf_token = $e;
         if(empty($_SESSION['csrf_token'])) {
             $_SESSION['csrf_token'] = substr(base_convert(sha1(uniqid((string)mt_rand())), 16, 36), 0, 32);
@@ -73,7 +75,7 @@ class FormX {
      * @return FormXElement The form element.
      */
     public function add(string $type, string $name, string $files=null): FormXElement {
-        $e = new FormXElement($type, $name, $files);
+        $e = new FormXElement($type, $name, $files, $this->formName);
         array_push($this->el, $e);
         $this->$name = $e;
         return $e;
@@ -91,6 +93,39 @@ class FormX {
                 return;
         $this->validate();
     }
+
+    public function saveToSession() {
+        foreach ($this->el as $el) {
+            $n = $el->nameFiles ?? $el->name;
+            if($n == "csrf_token") {
+                continue;
+            }
+            if($n == "pass" || $n == "password") continue;
+            if($this->method == "POST") {
+                if(!empty($_POST[$n])) {
+                    $_SESSION["__".$this->formName."__".$n] = $_POST[$n];
+                }
+            } else {
+                if(!empty($_GET[$n])) {
+                    $_SESSION["__".$this->formName."__".$n] = $_GET[$n];
+                }
+            }
+        }
+        $_SESSION["__".$this->formName."_time"] = time();
+    }
+
+    public static function getFromSession($form, $name) {
+        // the $form was submitted 10 s before
+        if(isset($_SESSION["__".$form."_time"]) && ((int) $_SESSION["__{$form}_time"] + 10 > time())) {
+            if(isset($_SESSION["__{$form}__{$name}"])) {
+                $x = $_SESSION["__{$form}__{$name}"];
+                unset($_SESSION["__{$form}__{$name}"]);
+                return $x;
+            }
+        }
+        return null;
+    }
+
 
     /**
      * Validates the form. All required elements must be filled, and if the element have Validator, then the element's value must be valid.

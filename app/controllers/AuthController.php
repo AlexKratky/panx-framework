@@ -58,8 +58,10 @@ class AuthController
             $l = ($l === null ? $GLOBALS["CONFIG"]["auth"]["LANDING_PAGE"] : $l);
             redirect($l);
         }
+        $form = new LoginForm();
         self::$handler::setParameters([
             'recaptcha_needed'=>self::$auth->isCaptchaNeeded(),
+            'form' => $form->getForm()
         ]);
 
     }

@@ -92,7 +92,7 @@ class Route extends RouteAction implements RouteErrors {
     /**
      * @var array The info about current Route.
      */
-    protected static $CURRENT_ROUTE_INFO;
+    public static $CURRENT_ROUTE_INFO;
     /**
      * @var string The string containing the Route.
      */
@@ -286,9 +286,9 @@ class Route extends RouteAction implements RouteErrors {
 
     /**
      * Gets the name of alias for current route.
-     * @return string Alias name.
+     * @return string Alias name or null.
      */
-    public static function getAlias(): string {
+    public static function getAlias() {
         foreach (self::$ALIASES as $alias => $route) {
             if($route == self::$CURRENT_ROUTE_INFO["route"]) {
                 return $alias;
@@ -344,6 +344,10 @@ class Route extends RouteAction implements RouteErrors {
     public function setMiddleware(array $MIDDLEWARES): Route {
         self::$MIDDLEWARES[$this->ROUTE] = $MIDDLEWARES;
         return $this;
+    }
+
+    public static function getMiddlewares($route) {
+        return self::$MIDDLEWARES[$route] ?? null;
     }
 
     /**
