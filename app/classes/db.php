@@ -95,7 +95,7 @@ class db {
             ));
         $q = self::$conn->prepare($sql);
         $q->execute($params);
-        $data = $q->fetchAll();
+        $data = $q->fetchAll(PDO::FETCH_ASSOC);
         return $data;
     }
 

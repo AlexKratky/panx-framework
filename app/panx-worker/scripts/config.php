@@ -54,7 +54,8 @@ DEBUG_SAVE = true
 ; SAVE ERRORS TO FILE
 DEBUG_LOG_ERR = true
 DEBUG_PRINT_ERR = true
-
+PDB_ENABLE = true
+PDB_USERNAME = alex
 
 [auth]
 LANDING_PAGE = /
@@ -74,6 +75,7 @@ UA_CODE =
 file[] = tracy.php
 
 [addintional_loader_files_after]
+file[] = app/core/PanxDebugBar/tracy.php
 
 [custom]
 CUSTOM_VALUE = xxx";

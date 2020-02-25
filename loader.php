@@ -166,7 +166,12 @@ function getArrayOfParameters($r) {
     $params = $r->getParameters();
     foreach ($params as $param) {
         if(Route::getValue($param->getName()) === false) {
-            error(400);
+            if($param->isOptional()) {
+                array_push($a, null);
+                continue;
+            } else {
+                error(400);
+            }
         }
         array_push($a, Route::getValue($param->getName()));
         

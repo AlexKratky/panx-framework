@@ -3,7 +3,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-$PANX_VERSION = "0.3.2";
+$PANX_VERSION = "0.3.4";
 
 $PATH = __DIR__;
 $SCRIPT_PATH = __DIR__."/app/panx-worker/scripts/";
@@ -13,7 +13,7 @@ if(file_exists(__DIR__."/app/panx-worker/TS_CMD.php")) {
     require(__DIR__."/app/panx-worker/TextTable.php");
 
     $PROGRAM_INFO["name"] = "panx-worker";
-    $PROGRAM_INFO["version"] = "v$PANX_VERSION (19-07-2019) [dd-mm-yyyy]";
+    $PROGRAM_INFO["version"] = "v$PANX_VERSION (25-02-2020) [dd-mm-yyyy]";
     $CONFIG = (file_exists(".config")) ? parse_ini_file(".config", true) : null;
 
     $BINDS = array('route-list', '-v', '--v', 'v');
