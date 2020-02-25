@@ -45,9 +45,18 @@ if (is_callable($template_files)) {
                 if (file_exists($_SERVER['DOCUMENT_ROOT'] . "/../app/handlers/" . $h . ".php")) {
                     require_once $_SERVER['DOCUMENT_ROOT'] . "/../app/handlers/" . $h . ".php";
                     $controller = Route::getController();
+                    $action = null;
                     if ($controller === null) {
                         $controller = Route::getRouteController();
                     }
+                    Logger::log($controller ?? "null");
+                    if(strpos($controller, "#") !== false) {
+                        $c = explode("#", $controller, 2);
+                        $controller = $c[0];
+                        $action = $c[1];  
+                    }
+                    Logger::log($controller ?? "null");
+
                     if ($controller !== null) {
                         if (file_exists($_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php")) {
                             require_once $_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php";
@@ -60,7 +69,7 @@ if (is_callable($template_files)) {
                             }
                         }
                         $controller::main($h);
-                        $action = Route::getRouteAction();
+                        $action = $action ?? Route::getRouteAction();
                         if ($action !== null) {
                             if (method_exists($controller, $action)) {
                                 call_user_func_array(array($controller, $action), getArrayOfParameters(new ReflectionMethod($controller, $action)));
@@ -75,9 +84,16 @@ if (is_callable($template_files)) {
         }
     } else {
         $controller = Route::getController();
+        $action = null;
         if ($controller === null) {
             $controller = Route::getRouteController();
         }
+        if(strpos($controller, "#") !== false) {
+            $c = explode("#", $controller, 2);
+            $controller = $c[0];
+            $action = $c[1];  
+        }
+
         if ($controller !== null) {
             if (file_exists($_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php")) {
                 require_once $_SERVER['DOCUMENT_ROOT'] . "/../app/controllers/$controller.php";
@@ -90,7 +106,7 @@ if (is_callable($template_files)) {
                 }
             }
             $controller::main(null);
-            $action = Route::getRouteAction();
+            $action = $action ?? Route::getRouteAction();
             if ($action !== null) {
                 if (method_exists($controller, $action)) {
                     call_user_func_array(array($controller, $action), getArrayOfParameters(new ReflectionMethod($controller, $action)));

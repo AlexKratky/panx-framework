@@ -214,7 +214,7 @@ abstract class RouteAction {
      * @param string $get The GET parameters (eg. ?x=x). Write like this x=true:y=false:debug => ?x=true&y=false&debug
      * @return string url.
      */
-    public static function alias(string $alias, ?string $params = null, ?string $get = null): string {
+    public static function alias(string $alias, ?string $params = null, ?string $get = null) {
         if(!isset(Route::$ALIASES[$alias])) return null;
         $r = new URL(Route::$ALIASES[$alias], false);
         $l = $r->getLink();

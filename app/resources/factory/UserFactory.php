@@ -10,7 +10,7 @@ class UserFactory extends Factory {
         for ($i=0; $i < $c; $i++) { 
             echo $this->factory->username . "\n";  
             db::query("INSERT INTO `users` (`USERNAME`, `EMAIL`, `PASSWORD`, `VERIFIED`, `ROLE`, `BALANCE`, `CREATED_AT`, `FULLNAME`, `SCHOOL`, `TEAM`, `RATING`)
-                VALUES (?, ?, ?, 1, 49, ?, CURRENT_TIMESTAMP(), ?, ?, ?, ?, '1'",
+                VALUES (?, ?, ?, 1, 49, ?, CURRENT_TIMESTAMP(), ?, ?, ?, ?, '1')",
                 array(
                     str_replace('.', '', $this->factory->username),
                     $this->factory->email,

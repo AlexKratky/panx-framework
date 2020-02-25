@@ -401,7 +401,7 @@ function cors()
     if($CONFIG["basic"]["APP_CORS"] != "1") return;
     if($CONFIG["basic"]["APP_CORS_ONLY_API"] == "1") {
         $u = new URL();
-        if(!isset($u->getLink()[1]) || $u->getLink()[1] != "api") {
+        if(!isset($u->getLink()[1]) || $u->getLink()[1] != "api" || $u->getLink()[1] != "rest") {
             return;
         }
     }
