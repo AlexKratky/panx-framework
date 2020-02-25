@@ -44,7 +44,7 @@ class Logger {
             Cache::save("__Logger__sizeChecked__$file.info", "t");
         }
         $text .= ( isset($GLOBALS["request"]) ? " | " . ($GLOBALS["request"]->getClientID() ?? null): '');
-        return file_put_contents ( $dir . "/logs/" . $file , "[".date("d/m/Y H:i:s")."] ".$text . " -  ".debug_backtrace()[0]['file']."@" . debug_backtrace()[1]['function'] ."() \r\n", FILE_APPEND | LOCK_EX);
+        return file_put_contents ('panx://'. $dir . "/logs/" . $file , "[".date("d/m/Y H:i:s")."] ".$text . " -  ".debug_backtrace()[0]['file']."@" . debug_backtrace()[1]['function'] ."() \r\n", FILE_APPEND | LOCK_EX);
     }
 
     public static function write(string $text, string $file = "main.log", ?string $dir = null) {self::log($text, $file, $dir);}

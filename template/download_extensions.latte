@@ -1,8 +1,182 @@
-{php $x = scandir($_SERVER["DOCUMENT_ROOT"] . "/../public/download/extensions")}
-Want to download panx-framework? You can find available version <a href="/panx/download/">here</a>
-{foreach $x as $file}
-    {continueIf $file == "." || $file == ".."}
-    <br>
 
-    <a href="/download/extensions/{$file}">{$file}</a>
-{/foreach}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    
+    <title>panx framework</title>
+    <link rel="stylesheet" href="/res/css/panx-design.css">
+    <script src="/res/js/panx-design.js"></script>
+    <link rel="shortcut icon" href="//panx.eu/res/img/favicon.png" type="image/x-icon">
+    <meta name="theme-color" content="#0055f4">
+    <!-- Windows Phone -->
+    <meta name="msapplication-navbutton-color" content="#0055f4">
+    <!-- iOS Safari -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="#0055f4">
+    <link rel="stylesheet" href="/res/css/panx.css">
+</head>
+<body>
+    <div class="layout-wrapper">
+        <div class="layout-inner">
+            <div class="layout-navbar navbar navbar-fixed" style="background: linear-gradient(30deg, rgb(15, 0, 69) 0%, rgb(0, 85, 244) 100%);">
+                <div class="navbar-title">
+                    <a href="/">
+                      <div class="navbar-logo">
+                          <img src="//panx.eu/res/img/logo.svg" alt="PD">
+                      </div>
+                      <div class="navbar-text">
+                          panx
+                      </div>
+                    </a>  
+                </div>
+                <div class="navbar-items">
+                    <a href="/#features">
+                        <div class="navbar-item">
+                            Features
+                        </div>
+                    </a>
+                    <a href="/#components">
+                        <div class="navbar-item">
+                            Components
+                        </div>
+                    </a>
+                    <a href="/#extensions">
+                        <div class="navbar-item">
+                            Extensions
+                        </div>
+                    </a>
+                    <a href="/docs">
+                        <div class="navbar-item">
+                            Documentation
+                        </div>
+                    </a>
+                </div>
+                <div class="navbar-mobile">
+                    <i class="icon ion-md-menu"></i>
+                </div>
+            </div>
+            <div class="layout-container">
+                <div class="layout-content">
+                <div class="row" style="max-width: 1400px; margin: auto auto;">
+                    <h1 style="margin-top: 80px;">Extensions</h1>
+                    {php $x = scandir($_SERVER["DOCUMENT_ROOT"] . "/../public/download/extensions")}
+                    <center>
+                        Want to download panx-framework? You can find available version <a href="/panx/download/" style="color: var(--primary)">here</a>.
+                    </center>
+                    {foreach $x as $file}
+                        {continueIf $file == "." || $file == ".."}
+                        <div class="col-4 col-s-11 col-m-11 centered">
+                            <div class="card">
+                                <div class="card-title">{basename($file, ".zip")}</div>
+                                <div class="card-actions">
+                                    <a href="/download/{$file}">
+                                        <button class="btn btn-primary">Download</button>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {/foreach}
+                </div>
+                <div class="row" style="margin-top: 100px;">
+                        <div class="col-12 np">
+                            <nav class="footer">
+                                <div class="row" style="max-width: 1200px; margin: auto auto;">
+                                    <div class="col-4 col-s-12">
+                                        <div>
+                                            <a href="/" class="footer-brand">panx-framework</a>
+                                        </div>
+                                        <a class="footer-social" href="javascript:void(0)">
+                                            <i class="ion ion-logo-twitter"></i>
+                                        </a>
+                                        &nbsp; &nbsp;
+                                        <a class="footer-social" href="https://github.com/AlexKratky/panx-framework">
+                                            <i class="ion ion-logo-github"></i>
+                                        </a>
+                                        &nbsp; &nbsp;
+                                        <a class="footer-social" href="https://packagist.org/packages/alexkratky/panx" title="packagist">
+                                            <i class="ion ion-md-link"></i>
+                                        </a>
+                                    </div>
+                    
+                                    <div class="col-8 np">
+                                        <div class="row">
+                                            <div class="col-4 col-s-6">
+                                                <div class="footer-text">Components</div>
+                                                <a href="https://packagist.org/packages/alexkratky/routex" class="footer-link">RouteX</a>
+                                                <a href="https://packagist.org/packages/alexkratky/authx" class="footer-link">AuthX</a>
+                                                <a href="https://packagist.org/packages/alexkratky/apix" class="footer-link">APIX</a>
+                                                <a href="javascript:void(0)" class="footer-link">FormX</a>
+                                                <a href="https://packagist.org/packages/alexkratky/cachex" class="footer-link">CacheX</a>
+                                                <a href="javascript:void(0)" class="footer-link">RestAPI</a>
+                                                <a href="https://packagist.org/packages/alexkratky/url" class="footer-link">URL</a>
+                                                <a href="https://packagist.org/packages/alexkratky/paginationx" class="footer-link">PaginationX</a>
+                                                <a href="https://packagist.org/packages/alexkratky/loggerx" class="footer-link">LoggerX</a>
+                                            </div>
+                                            <div class="col-4 col-s-6">
+                                                <div class="footer-text">Extensions</div>
+                                                <a href="https://github.com/AlexKratky/panx-auth" class="footer-link">Auth</a>
+                                                <a href="https://github.com/AlexKratky/panx-TotalAdmin" class="footer-link">TotalAdmin</a>
+                                                <a href="https://github.com/AlexKratky/panx-postmanager" class="footer-link">PostManager</a>
+                                                <a href="https://github.com/AlexKratky/panx-infinityscroll" class="footer-link">InfinityScroll</a>
+                                            </div>
+                                            <div class="col-4 col-s-6">
+                                                <div class="footer-text">Documentation</div>
+                                                <a href="https://panx.eu/docs/intro" class="footer-link">Intro</a>
+                                                <a href="https://panx.eu/docs/intro#composer" class="footer-link">Installation</a>
+                                                <a href="https://panx.eu/docs/getting-started" class="footer-link">Getting started</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 footer-copyright">
+                                        &copy; panx-framework 2019.
+                                    </div>
+                                </div>
+                            </nav>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+<link
+    href="https://fonts.googleapis.com/css?family=Montserrat:100,200,300,400,500,600,700,800,900|Poppins:100,200,300,400,500,600,700,800,900&display=swap"
+    rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Noto+Sans:400,700&display=swap" rel="stylesheet">
+
+
+<!--https://ionicons.com/-->
+<link href="https://unpkg.com/ionicons@4.5.10-0/dist/css/ionicons.min.css" rel="stylesheet">
+<!--OTHER-->
+<script>
+        let links = ["features", "components", "extensions"];
+
+        document.querySelectorAll('a[href*="#"]').forEach(item => {
+            item.addEventListener("click", (e) => {
+                console.log(item.hash);
+                
+                if (item.hash == "" || item.hash == "#") { //# 
+                    event.preventDefault();
+                    return;
+                }
+                if(links.indexOf(item.hash.replace("#", "")) === -1) return;
+                
+                    var target = document.getElementById(item.hash.replace("#", ""));
+                    console.log(target);
+                    
+                    if (target) {
+                        // Only prevent default if animation is actually gonna happen
+                        event.preventDefault();
+                        
+                        target.scrollIntoView({ behavior: "smooth" });
+                        
+                    }
+                
+            })
+        })
+</script>

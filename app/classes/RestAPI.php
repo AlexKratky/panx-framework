@@ -289,6 +289,23 @@ class RestAPI {
         if(!isset($this->delete[$table])) return array("success" => false, "error" => "invalid_table");
         if($this->delete[$table]["permission"] != null) {
             if(!$this->auth->isUserPermittedTo($this->delete[$table]["permission"])) {
+                if($this->delete[$table]["user_row"] != null) {
+                    if($this->delete[$table]["user_row"]["permission"] != null) {
+                        if(!$this->auth->isUserPermittedTo($this->delete[$table]["user_row"]["permission"])) {
+                            return array("success" => false, "error" => "user_permission_denied");
+                        }
+                    }
+                    if(isset($this->delete[$table]["user_row"]["column"])) $column = $this->delete[$table]["user_row"]["column"];
+
+                    if(db::count("SELECT COUNT(*) FROM `{$table}` WHERE `{$column}`=?", array($id)) > 0) {
+                        db::query("DELETE FROM `{$table}` WHERE `{$column}`=?", array($id));
+                        return array("success" => true);
+
+                    } else {
+                        return array("success" => false, "error" => "id_not_found");
+
+                    }
+                }
                 return array("success" => false, "error" => "permission_denied");
             }
         }

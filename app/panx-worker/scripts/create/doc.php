@@ -62,7 +62,7 @@ if (file_exists($source . "sorting")) {
     foreach ($s as $line) {
         foreach ($menu_arr as $menu_arr_el) {
             if ($menu_arr_el[0] == trim($line)) {
-                $menu = $menu . "<li class='sidemenu-li'><a href='/docs$version" . $menu_arr_el[0] . "'>" . $menu_arr_el[1] . "</a></li>\r\n";
+                $menu = $menu . "<li class='sidenav-item'><a href='/docs$version" . $menu_arr_el[0] . "'><i class='sidenav-icon ion ion-md-remove'></i>  " . $menu_arr_el[1] . "</a></li>\r\n";
                 break;
             }
         }
@@ -81,14 +81,14 @@ if (file_exists($source . "sorting")) {
         $n = read("Select page (or write default to use this sorting)");
         if ($n == "default") {
             foreach ($menu_arr as $menu_arr_el) {
-                $menu = $menu . "<li class='sidemenu-li'><a href='/docs$version" . $menu_arr_el[0] . "'>" . $menu_arr_el[1] . "</a></li>\r\n";
+                $menu = $menu . "<li class='sidenav-item'><a href='/docs$version" . $menu_arr_el[0] . "'><i class='sidenav-icon ion ion-md-remove'></i>  " . $menu_arr_el[1] . "</a></li>\r\n";
                 //unset($menu_arr_el);
 
             }
             break;
         } else {
             if (isset($menu_arr[$n])) {
-                $menu = $menu . "<li class='sidemenu-li'><a href='/docs$version" . $menu_arr[$n][0] . "'>" . $menu_arr[$n][1] . "</a></li>\r\n";
+                $menu = $menu . "<li class='sidenav-item'><a href='/docs$version" . $menu_arr[$n][0] . "'><i class='sidenav-icon ion ion-md-remove'></i>  " . $menu_arr[$n][1] . "</a></li>\r\n";
                 unset($menu_arr[$n]);
                 info_msg($n);
 

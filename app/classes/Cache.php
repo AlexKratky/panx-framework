@@ -35,7 +35,7 @@ class Cache {
      * @param mixed $data The data that will be saved. Data will be edited by json_encode()
     */
     public static function save(string $name, $data): void {
-        file_put_contents($_SERVER['DOCUMENT_ROOT']. "/../cache/" . $name, json_encode($data));
+        file_put_contents('panx://'.$_SERVER['DOCUMENT_ROOT']. "/../cache/" . $name, json_encode($data));
     }
 
     /**
@@ -46,7 +46,7 @@ class Cache {
     */
     public static function get(string $name, ?int $cacheTime = null) {
         if(file_exists($_SERVER['DOCUMENT_ROOT'] . "/../cache/" . $name) && filectime($_SERVER['DOCUMENT_ROOT'] . "/../cache/" . $name) + ($cacheTime == null ? self::CACHE_TIME : $cacheTime) > time()) {
-            return json_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . "/../cache/" . $name), true);
+            return json_decode(file_get_contents('panx://'.$_SERVER['DOCUMENT_ROOT'] . "/../cache/" . $name), true);
         } else {
             return false;
         }

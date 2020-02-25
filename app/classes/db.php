@@ -54,7 +54,7 @@ class db {
      */
     public static function query($sql, $params = array())
     {
-        if($GLOBALS["CONFIG"]["basic"]["APP_DEBUG"])
+        if($GLOBALS["CONFIG"]["basic"]["APP_DEBUG"] && isset($GLOBALS["database_queries"]))
             array_push($GLOBALS["database_queries"], array(
                 $sql,
                 $params
@@ -71,7 +71,7 @@ class db {
      * @param array $params The array of parameters.
      */
     public static function select($sql, $params = array()) {
-        if($GLOBALS["CONFIG"]["basic"]["APP_DEBUG"])
+        if($GLOBALS["CONFIG"]["basic"]["APP_DEBUG"] && isset($GLOBALS["database_queries"]))
             array_push($GLOBALS["database_queries"], array(
                 $sql,
                 $params
@@ -88,7 +88,7 @@ class db {
      * @param array $params The array of parameters.
      */
     public static function multipleSelect($sql, $params = array()) {
-        if($GLOBALS["CONFIG"]["basic"]["APP_DEBUG"])
+        if($GLOBALS["CONFIG"]["basic"]["APP_DEBUG"] && isset($GLOBALS["database_queries"]))
             array_push($GLOBALS["database_queries"], array(
                 $sql,
                 $params
@@ -105,7 +105,7 @@ class db {
      * @param array $params The array of parameters.
      */
     public static function multipleSelectAssoc($sql, $params = array()) {
-        if($GLOBALS["CONFIG"]["basic"]["APP_DEBUG"])
+        if($GLOBALS["CONFIG"]["basic"]["APP_DEBUG"] && isset($GLOBALS["database_queries"]))
             array_push($GLOBALS["database_queries"], array(
                 $sql,
                 $params
@@ -122,7 +122,7 @@ class db {
      * @param array $params The array of parameters.
      */
     public static function count($sql, $params = array()) {
-        if($GLOBALS["CONFIG"]["basic"]["APP_DEBUG"])
+        if($GLOBALS["CONFIG"]["basic"]["APP_DEBUG"] && isset($GLOBALS["database_queries"]))
             array_push($GLOBALS["database_queries"], array(
                 $sql,
                 $params

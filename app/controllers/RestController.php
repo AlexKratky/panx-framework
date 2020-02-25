@@ -5,25 +5,29 @@ class RestController {
     private static $convertColumnToUppercase = true;
     private static $convertColumnToLowercase = false;
     private static $api;
+    protected static $isApiKeyRequired = false;
 
     public static function main($handler)
     {
         self::$handler = $handler;
         self::$api = new API("v1");
-        if(!self::$api->request(new URL())) {
+        if($isApiKeyRequired && !self::$api->request(new URL())) {
             echo json(self::$api->error());
             exit();
         }
-        self::$restapi = new RestAPI(true,
-            //get
-            array(
-                "users" => array(
-                    "columns" => ["ID", "USERNAME", "EMAIL", "VERIFIED", "ROLE", "PERMISSIONS", "CREATED_AT", "EDITED_AT"],
+        Logger::log(json_encode(array(
+                "restapi_test" => array(
+                    "columns" => ["ID", "USER_ID", "TASK", "COMPLETED", "CREATED_AT"],
                     "getByColumn" => null,
-                    "permission" => "get_table_users",
-                    "select_all_permission" => "get_all_users",
+                    "permission" => "get_all_todos",
+                    "select_all_permission" => null,
+                    "select_all_permission_user" => array(
+                        "column" => "USER_ID",
+                        "user" => "id",
+                        "permission" => null
+                    ),
                     "user_row" => array(
-                        "column" => "ID",
+                        "column" => "USER_ID",
                         "user" => "id",
                         "permission" => null
                     )
@@ -32,20 +36,26 @@ class RestController {
             // TODO: TEST CREATE
             //create
             array(
-                "api_keys" => array(
-                    "columns" => ["API_KEY", "RATE_LIMIT", "RATE_LIMIT_MONTHLY", "RATE_LIMIT_DAILY_CURRENT", "RATE_LIMIT_DAILY", "RATE_LIMIT_WEEKLY_CURRENT", "RATE_LIMIT_WEEKLY", "RATE_LIMIT_TOTAL"], //required post params
-                    "permission" => "insert_table_api_keys",
+                "restapi_test" => array(
+                    "columns" => ["TASK"], //required post params
+                    "optional" => ["COMPLETED", "CREATED_AT"],
+                    "add_user_data" => array(
+                        "column" => "USER_ID",
+                        "user" => "id"
+                    ),
+                    "permission" => null,
                 )
             ),
             // TODO : TEST update
             //update
             array(
                 "users" => array(
-                    "columns" => ["ID", "USERNAME", "EMAIL", "VERIFIED", "ROLE", "PERMISSIONS"],
+                    "columns" => ["TASK", "COMPLETED"],
+                    "optional" => ["CREATED_AT"],
                     "getByColumn" => null,
-                    "permission" => "update_table_users",
+                    "permission" => "update_table_restapi_test",
                     "user_row" => array(
-                        "column" => "ID",
+                        "column" => "USER_ID",
                         "user" => "id",
                         "permission" => null
                     )
@@ -54,9 +64,75 @@ class RestController {
             //delete
             array(
                 "api_keys" => array(
-                    "columns" => ["ID", "API_KEY"], // columns that can be used to indetify the row to delete
+                    "columns" => ["ID"], // columns that can be used to indetify the row to delete
                     "getByColumn" => null,
-                    "permission" => "delete_table_api_keys"
+                    "permission" => "delete_table_api_keys",
+                    "user_row" => array(
+                        "column" => "USER_ID",
+                        "user" => "id",
+                        "permission" => null
+                    )
+                )
+                    )));
+        self::$restapi = new RestAPI(true,
+            //get
+            array(
+                "restapi_test" => array(
+                    "columns" => ["ID", "USER_ID", "TASK", "COMPLETED", "CREATED_AT"],
+                    "getByColumn" => null,
+                    "permission" => "get_all_todos",
+                    "select_all_permission" => null,
+                    "select_all_permission_user" => array(
+                        "column" => "USER_ID",
+                        "user" => "id",
+                        "permission" => null
+                    ),
+                    "user_row" => array(
+                        "column" => "USER_ID",
+                        "user" => "id",
+                        "permission" => null
+                    )
+                )
+            ),
+            // TODO: TEST CREATE
+            //create
+            array(
+                "restapi_test" => array(
+                    "columns" => ["TASK"], //required post params
+                    "optional" => ["COMPLETED", "CREATED_AT"],
+                    "add_user_data" => array(
+                        "column" => "USER_ID",
+                        "user" => "id"
+                    ),
+                    "permission" => null,
+                )
+            ),
+            // TODO : TEST update
+            //update
+            array(
+                "restapi_test" => array(
+                    "columns" => ["TASK", "COMPLETED"],
+                    "optional" => ["CREATED_AT"],
+                    "getByColumn" => null,
+                    "permission" => "update_table_restapi_test",
+                    "user_row" => array(
+                        "column" => "USER_ID",
+                        "user" => "id",
+                        "permission" => null
+                    )
+                )
+            ),
+            //delete
+            array(
+                "restapi_test" => array(
+                    "columns" => ["ID"], // columns that can be used to indetify the row to delete
+                    "getByColumn" => null,
+                    "permission" => "delete_table_restapi_test",
+                    "user_row" => array(
+                        "column" => "USER_ID",
+                        "user" => "id",
+                        "permission" => null
+                    )
                 )
             )
         );
